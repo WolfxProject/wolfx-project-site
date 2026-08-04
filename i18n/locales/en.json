@@ -1,0 +1,74 @@
+{
+  "nav": {
+    "home": "Home",
+    "projects": "Projects",
+    "docs": "Documentation",
+    "donate": "Donate",
+    "github": "GitHub",
+    "menu": "Menu"
+  },
+  "search": {
+    "label": "Search",
+    "placeholder": "Search documentation…",
+    "close": "Close search",
+    "empty": "No matching content",
+    "hint": "Search titles, sections, and body text locally",
+    "loading": "Loading search index…",
+    "failed": "The search index could not be loaded. Please try again."
+  },
+  "theme": {
+    "label": "Change theme",
+    "system": "System",
+    "light": "Light",
+    "dark": "Dark"
+  },
+  "language": {
+    "label": "Change language"
+  },
+  "docs": {
+    "navigation": "Documentation",
+    "onThisPage": "On this page",
+    "updated": "Last updated",
+    "version": "Document version",
+    "previous": "Previous",
+    "next": "Next",
+    "backToTop": "Back to top",
+    "fallback": "This page is not translated yet, so the Japanese version is shown."
+  },
+  "copy": {
+    "label": "Copy",
+    "copied": "Copied",
+    "failed": "Copy failed"
+  },
+  "donation": {
+    "walletAddress": "Wallet address",
+    "openExternal": "Open external website"
+  },
+  "apiStatus": {
+    "title": "API Status",
+    "activeClients": "Active WebSocket clients",
+    "nginxRequests": "Nginx Requests",
+    "daily": "Daily",
+    "weekly": "Weekly",
+    "networkTraffic": "Network Traffic",
+    "updatedAt": "Count data updated at",
+    "loading": "Loading",
+    "statusError": "Unable to load status",
+    "chartError": "Unable to load chart",
+    "refresh": "Refresh",
+    "refreshing": "Refreshing"
+  },
+  "footer": {
+    "statement": "An independently operated, unofficial public-interest project.",
+    "privacy": "Privacy policy",
+    "terms": "Terms of service",
+    "donate": "Donate",
+    "status": "Service status",
+    "links": "Links"
+  },
+  "error": {
+    "title": "Page not found",
+    "description": "Check the URL or find what you need from the home page.",
+    "home": "Back home"
+  }
+}

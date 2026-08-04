@@ -1,0 +1,74 @@
+{
+  "nav": {
+    "home": "ホーム",
+    "projects": "プロジェクト",
+    "docs": "ドキュメント",
+    "donate": "寄付",
+    "github": "GitHub",
+    "menu": "メニュー"
+  },
+  "search": {
+    "label": "検索",
+    "placeholder": "文書内を検索…",
+    "close": "検索を閉じる",
+    "empty": "一致する内容がありません",
+    "hint": "タイトル・見出し・本文をローカル検索",
+    "loading": "検索索引を読み込んでいます…",
+    "failed": "検索索引を読み込めませんでした。再度お試しください。"
+  },
+  "theme": {
+    "label": "テーマを切り替える",
+    "system": "システム",
+    "light": "ライト",
+    "dark": "ダーク"
+  },
+  "language": {
+    "label": "言語を切り替える"
+  },
+  "docs": {
+    "navigation": "ドキュメント",
+    "onThisPage": "このページの目次",
+    "updated": "最終更新",
+    "version": "文書バージョン",
+    "previous": "前へ",
+    "next": "次へ",
+    "backToTop": "ページ上部へ",
+    "fallback": "このページの翻訳がないため、日本語版を表示しています。"
+  },
+  "copy": {
+    "label": "コピー",
+    "copied": "コピーしました",
+    "failed": "コピーできませんでした"
+  },
+  "donation": {
+    "walletAddress": "ウォレットアドレス",
+    "openExternal": "外部サイトを開く"
+  },
+  "apiStatus": {
+    "title": "API ステータス",
+    "activeClients": "アクティブな WebSocket クライアント",
+    "nginxRequests": "Nginx リクエスト",
+    "daily": "日間",
+    "weekly": "週間",
+    "networkTraffic": "ネットワークトラフィック",
+    "updatedAt": "データ更新日時",
+    "loading": "読み込み中",
+    "statusError": "ステータスを取得できませんでした",
+    "chartError": "グラフを読み込めませんでした",
+    "refresh": "更新",
+    "refreshing": "更新中"
+  },
+  "footer": {
+    "statement": "独立して運営される非公式の公益プロジェクトです。",
+    "privacy": "プライバシーポリシー",
+    "terms": "利用規約",
+    "donate": "Donate",
+    "status": "Service Status",
+    "links": "Links"
+  },
+  "error": {
+    "title": "ページが見つかりません",
+    "description": "URL を確認するか、ホームから目的のページを探してください。",
+    "home": "ホームへ戻る"
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "wolfx-project-site",
+  "main": "worker/index.ts",
+  "compatibility_date": "2026-08-04",
+  "assets": {
+    "directory": "./.output/public",
+    "binding": "ASSETS",
+    "run_worker_first": [
+      "/apidoc*",
+      "/wsapi*",
+      "/seisapi*",
+      "/privacy_policy*",
+      "/tos*",
+      "/donate*",
+      "/zh/",
+      "/en/"
+    ],
+    "html_handling": "drop-trailing-slash",
+    "not_found_handling": "404-page"
+  }
+}
