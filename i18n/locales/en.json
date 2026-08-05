@@ -5,7 +5,8 @@
     "docs": "Documentation",
     "donate": "Donate",
     "github": "GitHub",
-    "menu": "Menu"
+    "menu": "Menu",
+    "closeMenu": "Close menu"
   },
   "search": {
     "label": "Search",
@@ -33,7 +34,8 @@
     "previous": "Previous",
     "next": "Next",
     "backToTop": "Back to top",
-    "fallback": "This page is not translated yet, so the Japanese version is shown."
+    "fallback": "This page is not translated yet, so the Japanese version is shown.",
+    "tableScroll": "Scroll horizontally to view the full table"
   },
   "copy": {
     "label": "Copy",

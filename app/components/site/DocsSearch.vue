@@ -14,6 +14,7 @@ interface SearchEntry {
 const { locale, t } = useI18n()
 const dialog = useTemplateRef<HTMLDialogElement>('dialog')
 const input = useTemplateRef<HTMLInputElement>('input')
+const trigger = useTemplateRef<HTMLButtonElement>('trigger')
 const query = ref('')
 const entries = ref<SearchEntry[]>([])
 const loaded = ref(false)
@@ -69,6 +70,8 @@ function excerpt(entry: SearchEntry) {
 }
 
 async function openSearch() {
+  document.documentElement.classList.add('has-modal-open')
+  document.body.classList.add('has-modal-open')
   dialog.value?.showModal()
   await nextTick()
   input.value?.focus()
@@ -89,8 +92,11 @@ async function openSearch() {
 }
 
 function resetSearch() {
+  document.documentElement.classList.remove('has-modal-open')
+  document.body.classList.remove('has-modal-open')
   query.value = ''
   activeIndex.value = -1
+  void nextTick(() => trigger.value?.focus())
 }
 
 function handleGlobalShortcut(event: KeyboardEvent) {
@@ -143,17 +149,24 @@ async function handleInputKeydown(event: KeyboardEvent) {
 }
 
 onMounted(() => document.addEventListener('keydown', handleGlobalShortcut))
-onBeforeUnmount(() => document.removeEventListener('keydown', handleGlobalShortcut))
+onBeforeUnmount(() => {
+  document.removeEventListener('keydown', handleGlobalShortcut)
+  document.documentElement.classList.remove('has-modal-open')
+  document.body.classList.remove('has-modal-open')
+})
 </script>
 
 <template>
   <button
+    ref="trigger"
     class="search-trigger"
     type="button"
+    :aria-label="t('search.label')"
+    :title="t('search.label')"
     @click="openSearch"
   >
     <UIcon name="i-lucide-search" />
-    <span>{{ t('search.label') }}</span>
+    <span class="search-trigger__label">{{ t('search.label') }}</span>
     <kbd>/</kbd>
   </button>
   <dialog

@@ -5,7 +5,8 @@
     "docs": "ドキュメント",
     "donate": "寄付",
     "github": "GitHub",
-    "menu": "メニュー"
+    "menu": "メニュー",
+    "closeMenu": "メニューを閉じる"
   },
   "search": {
     "label": "検索",
@@ -33,7 +34,8 @@
     "previous": "前へ",
     "next": "次へ",
     "backToTop": "ページ上部へ",
-    "fallback": "このページの翻訳がないため、日本語版を表示しています。"
+    "fallback": "このページの翻訳がないため、日本語版を表示しています。",
+    "tableScroll": "横にスクロールして表全体を表示"
   },
   "copy": {
     "label": "コピー",

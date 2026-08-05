@@ -34,7 +34,7 @@ export default defineNuxtConfig({
     head: {
       htmlAttrs: { lang: 'ja' },
       meta: [
-        { name: 'viewport', content: 'width=device-width, initial-scale=1' },
+        { name: 'viewport', content: 'width=device-width, initial-scale=1, viewport-fit=cover' },
         { name: 'theme-color', media: '(prefers-color-scheme: light)', content: '#f4f7f8' },
         { name: 'theme-color', media: '(prefers-color-scheme: dark)', content: '#081012' },
       ],
@@ -121,6 +121,7 @@ export default defineNuxtConfig({
         'lucide:menu',
         'lucide:monitor-cog',
         'lucide:moon',
+        'lucide:move-horizontal',
         'lucide:notebook-pen',
         'lucide:panel-left',
         'lucide:radio-tower',

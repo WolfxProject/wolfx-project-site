@@ -8,9 +8,35 @@ export default defineConfig({
   reporter: 'line',
   use: {
     baseURL: externalBaseUrl || 'http://127.0.0.1:4381',
-    browserName: 'chromium',
     headless: true,
   },
+  projects: [
+    {
+      name: 'desktop-chromium',
+      testIgnore: /mobile\.spec\.mjs/,
+      use: { browserName: 'chromium' },
+    },
+    {
+      name: 'mobile-chromium',
+      testMatch: /mobile\.spec\.mjs/,
+      use: {
+        browserName: 'chromium',
+        viewport: { width: 390, height: 844 },
+        hasTouch: true,
+        isMobile: true,
+      },
+    },
+    {
+      name: 'mobile-webkit',
+      testMatch: /mobile\.spec\.mjs/,
+      use: {
+        browserName: 'webkit',
+        viewport: { width: 390, height: 844 },
+        hasTouch: true,
+        isMobile: true,
+      },
+    },
+  ],
   webServer: externalBaseUrl
     ? undefined
     : {

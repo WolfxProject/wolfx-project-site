@@ -14,11 +14,8 @@ withDefaults(defineProps<{
 
 <template>
   <div class="code-block">
-    <div
-      v-if="filename || language"
-      class="code-block__header"
-    >
-      <span>{{ filename ?? language }}</span>
+    <div class="code-block__header">
+      <span v-if="filename || language">{{ filename ?? language }}</span>
     </div>
     <pre><slot /></pre>
     <CopyButton :value="code" />

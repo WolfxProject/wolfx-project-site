@@ -3,6 +3,11 @@ const { t } = useI18n()
 const { localize } = usePublicPath()
 const route = useRoute()
 const mobileOpen = ref(false)
+const menuButton = useTemplateRef<HTMLButtonElement>('menuButton')
+const mobileNavigation = useTemplateRef<{
+  open: () => Promise<void>
+  close: () => void
+}>('mobileNavigation')
 
 const navigation = computed(() => [
   { label: t('nav.home'), to: localize('/') },
@@ -12,8 +17,19 @@ const navigation = computed(() => [
 ])
 
 watch(() => route.path, () => {
-  mobileOpen.value = false
+  mobileNavigation.value?.close()
 })
+
+async function openMobileNavigation() {
+  mobileOpen.value = true
+  await mobileNavigation.value?.open()
+}
+
+async function handleMobileNavigationClose() {
+  mobileOpen.value = false
+  await nextTick()
+  menuButton.value?.focus()
+}
 </script>
 
 <template>
@@ -60,38 +76,24 @@ watch(() => route.path, () => {
         <ThemeSwitcher />
         <LanguageSwitcher />
         <button
+          ref="menuButton"
           class="icon-button mobile-menu-button"
           type="button"
           :aria-label="t('nav.menu')"
+          :title="t('nav.menu')"
           :aria-expanded="mobileOpen"
           aria-controls="mobile-navigation"
-          @click="mobileOpen = !mobileOpen"
+          @click="openMobileNavigation"
         >
-          <UIcon :name="mobileOpen ? 'i-lucide-x' : 'i-lucide-menu'" />
+          <UIcon name="i-lucide-menu" />
         </button>
       </div>
     </div>
-    <nav
-      v-if="mobileOpen"
+    <MobileNavigation
       id="mobile-navigation"
-      class="mobile-nav"
-      :aria-label="t('nav.menu')"
-    >
-      <NuxtLink
-        v-for="item in navigation"
-        :key="item.to"
-        :to="item.to"
-      >
-        {{ item.label }}
-      </NuxtLink>
-      <NuxtLink
-        to="https://github.com/WolfxProject"
-        external
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        {{ t('nav.github') }}
-      </NuxtLink>
-    </nav>
+      ref="mobileNavigation"
+      :navigation="navigation"
+      @close="handleMobileNavigationClose"
+    />
   </header>
 </template>
