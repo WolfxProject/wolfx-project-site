@@ -24,6 +24,7 @@ export default defineNuxtConfig({
     '@nuxt/ui',
     '@nuxtjs/i18n',
     '@nuxtjs/sitemap',
+    './modules/static-sitemap-alias',
     '@nuxt/eslint',
   ],
   components: [
@@ -75,7 +76,7 @@ export default defineNuxtConfig({
     prerender: {
       crawlLinks: true,
       routes: [...localizedRoutes, '/404.html'],
-      ignore: ['/__site-config__/debug.json', '/__sitemap__/debug.json'],
+      ignore: ['/sitemap.xml', '/__site-config__/debug.json', '/__sitemap__/debug.json'],
       failOnError: true,
     },
   },

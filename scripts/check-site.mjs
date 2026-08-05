@@ -402,10 +402,26 @@ else {
     }
   }
 
-  for (const required of ['404.html', 'robots.txt', 'sitemap_index.xml', '__sitemap__/ja-JP.xml', '__sitemap__/zh-CN.xml', '__sitemap__/en-US.xml', 'search-index.json']) {
+  for (const required of ['404.html', 'robots.txt', 'sitemap.xml', 'sitemap_index.xml', '__sitemap__/ja-JP.xml', '__sitemap__/zh-CN.xml', '__sitemap__/en-US.xml', 'search-index.json']) {
     if (!await exists(path.join(outputRoot, required)))
       fail(`Missing generated ${required}`)
   }
+  const rootSitemapPath = path.join(outputRoot, 'sitemap.xml')
+  if (await exists(rootSitemapPath)) {
+    const rootSitemapStat = await fs.stat(rootSitemapPath)
+    if (!rootSitemapStat.isFile()) {
+      fail('Generated sitemap.xml must be a file')
+    }
+    else {
+      const rootSitemap = await fs.readFile(rootSitemapPath, 'utf8')
+      if (!/^\s*(?:<\?xml\b[^>]*\?>\s*)?(?:<\?xml-stylesheet\b[^>]*\?>\s*)?<(?:sitemapindex|urlset)\b/.test(rootSitemap))
+        fail('Generated sitemap.xml does not start with an XML declaration or sitemap root element')
+      if (/<!doctype\s+html|<html\b/i.test(rootSitemap))
+        fail('Generated sitemap.xml contains HTML')
+    }
+  }
+  if (await exists(path.join(outputRoot, 'sitemap.xml', 'index.html')))
+    fail('Obsolete sitemap.xml/index.html redirect exists')
   if (await exists(path.join(outputRoot, 'api/search')))
     fail('Obsolete prerendered /api/search still exists')
 
@@ -435,15 +451,22 @@ else {
     }
   }
 
-  const sitemapFiles = ['sitemap_index.xml', '__sitemap__/ja-JP.xml', '__sitemap__/zh-CN.xml', '__sitemap__/en-US.xml']
-  const sitemapText = (await Promise.all(sitemapFiles.map(file => fs.readFile(path.join(outputRoot, file), 'utf8')))).join('\n')
+  const localeSitemapFiles = ['ja-JP', 'zh-CN', 'en-US'].map(locale => `__sitemap__/${locale}.xml`)
+  const sitemapFiles = ['sitemap.xml', 'sitemap_index.xml', ...localeSitemapFiles]
+  const sitemapContents = new Map(await Promise.all(sitemapFiles.map(async file => [file, await fs.readFile(path.join(outputRoot, file), 'utf8')])))
+  const sitemapText = [...sitemapContents.values()].join('\n')
   for (const forbidden of [...Object.keys(redirects), '/api/search', '/search-index.json', '/404']) {
     if (sitemapText.includes(`https://wolfx.jp${forbidden}`))
       fail(`Sitemap contains forbidden route ${forbidden}`)
   }
-  for (const locale of ['ja-JP', 'zh-CN', 'en-US']) {
-    if (!sitemapText.includes(`/__sitemap__/${locale}.xml`) && !sitemapText.includes(`hreflang=`))
-      fail(`Sitemap output does not include ${locale}`)
+  for (const file of localeSitemapFiles) {
+    const localeSitemap = sitemapContents.get(file) ?? ''
+    if (!/<urlset\b/.test(localeSitemap))
+      fail(`${file} is not a sitemap urlset`)
+    for (const hreflang of ['x-default', 'ja-JP', 'zh-CN', 'en-US']) {
+      if (!localeSitemap.includes(`hreflang="${hreflang}"`))
+        fail(`${file} is missing hreflang ${hreflang}`)
+    }
   }
   for (const route of ['/donate', '/zh/donate', '/en/donate']) {
     if (!sitemapText.includes(`https://wolfx.jp${route}`))
