@@ -3,7 +3,7 @@ title: "Wolfx Project Privacy Policy"
 description: "How Wolfx Project handles information across its public services."
 locale: en
 layout: legal
-updated: 2026-08-04
+updated: 2026-08-09
 source: privacy_policy_en.html
 ---
 Wolfx Project (the “Project”) is an independently operated, unofficial project. This Policy explains how the Project handles information when providing its websites, public APIs, WebSocket services, earthquake and earthquake early warning information, SeisJS, network diagnostics, and other services (the “Services”).
@@ -47,7 +47,7 @@ The Services may use the following third-party services or categories of service
 
 - **Cloudflare**: DNS, content delivery, reverse proxy, security, and network error reporting. Depending on the deployment environment, this website distributes static files through Workers Assets and uses a Worker for permanent redirects from legacy URLs. During communications, Cloudflare may receive IP addresses, HTTP headers, User-Agent, Referrer, cookies or identifiers, and communications and error information, and may independently process access and security logs. Retention depends on Cloudflare-side settings, contracts, and applicable policies, so this Policy does not promise a fixed number of days.
 - **STUN/WebRTC services**: when a user runs an IP check or network diagnostic, the browser may connect directly to configured STUN services operated by Cloudflare, Google, MiWiFi, or Bilibili and send network-address and connection information.
-- **Map services**: SeisJS map or location features may connect to Amap or OpenStreetMap and send location, map request, and ordinary communications information needed for the feature.
+- **Third-party reverse-geocoding services**: only when a user uses the relevant location or reverse-geocoding feature, SeisJS uses BigDataCloud as the primary reverse-geocoding service for Browser GPS and uses GeoNames as a fallback for GPS location and to reverse-geocode manually entered or stored coordinates. These services may receive precise latitude and longitude, a language parameter, and ordinary network-connection metadata such as the IP address and HTTP headers. Each third party's processing of information is also governed by its own privacy policy.
 - **Ping and network test endpoints**: network test pages may cause the browser to send requests directly to configured third-party endpoints in or outside Japan. Those endpoints may receive IP addresses, HTTP headers, and test-related information.
 - **External links**: Service Status, GitHub, Donate, and other external links connect to their destinations only when a user chooses to open them. After leaving this website, the destination processes information under its own privacy policy.
 
@@ -63,7 +63,7 @@ SeisJS and other Project services may use localStorage to retain a UUID, region,
 
 ## 8. Additional Information About SeisJS
 
-This Policy also applies to SeisJS. Depending on the user’s choices and device permissions, SeisJS may use location or region information, device-motion, accelerometer and other sensor data, a UUID, settings, and local storage, and may transmit information necessary to provide the service through WebSocket. Map features may connect directly to third-party map services. If SeisJS displays a supplemental privacy notice, that notice applies together with this Policy.
+This Policy also applies to general matters concerning SeisJS, including server logs, IP addresses, retention, security measures, third-party infrastructure, user rights, revisions to this Policy, and contact information. The SeisJS Service-specific Privacy Notice supplements this Policy with details specific to SeisJS sensors, stations, location information, and public data; both apply together.
 
 ## 9. Sharing and Disclosure
 
@@ -87,4 +87,4 @@ The Project may update this Policy in response to changes in the Services or app
 
 If you have any questions about this Privacy Policy or our data handling practices, you can contact us via email at: [contact@mtf.edu.kg](mailto:contact@mtf.edu.kg)
 
-Last updated: August 4, 2026
+Last updated: August 9, 2026
