@@ -31,24 +31,25 @@
     "cf:deploy": "nuxt typecheck && tsc --noEmit -p worker/tsconfig.json && eslint . --ignore-pattern worker-configuration.d.ts && node scripts/audit-legacy-content.mjs && node scripts/generate-search-index.mjs && node scripts/generate-redirects.mjs && nuxt generate && node scripts/prepare-cloudflare-assets.mjs && node scripts/check-site.mjs && wrangler deploy"
   },
   "dependencies": {
-    "@iconify-json/lucide": "^1.2.121",
+    "@iconify-json/lucide": "^1.2.122",
     "@nuxt/content": "^3.15.2",
     "@nuxt/ui": "^4.10.0",
     "@nuxtjs/i18n": "^10.6.0",
-    "@nuxtjs/sitemap": "^8.3.2",
-    "nuxt": "^4.5.1",
-    "vue": "^3.5.40",
+    "@nuxtjs/sitemap": "^8.3.3",
+    "nuxt": "^4.5.2",
+    "vue": "^3.5.41",
     "vue-router": "^5.2.0",
     "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@nuxt/eslint": "^1.16.0",
+    "@nuxt/eslint": "^1.17.0",
     "@playwright/test": "1.62.1",
-    "@types/node": "^26.1.2",
-    "better-sqlite3": "^13.0.2",
+    "@types/node": "^26.2.0",
+    "better-sqlite3": "^12.5.0",
     "debug": "^4.4.3",
-    "eslint": "^10.8.0",
+    "eslint": "^10.8.1",
     "extend": "^3.0.2",
+    "oxc-parser": "^0.143.0",
     "parse5": "^8.0.1",
     "rehype-raw": "^7.0.0",
     "remark-emoji": "^5.0.2",
@@ -57,10 +58,11 @@
     "remark-rehype": "^11.1.2",
     "turndown": "^7.2.4",
     "turndown-plugin-gfm": "^1.0.2",
-    "typescript": "^5.9.3",
-    "unified": "^9.2.2",
+    "typescript": "^6.0.3",
+    "unified": "^11.0.5",
     "unist-util-visit": "^5.1.0",
+    "unplugin": "^3.3.0",
     "vue-tsc": "^3.3.9",
-    "wrangler": "4.118.0"
+    "wrangler": "4.120.0"
   }
 }
