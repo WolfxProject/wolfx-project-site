@@ -1,4 +1,4 @@
-const base = process.env.CLOUDFLARE_TEST_BASE_URL ?? 'http://127.0.0.1:8787'
+const base = process.env.NGINX_TEST_BASE_URL ?? 'http://127.0.0.1:8790'
 const failures = []
 
 async function request(route, method = 'GET') {
@@ -13,7 +13,8 @@ async function checkStatus(route, status, method = 'GET') {
 }
 
 for (const route of [
-  '/', '/projects', '/donate', '/zh/', '/en/', '/zh/docs/open-api',
+  '/', '/projects', '/donate', '/docs/open-api', '/legal/privacy',
+  '/zh/', '/en/', '/zh/projects', '/en/projects',
   '/mc', '/mc/rules', '/mc/join', '/mc/vote',
   '/zh/mc', '/zh/mc/rules', '/zh/mc/join', '/zh/mc/vote',
   '/en/mc', '/en/mc/rules', '/en/mc/vote',
@@ -27,7 +28,7 @@ const homeBody = await home.text()
 if (!homeBody.includes('data-site="main"') || !homeBody.includes('https://wolfx.jp/'))
   failures.push('/: generated response is missing the main-site identity or canonical URL')
 
-const mc = await checkStatus('/mc?source=cloudflare', 200)
+const mc = await checkStatus('/mc?source=static', 200)
 const mcBody = await mc.text()
 if (!mcBody.includes('data-site="wolfxmc"') || !mcBody.includes('https://wolfx.jp/mc') || mcBody.includes('mc.wolfx.jp'))
   failures.push('/mc: generated response has the wrong site identity or canonical URL')
@@ -59,4 +60,4 @@ if (failures.length) {
   process.exit(1)
 }
 
-console.log('PASS canonical Cloudflare Workers Assets routes, assets, query strings, HEAD, and retired/missing-route 404 behavior.')
+console.log('PASS canonical static routes, assets, query strings, HEAD, and retired/missing-route 404 behavior.')

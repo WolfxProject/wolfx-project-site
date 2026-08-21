@@ -5,7 +5,6 @@ locale: en
 availableLocales: [zh, en]
 layout: mc
 updated: 2026-01-13
-source: https://mc.wolfx.jp/vote
 ---
 
 ::page-intro{eyebrow="SUPPORT WOLFX SURVIVAL" title="Wolfx Survival Vote"}

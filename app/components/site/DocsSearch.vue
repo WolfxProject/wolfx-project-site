@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { WolfxLocale } from '~/types/site'
-import { MAIN_SITE_ORIGIN } from '~~/data/site-identities'
 
 interface SearchEntry {
   title: string
@@ -75,12 +74,6 @@ function excerpt(entry: SearchEntry) {
   return source.length > 180 ? `${source.slice(0, 177)}…` : source
 }
 
-function resultHref(path: string) {
-  if (isWolfxMc.value && path.startsWith('/'))
-    return new URL(path, MAIN_SITE_ORIGIN).toString()
-  return path
-}
-
 async function openSearch() {
   document.documentElement.classList.add('has-modal-open')
   document.body.classList.add('has-modal-open')
@@ -134,8 +127,7 @@ async function selectResult(index: number) {
   if (!result)
     return
   closeSearch()
-  const href = resultHref(result.path)
-  await navigateTo(href, { external: /^https?:\/\//.test(href) })
+  await navigateTo(result.path)
 }
 
 async function handleInputKeydown(event: KeyboardEvent) {
@@ -254,7 +246,7 @@ onBeforeUnmount(() => {
         >
           <NuxtLink
             :id="`search-result-${index}`"
-            :to="resultHref(result.path)"
+            :to="result.path"
             @mouseenter="activeIndex = index"
             @focus="activeIndex = index"
             @click="closeSearch"

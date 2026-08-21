@@ -68,12 +68,12 @@ test('WolfxMC remains overflow-free at every target viewport', async ({ page }) 
   }
 })
 
-test('WolfxMC metadata uses its public host and only recovered languages', async ({ page }) => {
+test('WolfxMC metadata uses the canonical Wolfx Project origin and only recovered languages', async ({ page }) => {
   await mockMinecraftStatus(page)
   const cases = [
-    { route: '/mc', canonical: 'https://mc.wolfx.jp/', lang: 'zh-CN' },
-    { route: '/zh/mc/rules', canonical: 'https://mc.wolfx.jp/zh/rules', lang: 'zh-CN' },
-    { route: '/en/mc/vote', canonical: 'https://mc.wolfx.jp/en/vote', lang: 'en-US' },
+    { route: '/mc', canonical: 'https://wolfx.jp/mc', lang: 'zh-CN' },
+    { route: '/zh/mc/rules', canonical: 'https://wolfx.jp/zh/mc/rules', lang: 'zh-CN' },
+    { route: '/en/mc/vote', canonical: 'https://wolfx.jp/en/mc/vote', lang: 'en-US' },
   ]
 
   for (const item of cases) {
@@ -84,8 +84,20 @@ test('WolfxMC metadata uses its public host and only recovered languages', async
     await expect(page.locator('link[rel="alternate"][hreflang="zh-CN"]')).toHaveCount(1)
     await expect(page.locator('link[rel="alternate"][hreflang="x-default"]')).toHaveCount(1)
     await expect(page.locator('link[rel="alternate"][hreflang="ja"]')).toHaveCount(0)
-    await expect(page.locator('select[aria-label] option')).toHaveCount(2)
+    await expect(page.locator('select[aria-label] option')).toHaveCount(item.route.includes('/join') ? 1 : 2)
   }
+})
+
+test('WolfxMC navigation stays inside canonical /mc routes', async ({ page }) => {
+  await mockMinecraftStatus(page)
+  await page.goto('/en/mc')
+
+  const hrefs = await page.locator('.mc-navigation a').evaluateAll(links => links.map(link => link.getAttribute('href')))
+  expect(hrefs).toContain('/en/mc')
+  expect(hrefs).toContain('/en/mc/rules')
+  expect(hrefs).toContain('/mc/join')
+  expect(hrefs).toContain('/en/mc/vote')
+  expect(hrefs.every(href => href?.startsWith('/'))).toBeTruthy()
 })
 
 test('WolfxMC loads only the JSON status endpoint and no archived third-party script', async ({ page }) => {
@@ -127,7 +139,7 @@ test('WolfxMC is discoverable from Projects and remains readable in dark mode', 
   await mockMinecraftStatus(page)
   await page.goto('/projects')
   const project = page.locator('.project-card').filter({ has: page.getByRole('heading', { name: 'Wolfx Survival' }) })
-  await expect(project.getByRole('link')).toHaveAttribute('href', 'https://mc.wolfx.jp')
+  await expect(project.getByRole('link')).toHaveAttribute('href', '/mc')
 
   await page.emulateMedia({ colorScheme: 'dark', reducedMotion: 'reduce' })
   await page.setViewportSize({ width: 1366, height: 768 })

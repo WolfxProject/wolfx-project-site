@@ -26,7 +26,7 @@ updated: 2026-08-04
 :::project-card{title="ACG.kr" eyebrow="URL SHORTENER" href="https://acg.kr" image="/images/ACGKR.png" action="立即使用"}
 基于 YOURLS 的公益网址缩短服务。
 :::
-:::project-card{title="Wolfx Survival" eyebrow="MINECRAFT" href="https://mc.wolfx.jp" icon="i-lucide-box" action="打开 WolfxMC"}
+:::project-card{title="Wolfx Survival" eyebrow="MINECRAFT" href="/zh/mc" icon="i-lucide-box" action="打开 WolfxMC"}
 以原版生存为核心、地图永不重置、高自由度少限制，自 2019 年持续开放的 Minecraft 服务器。
 :::
 :::project-card{title="GitHub" eyebrow="OPEN SOURCE" href="https://github.com/WolfxProject" icon="i-lucide-github" action="查看仓库"}

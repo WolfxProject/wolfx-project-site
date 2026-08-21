@@ -1,6 +1,6 @@
 <script setup lang="ts">
 const { t } = useI18n()
-const { displayLocale, mainSiteUrl } = useSiteContext()
+const { displayLocale, sitePath } = useSiteContext()
 const route = useRoute()
 const mobileOpen = ref(false)
 const menuButton = useTemplateRef<HTMLButtonElement>('menuButton')
@@ -10,10 +10,10 @@ const mobileNavigation = useTemplateRef<{
 }>('mobileNavigation')
 
 const navigation = computed(() => [
-  { label: tr('nav.home'), to: mainSiteUrl('/') },
-  { label: tr('nav.projects'), to: mainSiteUrl('/projects') },
-  { label: tr('nav.docs'), to: mainSiteUrl('/docs/open-api') },
-  { label: tr('nav.donate'), to: mainSiteUrl('/donate') },
+  { label: tr('nav.home'), to: sitePath('/') },
+  { label: tr('nav.projects'), to: sitePath('/projects') },
+  { label: tr('nav.docs'), to: sitePath('/docs/open-api') },
+  { label: tr('nav.donate'), to: sitePath('/donate') },
 ])
 
 function tr(key: string) {
@@ -40,7 +40,7 @@ async function handleMobileNavigationClose() {
   <header class="site-header">
     <div class="site-header__inner site-container">
       <NuxtLink
-        :to="mainSiteUrl('/')"
+        :to="sitePath('/')"
         class="brand"
         aria-label="Wolfx Project"
       >

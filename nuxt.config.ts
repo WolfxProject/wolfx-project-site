@@ -1,5 +1,3 @@
-import legacyRedirects from './data/legacy-redirects.json'
-
 const siteUrl = 'https://wolfx.jp'
 
 const mainContentRoutes = [
@@ -18,19 +16,29 @@ const localizedRoutes = [
   ...mainContentRoutes.flatMap(path => [`/zh${path}`, `/en${path}`]),
 ]
 
-const wolfxMcRoutes = [
-  '/mc',
-  '/mc/rules',
-  '/mc/join',
-  '/mc/vote',
-  '/zh/mc',
-  '/zh/mc/rules',
-  '/zh/mc/join',
-  '/zh/mc/vote',
-  '/en/mc',
-  '/en/mc/rules',
-  '/en/mc/vote',
+const wolfxMcRouteFamilies = [
+  { path: '/mc', locales: ['zh', 'en'] },
+  { path: '/mc/rules', locales: ['zh', 'en'] },
+  { path: '/mc/join', locales: ['zh'] },
+  { path: '/mc/vote', locales: ['zh', 'en'] },
 ]
+
+const wolfxMcRoutes = wolfxMcRouteFamilies.flatMap(({ path, locales }) => [
+  path,
+  ...locales.map(locale => `/${locale}${path}`),
+])
+
+const wolfxMcSitemapUrls = wolfxMcRouteFamilies.flatMap(({ path, locales }) => {
+  const alternatives = [
+    { hreflang: 'x-default', href: path },
+    ...locales.map(locale => ({
+      hreflang: locale === 'zh' ? 'zh-CN' : 'en',
+      href: `/${locale}${path}`,
+    })),
+  ]
+  return [path, ...locales.map(locale => `/${locale}${path}`)]
+    .map(loc => ({ loc, alternatives }))
+})
 
 export default defineNuxtConfig({
   modules: [
@@ -79,12 +87,6 @@ export default defineNuxtConfig({
   ui: {
     fonts: false,
   },
-  routeRules: Object.fromEntries(
-    Object.entries(legacyRedirects).map(([path, target]) => [
-      path,
-      { redirect: { to: target, statusCode: 301 } },
-    ]),
-  ),
   compatibilityDate: '2026-08-04',
   nitro: {
     prerender: {
@@ -150,8 +152,8 @@ export default defineNuxtConfig({
     },
   },
   sitemap: {
-    urls: localizedRoutes,
-    exclude: ['/mc', '/mc/**', '/zh/mc', '/zh/mc/**', '/en/mc', '/en/mc/**'],
+    urls: [...localizedRoutes, ...wolfxMcSitemapUrls],
+    excludeAppSources: true,
     autoLastmod: true,
   },
 })

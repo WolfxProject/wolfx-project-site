@@ -31,7 +31,7 @@ pnpm test:e2e
 pnpm cf:dry-run
 ```
 
-`pnpm check` 检查三语文件、静态搜索、关键 API 端点、SEO、外部资源、生成产物与两种部署的重定向表。`pnpm test:e2e` 会启动普通静态服务器，在 360–2560px 的七档视口检查搜索、移动导航、明暗主题、页面溢出、标题层级、内容对齐和初始外部请求；浏览器二进制只需首次安装。`pnpm content:audit` 只读对比同级的 `../wolfx-project` 旧站，检查标题、章节、链接、端点、代码、表格与字段。
+`pnpm check` 检查三语文件、静态搜索、关键 API 端点、SEO、外部资源、生成产物、当前路由与 404 行为。`pnpm test:e2e` 会启动普通静态服务器，在 360–2560px 的七档视口检查搜索、移动导航、明暗主题、页面溢出、标题层级、内容对齐和初始外部请求；浏览器二进制只需首次安装。`pnpm content:audit` 只读对比同级的 `../wolfx-project` 旧站，检查标题、章节、链接、端点、代码、表格与字段。
 
 ## 内容目录
 
@@ -40,16 +40,23 @@ content/
 ├── ja/                    # 默认语言，对外不带前缀
 ├── zh/                    # /zh/...
 └── en/                    # /en/...
-    ├── index.md           # 首页
-    ├── donate.md          # 捐赠页
-    ├── projects.md        # 项目列表
-    ├── docs/
-    │   ├── open-api.md
-    │   ├── websocket.md
-    │   └── seisjs-api.md
-    └── legal/
-        ├── privacy.md
-        └── terms.md
+
+<locale>/
+├── index.md               # 首页
+├── donate.md              # 捐赠页
+├── projects.md            # 项目列表
+├── docs/
+│   ├── open-api.md
+│   ├── websocket.md
+│   └── seisjs-api.md
+├── legal/
+│   ├── privacy.md
+│   └── terms.md
+└── mc/                    # /mc、/zh/mc、/en/mc
+    ├── index.md
+    ├── rules.md
+    ├── join.md            # 仅恢复了中文，en 中不存在
+    └── vote.md
 ```
 
 大段正文、API 字段表和法律文本只能在 Markdown 中维护。Vue 组件只负责布局、交互与可复用展示。
@@ -94,7 +101,7 @@ API 字段继续使用 Markdown 表格，第一列保持原始字段名，不要
 
 ### 静态搜索
 
-`pnpm generate` 的生命周期会先运行 `scripts/generate-search-index.mjs`，从 24 份 Markdown 生成 `public/search-index.json`，再复制到 `.output/public/search-index.json`。搜索在浏览器本地执行，不需要 Server API、数据库或外部搜索服务。修改内容后直接重新执行 `pnpm generate`；也可单独运行：
+`pnpm generate` 的生命周期会先运行 `scripts/generate-search-index.mjs`，从 35 份 Markdown 生成 `public/search-index.json`，再复制到 `.output/public/search-index.json`。搜索在浏览器本地执行，不需要 Server API、数据库或外部搜索服务。修改内容后直接重新执行 `pnpm generate`；也可单独运行：
 
 ```bash
 pnpm search:generate
@@ -138,7 +145,6 @@ server {
     server_name wolfx.jp;
     root /srv/wolfx/.output/public;
 
-    include /srv/wolfx/deploy/nginx-redirects.conf;
     include /srv/wolfx/deploy/nginx-cache.conf;
 
     error_page 404 /404.html;
@@ -146,24 +152,16 @@ server {
 }
 ```
 
-`deploy/nginx-cache.conf` 对 `/_nuxt/*` 使用一年 `immutable` 缓存，对 HTML 和 `search-index.json` 使用重新验证策略，并以 `try_files ... =404` 保证不存在的路径不是首页 200。实际路径可按服务器布局调整；生成的重定向文件本身不包含服务器目录。
-
-`deploy/nginx-redirects.conf` 对旧 URL 返回生产 301，并用 `$is_args$args` 保留查询参数。唯一映射源是 `data/legacy-redirects.json`；修改后运行：
-
-```bash
-pnpm redirects:generate
-```
-
-该命令也会生成 Worker 使用的 `worker/generated-redirects.ts`。部署前用 `nginx -t` 检查完整 Nginx 配置。
+`deploy/nginx-cache.conf` 对 `/_nuxt/*` 使用一年 `immutable` 缓存，对 HTML 和 `search-index.json` 使用重新验证策略，并以 `try_files ... =404` 保证不存在的路径不是首页 200。`/mc` 与其子页面和其他 Nuxt 静态路由一样由同一 `wolfx.jp` 站点提供，不需要单独的 server block。实际路径可按服务器布局调整；部署前用 `nginx -t` 检查完整 Nginx 配置。
 
 ## Cloudflare Workers Assets 部署
 
-默认 Cloudflare 形态是“Nuxt 静态生成 + 极小 Worker + Workers Assets”：
+默认 Cloudflare 形态是“Nuxt 静态生成 + 极小 Worker + Workers Assets”，只服务 `wolfx.jp`：
 
 - 静态资源目录：`.output/public`
 - Worker 入口：`worker/index.ts`
 - 普通内容页面：直接由 Workers Assets 提供，不经过动态 SSR
-- Worker：仅处理 32 条旧 URL 的 HTTP 301、末尾斜杠兼容和 Assets 404 回退
+- Worker：仅保留当前 `/zh/`、`/en/` 首页形式并把请求交给 Workers Assets
 - 不需要常驻 Node.js 服务器，也不需要 SSR Worker 渲染普通页面
 
 本地预览和 HTTP 验收：
@@ -174,7 +172,7 @@ pnpm cf:dev
 pnpm cf:test
 ```
 
-`cf:dev` 会先完整生成站点，并根据统一映射创建 `.output/public/.assetsignore`。这会在 Cloudflare 上传时排除旧 URL 的静态兼容页，让请求进入 Worker 并获得真正的 301；Nginx 和其他静态主机仍可使用这些兼容页。
+`cf:dev` 会先完整生成站点，再启动本地 Workers Assets 服务。历史 URL 没有兼容别名，应按普通不存在路径返回 404。
 
 只打包、不发布：
 
@@ -193,14 +191,11 @@ pnpm cf:deploy
 
 Cloudflare 缓存建议见 `deploy/cloudflare-cache.md`。仅 `/_nuxt/*` 适合长期 `immutable`；HTML、法律文本、API 文档、sitemap 和搜索索引必须允许重新验证。
 
-## 旧 URL 维护
-
-只编辑 `data/legacy-redirects.json`，然后运行 `pnpm redirects:generate`。不要直接维护 Nginx 或 Worker 的生成文件。发布前必须在 Nginx 配置和 `pnpm cf:dev` 环境分别验证 301、查询参数、目标页面与 404。
-
 ## 内容与隐私约定
 
 - 不加载 Google Fonts、分析、广告或推广 iframe。
 - 主题与语言选择仅保存在浏览器本地。
 - 不在组件里硬编码大段多语言正文。
 - 不修改只读迁移来源 `../wolfx-project`。
+- 不维护旧 URL 别名或兼容重定向；除非未来任务明确要求，历史路径应保持 404。
 - 发布前运行 `pnpm typecheck && pnpm lint && pnpm content:audit && pnpm generate && pnpm check && pnpm test:e2e && pnpm cf:dry-run`。

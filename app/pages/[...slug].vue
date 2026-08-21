@@ -1,20 +1,19 @@
 <script setup lang="ts">
 import type { WolfxContentPage, WolfxLocale } from '~/types/site'
-import {
-  MAIN_SITE_ORIGIN,
-  toWolfxMcPublicPath,
-  WOLFX_MC_ORIGIN,
-} from '~~/data/site-identities'
 
 definePageMeta({ layout: false })
 
+const siteOrigin = 'https://wolfx.jp'
 const route = useRoute()
-const { locale } = useI18n()
+const { locale, loadLocaleMessages } = useI18n()
 const { unlocalize } = usePublicPath()
-const { internalPath, isWolfxMc } = useSiteContext()
+const { isWolfxMc } = useSiteContext()
+
+if (isWolfxMc.value && locale.value === 'ja')
+  await loadLocaleMessages('zh')
 
 const requestedPath = computed(() => {
-  const routePath = internalPath.value.replace(/\/$/, '') || '/'
+  const routePath = route.path.replace(/\/$/, '') || '/'
   const pathLocale = routePath.match(/^\/(zh|en)(?=\/|$)/)?.[1] as WolfxLocale | undefined
   if (!pathLocale)
     return routePath === '/' ? '/ja' : `/ja${routePath}`
@@ -28,7 +27,7 @@ const { data: result } = await useAsyncData(
     if (direct)
       return { page: direct, isFallback: false }
 
-    if (locale.value !== 'ja') {
+    if (locale.value !== 'ja' && !isWolfxMc.value) {
       const fallbackPath = unlocalize(route.path) === '/'
         ? '/ja'
         : `/ja${unlocalize(route.path)}`
@@ -51,17 +50,14 @@ if (!result.value?.page) {
 
 const page = computed(() => result.value!.page as unknown as WolfxContentPage)
 const isFallback = computed(() => result.value?.isFallback ?? false)
-const publicPath = computed(() => unlocalize(internalPath.value))
+const publicPath = computed(() => unlocalize(route.path))
 const canonicalPath = computed(() => {
-  if (isWolfxMc.value)
-    return toWolfxMcPublicPath(internalPath.value)
   if (locale.value === 'ja')
     return publicPath.value
   return `/${locale.value}${publicPath.value === '/' ? '/' : publicPath.value}`
 })
-const siteOrigin = computed(() => isWolfxMc.value ? WOLFX_MC_ORIGIN : MAIN_SITE_ORIGIN)
 const siteName = computed(() => isWolfxMc.value ? 'Wolfx Survival' : 'Wolfx Project')
-const canonical = computed(() => new URL(canonicalPath.value, siteOrigin.value).toString())
+const canonical = computed(() => new URL(canonicalPath.value, siteOrigin).toString())
 const pageTitle = computed(() => page.value.title.toLocaleLowerCase().includes(siteName.value.toLocaleLowerCase())
   ? page.value.title
   : `${page.value.title} · ${siteName.value}`)
@@ -77,8 +73,6 @@ const ogLocale: Record<WolfxLocale, string> = {
 }
 
 function alternatePath(targetLocale: WolfxLocale) {
-  if (isWolfxMc.value)
-    return toWolfxMcPublicPath(internalPath.value, targetLocale)
   if (targetLocale === 'ja')
     return publicPath.value
   return `/${targetLocale}${publicPath.value === '/' ? '/' : publicPath.value}`
@@ -92,15 +86,13 @@ const alternateLinks = computed(() => {
     return {
       rel: 'alternate' as const,
       hreflang,
-      href: new URL(alternatePath(targetLocale), siteOrigin.value).toString(),
+      href: new URL(alternatePath(targetLocale), siteOrigin).toString(),
     }
   })
   links.push({
     rel: 'alternate' as const,
     hreflang: 'x-default',
-    href: isWolfxMc.value
-      ? new URL(toWolfxMcPublicPath(internalPath.value, 'ja'), siteOrigin.value).toString()
-      : new URL(alternatePath('ja'), siteOrigin.value).toString(),
+    href: new URL(alternatePath('ja'), siteOrigin).toString(),
   })
   return links
 })
@@ -115,7 +107,7 @@ const structuredData = computed(() => {
     'publisher': {
       '@type': 'Organization',
       'name': 'Wolfx Project',
-      'url': MAIN_SITE_ORIGIN,
+      'url': siteOrigin,
     },
   }
   if (page.value.layout === 'docs') {
@@ -149,11 +141,11 @@ useSeoMeta({
   ogUrl: canonical,
   ogLocale: () => ogLocale[contentLocale.value],
   ogSiteName: siteName,
-  ogImage: () => `${siteOrigin.value}/images/logo.png`,
+  ogImage: `${siteOrigin}/images/logo.png`,
   twitterCard: 'summary_large_image',
   twitterTitle: pageTitle,
   twitterDescription: () => page.value.description,
-  twitterImage: () => `${siteOrigin.value}/images/logo.png`,
+  twitterImage: `${siteOrigin}/images/logo.png`,
 })
 
 useHead(() => ({

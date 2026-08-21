@@ -1,6 +1,6 @@
 <script setup lang="ts">
 const { t } = useI18n()
-const { displayLocale, mainSiteUrl } = useSiteContext()
+const { displayLocale, sitePath } = useSiteContext()
 const year = new Date().getFullYear()
 
 function tr(key: string) {
@@ -13,13 +13,13 @@ function tr(key: string) {
     <div class="site-footer__main site-container">
       <div>
         <NuxtLink
-          :to="mainSiteUrl('/')"
+          :to="sitePath('/')"
           class="footer-brand"
         >Wolfx Project</NuxtLink>
         <p>{{ tr('footer.statement') }}</p>
       </div>
       <nav aria-label="Project">
-        <NuxtLink :to="mainSiteUrl('/projects')">{{ tr('nav.projects') }}</NuxtLink>
+        <NuxtLink :to="sitePath('/projects')">{{ tr('nav.projects') }}</NuxtLink>
         <NuxtLink
           to="https://github.com/WolfxProject"
           external
@@ -27,7 +27,7 @@ function tr(key: string) {
           rel="noopener noreferrer"
         >GitHub</NuxtLink>
         <NuxtLink
-          :to="mainSiteUrl('/donate')"
+          :to="sitePath('/donate')"
         >{{ tr('footer.donate') }}</NuxtLink>
         <NuxtLink
           to="https://status.wolfx.jp"
@@ -37,8 +37,8 @@ function tr(key: string) {
         >{{ tr('footer.status') }}</NuxtLink>
       </nav>
       <nav aria-label="Legal">
-        <NuxtLink :to="mainSiteUrl('/legal/privacy')">{{ tr('footer.privacy') }}</NuxtLink>
-        <NuxtLink :to="mainSiteUrl('/legal/terms')">{{ tr('footer.terms') }}</NuxtLink>
+        <NuxtLink :to="sitePath('/legal/privacy')">{{ tr('footer.privacy') }}</NuxtLink>
+        <NuxtLink :to="sitePath('/legal/terms')">{{ tr('footer.terms') }}</NuxtLink>
       </nav>
       <nav :aria-label="tr('footer.links')">
         <NuxtLink

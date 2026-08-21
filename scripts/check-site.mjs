@@ -2,10 +2,6 @@ import fs from 'node:fs/promises'
 import { createRequire } from 'node:module'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import {
-  toWolfxMcInternalPath,
-  WOLFX_MC_ORIGIN,
-} from '../data/site-identities.ts'
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const require = createRequire(import.meta.url)
@@ -29,17 +25,38 @@ const routePages = [
   { file: 'legal/terms.md', route: 'legal/terms', layout: 'legal' },
 ]
 const wolfxMcPages = [
-  { route: '/mc', publicPath: '/', locale: 'zh', htmlLang: 'zh-CN', alternates: ['zh-CN', 'en', 'x-default'] },
-  { route: '/zh/mc', publicPath: '/zh/', locale: 'zh', htmlLang: 'zh-CN', alternates: ['zh-CN', 'en', 'x-default'] },
-  { route: '/en/mc', publicPath: '/en/', locale: 'en', htmlLang: 'en-US', alternates: ['zh-CN', 'en', 'x-default'] },
-  { route: '/mc/rules', publicPath: '/rules', locale: 'zh', htmlLang: 'zh-CN', alternates: ['zh-CN', 'en', 'x-default'] },
-  { route: '/zh/mc/rules', publicPath: '/zh/rules', locale: 'zh', htmlLang: 'zh-CN', alternates: ['zh-CN', 'en', 'x-default'] },
-  { route: '/en/mc/rules', publicPath: '/en/rules', locale: 'en', htmlLang: 'en-US', alternates: ['zh-CN', 'en', 'x-default'] },
-  { route: '/mc/join', publicPath: '/join', locale: 'zh', htmlLang: 'zh-CN', alternates: ['zh-CN', 'x-default'] },
-  { route: '/zh/mc/join', publicPath: '/zh/join', locale: 'zh', htmlLang: 'zh-CN', alternates: ['zh-CN', 'x-default'] },
-  { route: '/mc/vote', publicPath: '/vote', locale: 'zh', htmlLang: 'zh-CN', alternates: ['zh-CN', 'en', 'x-default'] },
-  { route: '/zh/mc/vote', publicPath: '/zh/vote', locale: 'zh', htmlLang: 'zh-CN', alternates: ['zh-CN', 'en', 'x-default'] },
-  { route: '/en/mc/vote', publicPath: '/en/vote', locale: 'en', htmlLang: 'en-US', alternates: ['zh-CN', 'en', 'x-default'] },
+  { route: '/mc', locale: 'zh', htmlLang: 'zh-CN', alternates: ['zh-CN', 'en', 'x-default'] },
+  { route: '/zh/mc', locale: 'zh', htmlLang: 'zh-CN', alternates: ['zh-CN', 'en', 'x-default'] },
+  { route: '/en/mc', locale: 'en', htmlLang: 'en-US', alternates: ['zh-CN', 'en', 'x-default'] },
+  { route: '/mc/rules', locale: 'zh', htmlLang: 'zh-CN', alternates: ['zh-CN', 'en', 'x-default'] },
+  { route: '/zh/mc/rules', locale: 'zh', htmlLang: 'zh-CN', alternates: ['zh-CN', 'en', 'x-default'] },
+  { route: '/en/mc/rules', locale: 'en', htmlLang: 'en-US', alternates: ['zh-CN', 'en', 'x-default'] },
+  { route: '/mc/join', locale: 'zh', htmlLang: 'zh-CN', alternates: ['zh-CN', 'x-default'] },
+  { route: '/zh/mc/join', locale: 'zh', htmlLang: 'zh-CN', alternates: ['zh-CN', 'x-default'] },
+  { route: '/mc/vote', locale: 'zh', htmlLang: 'zh-CN', alternates: ['zh-CN', 'en', 'x-default'] },
+  { route: '/zh/mc/vote', locale: 'zh', htmlLang: 'zh-CN', alternates: ['zh-CN', 'en', 'x-default'] },
+  { route: '/en/mc/vote', locale: 'en', htmlLang: 'en-US', alternates: ['zh-CN', 'en', 'x-default'] },
+]
+const retiredRoutes = [
+  '/apidoc', '/apidoc.html', '/apidoc_zh', '/apidoc_zh.html', '/apidoc_en', '/apidoc_en.html',
+  '/wsapi', '/wsapi.html', '/wsapi_ja', '/wsapi_zh', '/wsapi_zh.html', '/wsapi_en', '/wsapi_en.html',
+  '/seisapi', '/seisapi.html', '/seisapi_zh', '/seisapi_zh.html', '/seisapi_en', '/seisapi_en.html',
+  '/privacy_policy', '/privacy_policy.html', '/privacy_policy_zh', '/privacy_policy_zh.html',
+  '/privacy_policy_en', '/privacy_policy_en.html', '/tos', '/tos.html', '/tos_zh', '/tos_zh.html',
+  '/tos_en', '/tos_en.html', '/donate.html', '/mc/rules.html', '/mc/join.html', '/mc/vote.html',
+]
+const retiredArchitectureFiles = [
+  'data/legacy-redirects.json',
+  'data/site-identities.ts',
+  'deploy/nginx-redirects.conf',
+  'deploy/nginx-wolfxmc.conf',
+  'deploy/nginx-wolfxmc-redirects.conf',
+  'public/mc-robots.txt',
+  'public/mc-sitemap.xml',
+  'scripts/check-wolfxmc-static.mjs',
+  'scripts/generate-redirects.mjs',
+  'scripts/prepare-cloudflare-assets.mjs',
+  'worker/generated-redirects.ts',
 ]
 const requiredEndpoints = [
   'https://api.wolfx.jp/jma_eew.json',
@@ -158,10 +175,6 @@ function extractAttribute(html, pattern) {
   return html.match(pattern)?.[1]
 }
 
-function tsString(value) {
-  return `'${value.replaceAll('\\', '\\\\').replaceAll('\'', '\\\'')}'`
-}
-
 const markdownFiles = []
 for (const locale of locales) {
   const docs = []
@@ -248,49 +261,9 @@ for (const file of markdownFiles) {
   }
 }
 
-const redirectsSource = await fs.readFile(path.join(root, 'data/legacy-redirects.json'), 'utf8')
-const redirects = JSON.parse(redirectsSource)
-const redirectEntries = Object.entries(redirects)
-const rawKeys = [...redirectsSource.matchAll(/^\s*"([^"]+)"\s*:/gm)].map(match => match[1])
-if (rawKeys.length !== redirectEntries.length)
-  fail(`Legacy redirect source count does not match parsed entries (${rawKeys.length} vs ${redirectEntries.length})`)
-if (new Set(rawKeys).size !== rawKeys.length)
-  fail('Duplicate legacy redirect source')
-
-for (const [source, target] of redirectEntries) {
-  if (!source.startsWith('/') || source.includes('?') || source.includes('#'))
-    fail(`Invalid redirect source ${source}`)
-  if (!target.startsWith('/') || target.startsWith('//') || target.includes('?') || target.includes('#'))
-    fail(`Redirect target must be an internal absolute path: ${source} -> ${target}`)
-  if (source === target)
-    fail(`Redirect source equals target: ${source}`)
-  if (redirects[target])
-    fail(`Redirect chain detected: ${source} -> ${target} -> ${redirects[target]}`)
-}
-if (redirects['/donate.html'] !== '/donate')
-  fail('Missing /donate.html -> /donate legacy redirect')
-
-const nginxRedirects = await fs.readFile(path.join(root, 'deploy/nginx-redirects.conf'), 'utf8')
-const wolfxMcNginxRedirects = await fs.readFile(path.join(root, 'deploy/nginx-wolfxmc-redirects.conf'), 'utf8')
-const workerRedirects = await fs.readFile(path.join(root, 'worker/generated-redirects.ts'), 'utf8')
-if ((nginxRedirects.match(/^location = /gm) ?? []).length !== redirectEntries.length)
-  fail('Nginx redirect count is out of sync with data/legacy-redirects.json')
-if ((workerRedirects.match(/^ {2}'\//gm) ?? []).length !== redirectEntries.length)
-  fail('Worker redirect count is out of sync with data/legacy-redirects.json')
-for (const [source, target] of redirectEntries) {
-  if (!nginxRedirects.includes(`location = ${source} {\n    return 301 ${target}$is_args$args;`))
-    fail(`Nginx redirect mismatch: ${source} -> ${target}`)
-  if (!workerRedirects.includes(`  ${tsString(source)}: ${tsString(target)},`))
-    fail(`Worker redirect mismatch: ${source} -> ${target}`)
-}
-const wolfxMcLegacyRedirects = redirectEntries.filter(([, target]) => toWolfxMcInternalPath(target) === target)
-if ((wolfxMcNginxRedirects.match(/^location = /gm) ?? []).length !== wolfxMcLegacyRedirects.length)
-  fail('WolfxMC Nginx redirect count is out of sync with data/legacy-redirects.json')
-for (const [source, target] of wolfxMcLegacyRedirects) {
-  const publicSource = new URL(source.replace(/^\/(?:zh|en)?\/?mc/, match => match.startsWith('/zh') ? '/zh' : match.startsWith('/en') ? '/en' : '') || '/', WOLFX_MC_ORIGIN).pathname
-  const publicTarget = new URL(target.replace(/^\/(?:zh|en)?\/?mc/, match => match.startsWith('/zh') ? '/zh' : match.startsWith('/en') ? '/en' : '') || '/', WOLFX_MC_ORIGIN).pathname
-  if (!wolfxMcNginxRedirects.includes(`location = ${publicSource} {\n    return 301 ${publicTarget}$is_args$args;`))
-    fail(`WolfxMC Nginx redirect mismatch: ${publicSource} -> ${publicTarget}`)
+for (const file of retiredArchitectureFiles) {
+  if (await exists(path.join(root, file)))
+    fail(`Retired multi-host or redirect artifact still exists: ${file}`)
 }
 
 const sourceIndexFile = path.join(root, 'public/search-index.json')
@@ -320,18 +293,14 @@ else {
     }
     if (!['ja', 'zh', 'en'].includes(entry.locale))
       fail(`${label}: invalid locale ${entry.locale}`)
-    const isWolfxMcPath = typeof entry.path === 'string' && entry.path.startsWith(`${WOLFX_MC_ORIGIN}/`)
-    if ((!entry.path?.startsWith('/') && !isWolfxMcPath) || entry.path?.includes('.md'))
+    if (!entry.path?.startsWith('/') || entry.path?.startsWith('//') || entry.path?.includes('.md'))
       fail(`${label}: invalid public path ${entry.path}`)
     if (paths.has(entry.path))
       fail(`${label}: duplicate path ${entry.path}`)
     paths.add(entry.path)
     if (/<[^>]+>|^---$|\n#{1,6}\s|```/.test(entry.text))
       fail(`${label}: text contains markup or frontmatter noise`)
-    const routePath = isWolfxMcPath
-      ? toWolfxMcInternalPath(new URL(entry.path).pathname)
-      : entry.path
-    const contentRoute = /\/(?:zh|en)?\/?mc$/.test(routePath) ? `${routePath}/index` : routePath
+    const contentRoute = /^\/(?:zh\/|en\/)?mc$/.test(entry.path) ? `${entry.path}/index` : entry.path
     const expectedContent = contentRoute === '/'
       ? path.join(root, 'content/ja/index.md')
       : path.join(root, 'content', entry.locale, `${contentRoute.replace(/^\/(zh|en)(?=\/|$)/, '').replace(/^\//, '') || 'index'}.md`)
@@ -361,9 +330,9 @@ else {
       fail(`Static search has no ${locale} result for ${term} at ${expectedPath}`)
   }
   for (const [locale, term, expectedPath] of [
-    ['ja', 'Wolfx Survival', 'https://mc.wolfx.jp/'],
-    ['zh', 'Wolfx Survival', 'https://mc.wolfx.jp/zh/'],
-    ['en', 'Wolfx Survival', 'https://mc.wolfx.jp/en/'],
+    ['ja', 'Wolfx Survival', '/mc'],
+    ['zh', 'Wolfx Survival', '/zh/mc'],
+    ['en', 'Wolfx Survival', '/en/mc'],
   ]) {
     const found = index.some(entry => entry.locale === locale && entry.path === expectedPath
       && `${entry.title} ${(entry.headings ?? []).join(' ')} ${entry.text}`.includes(term))
@@ -456,7 +425,7 @@ else {
       fail(`${page.route}: expected html lang ${page.htmlLang}`)
     if (!html.includes('data-site="wolfxmc"'))
       fail(`${page.route}: missing WolfxMC site identity`)
-    if (!html.includes(`<link rel="canonical" href="${WOLFX_MC_ORIGIN}${page.publicPath}"`))
+    if (!html.includes(`<link rel="canonical" href="https://wolfx.jp${page.route}"`))
       fail(`${page.route}: wrong WolfxMC canonical URL`)
     for (const hreflang of page.alternates) {
       if (!html.includes(`hreflang="${hreflang}"`))
@@ -468,7 +437,7 @@ else {
       fail(`${page.route}: expected exactly one h1`)
     if (!html.includes('property="og:url"') || !html.includes('name="twitter:card"'))
       fail(`${page.route}: missing social metadata`)
-    if (!html.includes(`"url":"${WOLFX_MC_ORIGIN}${page.publicPath}"`))
+    if (!html.includes(`"url":"https://wolfx.jp${page.route}"`))
       fail(`${page.route}: structured data uses the wrong public URL`)
     if (/web\.archive\.org|minecraft\.min\.js/i.test(html))
       fail(`${page.route}: contains an archive or retired live-status script`)
@@ -478,7 +447,7 @@ else {
       fail(`${page.route}: exposes the retired world/map storage statistic`)
   }
 
-  for (const required of ['404.html', 'robots.txt', 'mc-robots.txt', 'mc-sitemap.xml', 'sitemap.xml', 'sitemap_index.xml', '__sitemap__/ja-JP.xml', '__sitemap__/zh-CN.xml', '__sitemap__/en-US.xml', 'search-index.json']) {
+  for (const required of ['404.html', 'robots.txt', 'sitemap.xml', 'sitemap_index.xml', '__sitemap__/ja-JP.xml', '__sitemap__/zh-CN.xml', '__sitemap__/en-US.xml', 'search-index.json']) {
     if (!await exists(path.join(outputRoot, required)))
       fail(`Missing generated ${required}`)
   }
@@ -501,40 +470,23 @@ else {
   if (await exists(path.join(outputRoot, 'api/search')))
     fail('Obsolete prerendered /api/search still exists')
 
-  for (const [source, target] of redirectEntries) {
+  for (const source of retiredRoutes) {
     const relative = source.slice(1)
     const file = source.endsWith('.html')
       ? path.join(outputRoot, relative)
       : path.join(outputRoot, relative, 'index.html')
-    if (!await exists(file)) {
-      fail(`Missing static redirect compatibility page ${source}`)
-      continue
-    }
-    const html = await fs.readFile(file, 'utf8')
-    if (!html.includes(`http-equiv="refresh" content="0; url=${target}"`))
-      fail(`Static redirect mismatch: ${source} -> ${target}`)
-    if (!await exists(outputFileForRoute(target)))
-      fail(`Redirect target does not exist in output: ${source} -> ${target}`)
-  }
-
-  const assetsIgnoreFile = path.join(outputRoot, '.assetsignore')
-  if (await exists(assetsIgnoreFile)) {
-    const assetsIgnore = await fs.readFile(assetsIgnoreFile, 'utf8')
-    for (const source of Object.keys(redirects)) {
-      const expected = source.endsWith('.html') ? source.slice(1) : `${source.slice(1)}/**`
-      if (!assetsIgnore.split('\n').includes(expected))
-        fail(`Workers Assets exclusion missing for ${source}`)
-    }
+    if (await exists(file))
+      fail(`Retired route is still present in generated output: ${source}`)
   }
 
   const localeSitemapFiles = ['ja-JP', 'zh-CN', 'en-US'].map(locale => `__sitemap__/${locale}.xml`)
   const sitemapFiles = ['sitemap.xml', 'sitemap_index.xml', ...localeSitemapFiles]
   const sitemapContents = new Map(await Promise.all(sitemapFiles.map(async file => [file, await fs.readFile(path.join(outputRoot, file), 'utf8')])))
   const sitemapText = [...sitemapContents.values()].join('\n')
-  if (sitemapText.includes(WOLFX_MC_ORIGIN) || sitemapText.includes('/mc'))
-    fail('Primary sitemap must not expose the WolfxMC host or internal /mc routes')
-  for (const forbidden of [...Object.keys(redirects), '/api/search', '/search-index.json', '/404']) {
-    if (sitemapText.includes(`https://wolfx.jp${forbidden}`))
+  if (sitemapText.includes('https://mc.wolfx.jp'))
+    fail('Sitemap still exposes the retired WolfxMC hostname')
+  for (const forbidden of [...retiredRoutes, '/api/search', '/search-index.json', '/404']) {
+    if (sitemapText.includes(`<loc>https://wolfx.jp${forbidden}</loc>`))
       fail(`Sitemap contains forbidden route ${forbidden}`)
   }
   for (const file of localeSitemapFiles) {
@@ -546,22 +498,14 @@ else {
         fail(`${file} is missing hreflang ${hreflang}`)
     }
   }
-  for (const route of ['/donate', '/zh/donate', '/en/donate']) {
+  for (const route of ['/donate', '/zh/donate', '/en/donate', ...wolfxMcPages.map(page => page.route)]) {
     if (!sitemapText.includes(`https://wolfx.jp${route}`))
       fail(`Sitemap is missing ${route}`)
   }
-
-  const wolfxMcSitemap = await fs.readFile(path.join(outputRoot, 'mc-sitemap.xml'), 'utf8')
-  for (const page of wolfxMcPages) {
-    if (!wolfxMcSitemap.includes(`<loc>${WOLFX_MC_ORIGIN}${page.publicPath}</loc>`))
-      fail(`WolfxMC sitemap is missing ${page.publicPath}`)
+  for (const urlBlock of sitemapText.matchAll(/<url>.*?<\/url>/gs)) {
+    if (/<loc>https:\/\/wolfx\.jp\/(?:zh\/|en\/)?mc(?:\/|<)/.test(urlBlock[0]) && /hreflang="ja(?:-JP)?"/.test(urlBlock[0]))
+      fail('WolfxMC sitemap entry claims an unrecovered Japanese translation')
   }
-  if (wolfxMcSitemap.includes('https://wolfx.jp/') || /<loc>[^<]*\/mc(?:\/|<)/.test(wolfxMcSitemap))
-    fail('WolfxMC sitemap exposes the primary host or internal /mc routes')
-
-  const wolfxMcRobots = await fs.readFile(path.join(outputRoot, 'mc-robots.txt'), 'utf8')
-  if (!/^User-agent:\s*\*$/m.test(wolfxMcRobots) || !/^Allow:\s*\/$/m.test(wolfxMcRobots) || !wolfxMcRobots.includes(`${WOLFX_MC_ORIGIN}/sitemap.xml`))
-    fail('mc-robots.txt is missing crawler or WolfxMC sitemap directives')
 
   const robots = await fs.readFile(path.join(outputRoot, 'robots.txt'), 'utf8')
   if (!/^User-agent:\s*\*$/m.test(robots) || !/^Allow:\s*\/$/m.test(robots) || !robots.includes('https://wolfx.jp/sitemap_index.xml'))
@@ -604,6 +548,8 @@ else {
       fail(`${relative}: contains localhost or a development port`)
     if (/(?:CF_API_TOKEN|CLOUDFLARE_API_TOKEN|(?:^|[^A-Za-z])sk-[A-Za-z0-9_-]{20,})/.test(text))
       fail(`${relative}: contains a private token pattern`)
+    if (text.includes('mc.wolfx.jp'))
+      fail(`${relative}: contains the retired WolfxMC hostname`)
   }
 }
 
@@ -611,4 +557,4 @@ if (failures.length) {
   console.error(failures.map(message => `FAIL ${message}`).join('\n'))
   process.exit(1)
 }
-console.log(`PASS ${locales.length * routePages.length} primary pages, ${wolfxMcPages.length} WolfxMC pages, ${redirectEntries.length} redirects, static search, API endpoints, SEO, sitemaps, privacy resources, and generated output.`)
+console.log(`PASS ${locales.length * routePages.length} primary pages, ${wolfxMcPages.length} WolfxMC pages, ${retiredRoutes.length} retired-route absences, static search, API endpoints, SEO, sitemaps, privacy resources, and generated output.`)

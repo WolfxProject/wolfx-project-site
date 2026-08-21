@@ -5,7 +5,6 @@ locale: zh
 availableLocales: [zh, en]
 layout: mc
 updated: 2026-06-11
-source: https://mc.wolfx.jp/
 ---
 
 ::mc-hero{eyebrow="PURE VANILLA · NEVER RESET · FREE" title="来玩点轻松的生存吧 ☁️ — Wolfx Survival" copy-label="复制服务器 IP" rules-label="查看规则" join-label="加入教程 / Join Guide" minecraft-label="获取 Minecraft" version-label="支持版本（归档时）" since-label="持续开放自"}

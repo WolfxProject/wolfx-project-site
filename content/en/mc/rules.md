@@ -5,7 +5,6 @@ locale: en
 availableLocales: [zh, en]
 layout: mc
 updated: 2026-01-06
-source: https://mc.wolfx.jp/rules
 ---
 
 ::page-intro{eyebrow="WOLFX SURVIVAL" title="Wolfx Survival Server Rules"}

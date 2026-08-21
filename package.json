@@ -10,7 +10,7 @@
   "scripts": {
     "dev": "nuxt dev",
     "build": "nuxt build",
-    "pregenerate": "node scripts/generate-search-index.mjs && node scripts/generate-redirects.mjs",
+    "pregenerate": "node scripts/generate-search-index.mjs",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "typecheck": "nuxt typecheck && tsc --noEmit -p worker/tsconfig.json",
@@ -19,17 +19,16 @@
     "content:migrate": "node scripts/migrate-legacy-content.mjs",
     "content:audit": "node scripts/audit-legacy-content.mjs",
     "search:generate": "node scripts/generate-search-index.mjs",
-    "redirects:generate": "node scripts/generate-redirects.mjs",
     "check": "node scripts/check-site.mjs",
-    "test:e2e": "node scripts/generate-search-index.mjs && node scripts/generate-redirects.mjs && nuxt generate && playwright test --project=desktop-chromium --project=mobile-chromium",
-    "test:e2e:mobile": "node scripts/generate-search-index.mjs && node scripts/generate-redirects.mjs && nuxt generate && playwright test tests/e2e/mobile.spec.mjs --project=mobile-chromium --project=mobile-webkit",
+    "test:e2e": "pnpm generate && playwright test --project=desktop-chromium --project=mobile-chromium",
+    "test:e2e:mobile": "pnpm generate && playwright test tests/e2e/mobile.spec.mjs --project=mobile-chromium --project=mobile-webkit",
     "wrangler:types": "wrangler types worker-configuration.d.ts",
-    "cf:prepare": "node scripts/generate-search-index.mjs && node scripts/generate-redirects.mjs && nuxt generate && node scripts/prepare-cloudflare-assets.mjs",
-    "cf:dev": "node scripts/generate-search-index.mjs && node scripts/generate-redirects.mjs && nuxt generate && node scripts/prepare-cloudflare-assets.mjs && wrangler dev --port 8787",
+    "cf:prepare": "pnpm generate",
+    "cf:dev": "pnpm generate && wrangler dev --port 8787",
     "cf:test": "node scripts/check-cloudflare.mjs",
-    "nginx:test": "node scripts/check-wolfxmc-static.mjs",
-    "cf:dry-run": "node scripts/generate-search-index.mjs && node scripts/generate-redirects.mjs && nuxt generate && node scripts/prepare-cloudflare-assets.mjs && node scripts/check-site.mjs && wrangler deploy --dry-run --outdir .wrangler/dry-run",
-    "cf:deploy": "nuxt typecheck && tsc --noEmit -p worker/tsconfig.json && eslint . --ignore-pattern worker-configuration.d.ts && node scripts/audit-legacy-content.mjs && node scripts/generate-search-index.mjs && node scripts/generate-redirects.mjs && nuxt generate && node scripts/prepare-cloudflare-assets.mjs && node scripts/check-site.mjs && wrangler deploy"
+    "nginx:test": "node scripts/check-nginx-static.mjs",
+    "cf:dry-run": "pnpm generate && pnpm check && wrangler deploy --dry-run --outdir .wrangler/dry-run",
+    "cf:deploy": "pnpm typecheck && pnpm lint && pnpm content:audit && pnpm generate && pnpm check && wrangler deploy"
   },
   "dependencies": {
     "@iconify-json/lucide": "^1.2.124",

@@ -5,7 +5,6 @@ locale: en
 availableLocales: [zh, en]
 layout: mc
 updated: 2026-06-11
-source: https://mc.wolfx.jp/
 ---
 
 ::mc-hero{eyebrow="PURE VANILLA · NEVER RESET · FREE" title="Let’s chill in survival ☁️ — Wolfx Survival" copy-label="Copy server IP" rules-label="View rules" join-label="Join guide" minecraft-label="Get Minecraft" version-label="Supported (at capture)" since-label="Open since"}

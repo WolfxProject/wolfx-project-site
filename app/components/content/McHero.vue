@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { WolfxLocale } from '~/types/site'
 import { wolfxMc } from '~~/data/wolfxmc'
 
 defineProps<{
@@ -12,9 +13,15 @@ defineProps<{
   sinceLabel: string
 }>()
 
-const { t } = useI18n()
+const { locale, t } = useI18n()
+const { localize } = usePublicPath()
 const { displayLocale } = useSiteContext()
 const { status } = useMinecraftStatus()
+
+const rulesPath = computed(() => localize('/mc/rules', locale.value as WolfxLocale))
+const joinPath = computed(() => locale.value === 'en'
+  ? '/mc/join'
+  : localize('/mc/join', locale.value as WolfxLocale))
 
 function tr(key: string) {
   return t(key, {}, { locale: displayLocale.value })
@@ -85,14 +92,15 @@ const playerLabel = computed(() => {
             </div>
           </div>
           <UButton
-            to="https://mc.wolfx.jp/join"
+            :to="joinPath"
+            :locale="false"
             size="xl"
             trailing-icon="i-lucide-arrow-right"
           >
             {{ joinLabel }}
           </UButton>
           <UButton
-            to="https://mc.wolfx.jp/rules"
+            :to="rulesPath"
             size="xl"
             color="neutral"
             variant="outline"
