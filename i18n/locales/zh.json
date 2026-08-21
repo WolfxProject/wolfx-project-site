@@ -26,6 +26,18 @@
   "language": {
     "label": "切换语言"
   },
+  "mc": {
+    "navigation": "Wolfx Survival 导航",
+    "overview": "首页",
+    "rules": "规则",
+    "join": "加入",
+    "vote": "投票",
+    "statusLoading": "正在查询状态",
+    "statusOnline": "在线",
+    "statusOffline": "离线",
+    "statusUnknown": "状态暂不可用",
+    "playersOnline": "{count} 人在线"
+  },
   "docs": {
     "navigation": "文档",
     "onThisPage": "本页目录",

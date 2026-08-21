@@ -7,6 +7,10 @@ import { fileURLToPath } from 'node:url'
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const legacyRoot = path.resolve(root, '../wolfx-project')
 const execFileAsync = promisify(execFile)
+// The public migration source now contains generated redirect stubs at HEAD.
+// Pin the last full-content revision so the audit continues comparing against
+// the immutable documents that were actually migrated into this repository.
+const legacyRevision = '8cd8387d334d8301d4f6c9ed7eeb5cc522fd8b42'
 const migrations = [
   ['apidoc.html', 'ja/docs/open-api.md'], ['apidoc_zh.html', 'zh/docs/open-api.md'], ['apidoc_en.html', 'en/docs/open-api.md'],
   ['wsapi.html', 'ja/docs/websocket.md'], ['wsapi_zh.html', 'zh/docs/websocket.md'], ['wsapi_en.html', 'en/docs/websocket.md'],
@@ -29,15 +33,8 @@ const apiStatusResources = [
 const apiStatusComponent = await fs.readFile(path.join(root, 'app/components/content/ApiStatusPanel.vue'), 'utf8')
 
 async function readLegacyFile(filename) {
-  try {
-    return await fs.readFile(path.join(legacyRoot, filename), 'utf8')
-  }
-  catch (error) {
-    if (error?.code !== 'ENOENT')
-      throw error
-    const { stdout } = await execFileAsync('git', ['show', `HEAD:${filename}`], { cwd: legacyRoot, encoding: 'utf8' })
-    return stdout
-  }
+  const { stdout } = await execFileAsync('git', ['show', `${legacyRevision}:${filename}`], { cwd: legacyRoot, encoding: 'utf8' })
+  return stdout
 }
 
 function isApiStatusEndpoint(value) {

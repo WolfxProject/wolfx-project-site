@@ -2,7 +2,7 @@ import legacyRedirects from './data/legacy-redirects.json'
 
 const siteUrl = 'https://wolfx.jp'
 
-const contentRoutes = [
+const mainContentRoutes = [
   '/',
   '/projects',
   '/donate',
@@ -14,8 +14,22 @@ const contentRoutes = [
 ]
 
 const localizedRoutes = [
-  ...contentRoutes,
-  ...contentRoutes.flatMap(path => [`/zh${path}`, `/en${path}`]),
+  ...mainContentRoutes,
+  ...mainContentRoutes.flatMap(path => [`/zh${path}`, `/en${path}`]),
+]
+
+const wolfxMcRoutes = [
+  '/mc',
+  '/mc/rules',
+  '/mc/join',
+  '/mc/vote',
+  '/zh/mc',
+  '/zh/mc/rules',
+  '/zh/mc/join',
+  '/zh/mc/vote',
+  '/en/mc',
+  '/en/mc/rules',
+  '/en/mc/vote',
 ]
 
 export default defineNuxtConfig({
@@ -75,7 +89,7 @@ export default defineNuxtConfig({
   nitro: {
     prerender: {
       crawlLinks: true,
-      routes: [...localizedRoutes, '/404.html'],
+      routes: [...localizedRoutes, ...wolfxMcRoutes, '/404.html'],
       ignore: ['/sitemap.xml', '/__site-config__/debug.json', '/__sitemap__/debug.json'],
       failOnError: true,
     },
@@ -137,6 +151,7 @@ export default defineNuxtConfig({
   },
   sitemap: {
     urls: localizedRoutes,
+    exclude: ['/mc', '/mc/**', '/zh/mc', '/zh/mc/**', '/en/mc', '/en/mc/**'],
     autoLastmod: true,
   },
 })

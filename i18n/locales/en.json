@@ -26,6 +26,18 @@
   "language": {
     "label": "Change language"
   },
+  "mc": {
+    "navigation": "Wolfx Survival navigation",
+    "overview": "Overview",
+    "rules": "Rules",
+    "join": "Join",
+    "vote": "Vote",
+    "statusLoading": "Checking status",
+    "statusOnline": "Online",
+    "statusOffline": "Offline",
+    "statusUnknown": "Status unavailable",
+    "playersOnline": "{count} player online | {count} players online"
+  },
   "docs": {
     "navigation": "Documentation",
     "onThisPage": "On this page",

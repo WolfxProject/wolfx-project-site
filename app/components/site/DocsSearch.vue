@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { WolfxLocale } from '~/types/site'
+import { MAIN_SITE_ORIGIN } from '~~/data/site-identities'
 
 interface SearchEntry {
   title: string
@@ -12,6 +13,7 @@ interface SearchEntry {
 }
 
 const { locale, t } = useI18n()
+const { displayLocale, isWolfxMc } = useSiteContext()
 const dialog = useTemplateRef<HTMLDialogElement>('dialog')
 const input = useTemplateRef<HTMLInputElement>('input')
 const trigger = useTemplateRef<HTMLButtonElement>('trigger')
@@ -22,13 +24,17 @@ const loading = ref(false)
 const failed = ref(false)
 const activeIndex = ref(-1)
 
+function tr(key: string) {
+  return t(key, {}, { locale: displayLocale.value })
+}
+
 const results = computed(() => {
   const term = query.value.trim().toLocaleLowerCase()
   if (!term)
     return []
   const terms = term.split(/\s+/).filter(Boolean)
   return entries.value
-    .filter(entry => entry.locale === locale.value)
+    .filter(entry => entry.locale === (isWolfxMc.value ? displayLocale.value : locale.value))
     .map((entry) => {
       const title = entry.title.toLocaleLowerCase()
       const headings = (entry.headings ?? []).join(' ').toLocaleLowerCase()
@@ -67,6 +73,12 @@ watch(results, (value) => {
 function excerpt(entry: SearchEntry) {
   const source = entry.description || entry.text
   return source.length > 180 ? `${source.slice(0, 177)}…` : source
+}
+
+function resultHref(path: string) {
+  if (isWolfxMc.value && path.startsWith('/'))
+    return new URL(path, MAIN_SITE_ORIGIN).toString()
+  return path
 }
 
 async function openSearch() {
@@ -122,7 +134,8 @@ async function selectResult(index: number) {
   if (!result)
     return
   closeSearch()
-  await navigateTo(result.path)
+  const href = resultHref(result.path)
+  await navigateTo(href, { external: /^https?:\/\//.test(href) })
 }
 
 async function handleInputKeydown(event: KeyboardEvent) {
@@ -161,18 +174,18 @@ onBeforeUnmount(() => {
     ref="trigger"
     class="search-trigger"
     type="button"
-    :aria-label="t('search.label')"
-    :title="t('search.label')"
+    :aria-label="tr('search.label')"
+    :title="tr('search.label')"
     @click="openSearch"
   >
     <UIcon name="i-lucide-search" />
-    <span class="search-trigger__label">{{ t('search.label') }}</span>
+    <span class="search-trigger__label">{{ tr('search.label') }}</span>
     <kbd>/</kbd>
   </button>
   <dialog
     ref="dialog"
     class="search-dialog"
-    :aria-label="t('search.label')"
+    :aria-label="tr('search.label')"
     @click="closeOnBackdrop"
     @close="resetSearch"
   >
@@ -183,19 +196,19 @@ onBeforeUnmount(() => {
           ref="input"
           v-model="query"
           type="search"
-          :placeholder="t('search.placeholder')"
+          :placeholder="tr('search.placeholder')"
           autocomplete="off"
           role="combobox"
           aria-autocomplete="list"
           aria-controls="search-results"
           :aria-expanded="Boolean(results.length)"
           :aria-activedescendant="activeResultId"
-          :aria-label="t('search.label')"
+          :aria-label="tr('search.label')"
           @keydown="handleInputKeydown"
         >
         <button
           type="button"
-          :aria-label="t('search.close')"
+          :aria-label="tr('search.close')"
           @click="closeSearch"
         >
           <UIcon name="i-lucide-x" />
@@ -206,26 +219,26 @@ onBeforeUnmount(() => {
         class="search-hint"
         role="status"
       >
-        {{ t('search.loading') }}
+        {{ tr('search.loading') }}
       </p>
       <p
         v-else-if="failed"
         class="search-hint"
         role="alert"
       >
-        {{ t('search.failed') }}
+        {{ tr('search.failed') }}
       </p>
       <p
         v-else-if="!query"
         class="search-hint"
       >
-        {{ t('search.hint') }}
+        {{ tr('search.hint') }}
       </p>
       <p
         v-else-if="!results.length"
         class="search-hint"
       >
-        {{ t('search.empty') }}
+        {{ tr('search.empty') }}
       </p>
       <ul
         v-else
@@ -241,7 +254,7 @@ onBeforeUnmount(() => {
         >
           <NuxtLink
             :id="`search-result-${index}`"
-            :to="result.path"
+            :to="resultHref(result.path)"
             @mouseenter="activeIndex = index"
             @focus="activeIndex = index"
             @click="closeSearch"

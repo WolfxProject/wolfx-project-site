@@ -1,6 +1,11 @@
 <script setup lang="ts">
-const { localize } = usePublicPath()
+const { t } = useI18n()
+const { displayLocale, mainSiteUrl } = useSiteContext()
 const year = new Date().getFullYear()
+
+function tr(key: string) {
+  return t(key, {}, { locale: displayLocale.value })
+}
 </script>
 
 <template>
@@ -8,13 +13,13 @@ const year = new Date().getFullYear()
     <div class="site-footer__main site-container">
       <div>
         <NuxtLink
-          :to="localize('/')"
+          :to="mainSiteUrl('/')"
           class="footer-brand"
         >Wolfx Project</NuxtLink>
-        <p>{{ $t('footer.statement') }}</p>
+        <p>{{ tr('footer.statement') }}</p>
       </div>
       <nav aria-label="Project">
-        <NuxtLink :to="localize('/projects')">{{ $t('nav.projects') }}</NuxtLink>
+        <NuxtLink :to="mainSiteUrl('/projects')">{{ tr('nav.projects') }}</NuxtLink>
         <NuxtLink
           to="https://github.com/WolfxProject"
           external
@@ -22,20 +27,20 @@ const year = new Date().getFullYear()
           rel="noopener noreferrer"
         >GitHub</NuxtLink>
         <NuxtLink
-          :to="localize('/donate')"
-        >{{ $t('footer.donate') }}</NuxtLink>
+          :to="mainSiteUrl('/donate')"
+        >{{ tr('footer.donate') }}</NuxtLink>
         <NuxtLink
           to="https://status.wolfx.jp"
           external
           target="_blank"
           rel="noopener noreferrer"
-        >{{ $t('footer.status') }}</NuxtLink>
+        >{{ tr('footer.status') }}</NuxtLink>
       </nav>
       <nav aria-label="Legal">
-        <NuxtLink :to="localize('/legal/privacy')">{{ $t('footer.privacy') }}</NuxtLink>
-        <NuxtLink :to="localize('/legal/terms')">{{ $t('footer.terms') }}</NuxtLink>
+        <NuxtLink :to="mainSiteUrl('/legal/privacy')">{{ tr('footer.privacy') }}</NuxtLink>
+        <NuxtLink :to="mainSiteUrl('/legal/terms')">{{ tr('footer.terms') }}</NuxtLink>
       </nav>
-      <nav :aria-label="$t('footer.links')">
+      <nav :aria-label="tr('footer.links')">
         <NuxtLink
           to="https://blog.yorushi.top"
           external

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 const { t } = useI18n()
-const { localize } = usePublicPath()
+const { displayLocale, mainSiteUrl } = useSiteContext()
 const route = useRoute()
 const mobileOpen = ref(false)
 const menuButton = useTemplateRef<HTMLButtonElement>('menuButton')
@@ -10,11 +10,15 @@ const mobileNavigation = useTemplateRef<{
 }>('mobileNavigation')
 
 const navigation = computed(() => [
-  { label: t('nav.home'), to: localize('/') },
-  { label: t('nav.projects'), to: localize('/projects') },
-  { label: t('nav.docs'), to: localize('/docs/open-api') },
-  { label: t('nav.donate'), to: localize('/donate') },
+  { label: tr('nav.home'), to: mainSiteUrl('/') },
+  { label: tr('nav.projects'), to: mainSiteUrl('/projects') },
+  { label: tr('nav.docs'), to: mainSiteUrl('/docs/open-api') },
+  { label: tr('nav.donate'), to: mainSiteUrl('/donate') },
 ])
+
+function tr(key: string) {
+  return t(key, {}, { locale: displayLocale.value })
+}
 
 watch(() => route.path, () => {
   mobileNavigation.value?.close()
@@ -36,7 +40,7 @@ async function handleMobileNavigationClose() {
   <header class="site-header">
     <div class="site-header__inner site-container">
       <NuxtLink
-        :to="localize('/')"
+        :to="mainSiteUrl('/')"
         class="brand"
         aria-label="Wolfx Project"
       >
@@ -51,7 +55,7 @@ async function handleMobileNavigationClose() {
 
       <nav
         class="desktop-nav"
-        :aria-label="t('nav.menu')"
+        :aria-label="tr('nav.menu')"
       >
         <NuxtLink
           v-for="item in navigation"
@@ -66,7 +70,7 @@ async function handleMobileNavigationClose() {
           target="_blank"
           rel="noopener noreferrer"
         >
-          {{ t('nav.github') }}
+          {{ tr('nav.github') }}
           <UIcon name="i-lucide-arrow-up-right" />
         </NuxtLink>
       </nav>
@@ -79,8 +83,8 @@ async function handleMobileNavigationClose() {
           ref="menuButton"
           class="icon-button mobile-menu-button"
           type="button"
-          :aria-label="t('nav.menu')"
-          :title="t('nav.menu')"
+          :aria-label="tr('nav.menu')"
+          :title="tr('nav.menu')"
           :aria-expanded="mobileOpen"
           aria-controls="mobile-navigation"
           @click="openMobileNavigation"
@@ -93,6 +97,7 @@ async function handleMobileNavigationClose() {
       id="mobile-navigation"
       ref="mobileNavigation"
       :navigation="navigation"
+      :locale-override="displayLocale"
       @close="handleMobileNavigationClose"
     />
   </header>

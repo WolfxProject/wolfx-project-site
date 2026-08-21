@@ -32,4 +32,7 @@ export const legacyRedirects: Readonly<Record<string, string>> = {
   '/tos_en': '/en/legal/terms',
   '/tos_en.html': '/en/legal/terms',
   '/donate.html': '/donate',
+  '/mc/rules.html': '/mc/rules',
+  '/mc/join.html': '/mc/join',
+  '/mc/vote.html': '/mc/vote',
 }

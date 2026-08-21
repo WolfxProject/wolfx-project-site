@@ -1,5 +1,5 @@
 export type WolfxLocale = 'ja' | 'zh' | 'en'
-export type WolfxLayout = 'landing' | 'docs' | 'legal'
+export type WolfxLayout = 'landing' | 'docs' | 'legal' | 'mc'
 
 export interface TocLink {
   id: string
@@ -14,6 +14,8 @@ export interface WolfxContentPage {
   title: string
   description: string
   locale: WolfxLocale
+  sourceLocale?: WolfxLocale
+  availableLocales?: WolfxLocale[]
   layout: WolfxLayout
   updated?: string
   version?: string

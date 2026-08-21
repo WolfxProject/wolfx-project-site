@@ -1,11 +1,14 @@
 <script setup lang="ts">
+import type { WolfxLocale } from '~/types/site'
+
 interface NavigationItem {
   label: string
   to: string
 }
 
-defineProps<{
+const props = defineProps<{
   navigation: NavigationItem[]
+  localeOverride?: WolfxLocale
 }>()
 
 const emit = defineEmits<{
@@ -15,6 +18,10 @@ const emit = defineEmits<{
 const { t } = useI18n()
 const dialog = useTemplateRef<HTMLDialogElement>('dialog')
 let scrollPosition = 0
+
+function tr(key: string) {
+  return t(key, {}, { locale: props.localeOverride })
+}
 
 function lockPageScroll() {
   scrollPosition = window.scrollY
@@ -63,7 +70,7 @@ defineExpose({ open, close })
   <dialog
     ref="dialog"
     class="mobile-navigation"
-    :aria-label="t('nav.menu')"
+    :aria-label="tr('nav.menu')"
     @click="closeOnBackdrop"
     @close="handleClose"
   >
@@ -74,14 +81,14 @@ defineExpose({ open, close })
           class="icon-button"
           type="button"
           data-mobile-nav-close
-          :aria-label="t('nav.closeMenu')"
-          :title="t('nav.closeMenu')"
+          :aria-label="tr('nav.closeMenu')"
+          :title="tr('nav.closeMenu')"
           @click="close"
         >
           <UIcon name="i-lucide-x" />
         </button>
       </div>
-      <nav :aria-label="t('nav.menu')">
+      <nav :aria-label="tr('nav.menu')">
         <NuxtLink
           v-for="item in navigation"
           :key="item.to"
@@ -97,7 +104,7 @@ defineExpose({ open, close })
           rel="noopener noreferrer"
           @click="close"
         >
-          {{ t('nav.github') }}
+          {{ tr('nav.github') }}
           <UIcon name="i-lucide-arrow-up-right" />
         </NuxtLink>
       </nav>

@@ -26,6 +26,13 @@
   "language": {
     "label": "言語を切り替える"
   },
+  "mc": {
+    "navigation": "Wolfx Survival ナビゲーション",
+    "overview": "概要",
+    "rules": "ルール",
+    "join": "参加方法",
+    "vote": "投票"
+  },
   "docs": {
     "navigation": "ドキュメント",
     "onThisPage": "このページの目次",

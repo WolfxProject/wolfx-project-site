@@ -1,6 +1,7 @@
 <script setup lang="ts">
 const colorMode = useColorMode()
 const { t } = useI18n()
+const { displayLocale } = useSiteContext()
 const modes = ['system', 'light', 'dark'] as const
 
 const icon = computed(() => ({
@@ -8,6 +9,10 @@ const icon = computed(() => ({
   light: 'i-lucide-sun',
   dark: 'i-lucide-moon',
 }[colorMode.preference] ?? 'i-lucide-monitor-cog'))
+
+function tr(key: string) {
+  return t(key, {}, { locale: displayLocale.value })
+}
 
 function cycleTheme() {
   const current = modes.indexOf(colorMode.preference as typeof modes[number])
@@ -19,8 +24,8 @@ function cycleTheme() {
   <button
     class="icon-button"
     type="button"
-    :aria-label="`${t('theme.label')}: ${t(`theme.${colorMode.preference}`)}`"
-    :title="t(`theme.${colorMode.preference}`)"
+    :aria-label="`${tr('theme.label')}: ${tr(`theme.${colorMode.preference}`)}`"
+    :title="tr(`theme.${colorMode.preference}`)"
     @click="cycleTheme"
   >
     <UIcon :name="icon" />

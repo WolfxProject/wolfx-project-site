@@ -1,6 +1,7 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { isWolfxMcInternalPath, wolfxMcUrl } from '../data/site-identities.ts'
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const contentRoot = path.join(root, 'content')
@@ -61,7 +62,8 @@ function plainBody(body) {
 function publicPath(locale, relativeFile) {
   const route = relativeFile.replace(/\.md$/, '').replace(/(^|\/)index$/, '')
   const prefix = locale === 'ja' ? '' : `/${locale}`
-  return `${prefix}/${route}`.replace(/\/{2,}/g, '/').replace(/\/$/, '') || '/'
+  const internalPath = `${prefix}/${route}`.replace(/\/{2,}/g, '/').replace(/\/$/, '') || '/'
+  return isWolfxMcInternalPath(internalPath) ? wolfxMcUrl(internalPath) : internalPath
 }
 
 async function markdownFiles(directory) {
