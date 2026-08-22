@@ -31,7 +31,12 @@
     "overview": "概要",
     "rules": "ルール",
     "join": "参加方法",
-    "vote": "投票"
+    "vote": "投票",
+    "statusLoading": "ステータスを確認中",
+    "statusOnline": "オンライン",
+    "statusOffline": "オフライン",
+    "statusUnknown": "ステータスを取得できません",
+    "playersOnline": "{count} 人がオンライン"
   },
   "docs": {
     "navigation": "ドキュメント",

@@ -60,7 +60,10 @@ function plainBody(body) {
 
 function publicPath(locale, relativeFile) {
   const route = relativeFile.replace(/\.md$/, '').replace(/(^|\/)index$/, '')
-  const prefix = locale === 'ja' ? '' : `/${locale}`
+  const isWolfxMc = route === 'mc' || route.startsWith('mc/')
+  let prefix = `/${locale}`
+  if ((isWolfxMc && locale === 'zh') || (!isWolfxMc && locale === 'ja'))
+    prefix = ''
   return `${prefix}/${route}`.replace(/\/{2,}/g, '/').replace(/\/$/, '') || '/'
 }
 

@@ -3,7 +3,7 @@ import type { WolfxLocale } from '~/types/site'
 
 const { locales, t } = useI18n()
 const route = useRoute()
-const { localize, unlocalize } = usePublicPath()
+const { localize, localizeWolfxMc, unlocalize } = usePublicPath()
 const { displayLocale, isWolfxMc } = useSiteContext()
 
 const localeCode: Record<WolfxLocale, string> = {
@@ -15,8 +15,7 @@ const localeCode: Record<WolfxLocale, string> = {
 const visibleLocales = computed(() => {
   if (!isWolfxMc.value)
     return locales.value
-  const available = unlocalize(route.path) === '/mc/join' ? ['zh'] : ['zh', 'en']
-  return locales.value.filter(item => available.includes(item.code))
+  return locales.value
 })
 const activeLocale = computed(() => visibleLocales.value.find(item => item.code === displayLocale.value))
 const activeLocaleCode = computed(() => localeCode[displayLocale.value])
@@ -29,7 +28,16 @@ async function changeLanguage(event: Event) {
   const target = (event.target as HTMLSelectElement).value as WolfxLocale
   if (import.meta.client)
     localStorage.setItem('wolfx-locale', target)
-  await navigateTo(localize(unlocalize(route.path), target))
+  const path = unlocalize(route.path)
+  const targetPath = isWolfxMc.value
+    ? localizeWolfxMc(path, target)
+    : localize(path, target)
+  if (isWolfxMc.value) {
+    if (import.meta.client)
+      window.location.assign(targetPath)
+    return
+  }
+  await navigateTo(targetPath)
 }
 </script>
 

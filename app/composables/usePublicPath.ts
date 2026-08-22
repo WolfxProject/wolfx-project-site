@@ -13,9 +13,19 @@ export function usePublicPath() {
     return `/${targetLocale}${cleanPath === '/' ? '/' : cleanPath}`
   }
 
+  function localizeWolfxMc(path: string, targetLocale: WolfxLocale, explicitChinese = false) {
+    if (!path.startsWith('/') || path.startsWith('//'))
+      return path
+
+    const cleanPath = path.replace(/^\/(?:ja|zh|en)(?=\/|$)/, '') || '/'
+    if (targetLocale === 'zh')
+      return explicitChinese ? `/zh${cleanPath}` : cleanPath
+    return `/${targetLocale}${cleanPath}`
+  }
+
   function unlocalize(path: string) {
     return path.replace(/^\/(?:ja|zh|en)(?=\/|$)/, '') || '/'
   }
 
-  return { localize, unlocalize }
+  return { localize, localizeWolfxMc, unlocalize }
 }

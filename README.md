@@ -52,14 +52,16 @@ content/
 ├── legal/
 │   ├── privacy.md
 │   └── terms.md
-└── mc/                    # /mc、/zh/mc、/en/mc
+└── mc/                    # /mc、/zh/mc、/ja/mc、/en/mc
     ├── index.md
     ├── rules.md
-    ├── join.md            # 仅恢复了中文，en 中不存在
+    ├── join.md
     └── vote.md
 ```
 
 大段正文、API 字段表和法律文本只能在 Markdown 中维护。Vue 组件只负责布局、交互与可复用展示。
+
+主站继续以无前缀日语为默认语言；WolfxMC 则有意采用不同的公开语言模型：`/mc` 为首选简体中文入口，`/zh/mc` 为显式简体中文，`/ja/mc` 为日语，`/en/mc` 为英语。显式中文页面 canonical 到对应的无前缀 `/mc` 页面。
 
 ### 新增或编辑页面
 
@@ -101,7 +103,7 @@ API 字段继续使用 Markdown 表格，第一列保持原始字段名，不要
 
 ### 静态搜索
 
-`pnpm generate` 的生命周期会先运行 `scripts/generate-search-index.mjs`，从 35 份 Markdown 生成 `public/search-index.json`，再复制到 `.output/public/search-index.json`。搜索在浏览器本地执行，不需要 Server API、数据库或外部搜索服务。修改内容后直接重新执行 `pnpm generate`；也可单独运行：
+`pnpm generate` 的生命周期会先运行 `scripts/generate-search-index.mjs`，从 36 份 Markdown 生成 `public/search-index.json`，再复制到 `.output/public/search-index.json`。搜索在浏览器本地执行，不需要 Server API、数据库或外部搜索服务。修改内容后直接重新执行 `pnpm generate`；也可单独运行：
 
 ```bash
 pnpm search:generate
@@ -153,6 +155,8 @@ server {
 ```
 
 `deploy/nginx-cache.conf` 对 `/_nuxt/*` 使用一年 `immutable` 缓存，对 HTML 和 `search-index.json` 使用重新验证策略，并以 `try_files ... =404` 保证不存在的路径不是首页 200。`/mc` 与其子页面和其他 Nuxt 静态路由一样由同一 `wolfx.jp` 站点提供，不需要单独的 server block。实际路径可按服务器布局调整；部署前用 `nginx -t` 检查完整 Nginx 配置。
+
+WolfxMC 网站与 Minecraft 连接端点是不同概念：网站仅位于 `https://wolfx.jp/mc`；玩家通常连接 `Wolfx.jp`，海外玩家连接 `mc.wolfx.jp`，浏览器中的 mcapi.us 状态查询也使用 `mc.wolfx.jp`。`mc.wolfx.jp` 不得作为网站 origin、canonical、跳转目标或 Worker/Nginx 网站路由。
 
 ## Cloudflare Workers Assets 部署
 

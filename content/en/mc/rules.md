@@ -2,13 +2,13 @@
 title: "Wolfx Survival Server Rules"
 description: "Rules protecting fair gameplay, server stability, and a positive experience for all Wolfx Survival players."
 locale: en
-availableLocales: [zh, en]
+availableLocales: [zh, ja, en]
 layout: mc
 updated: 2026-01-06
 ---
 
 ::page-intro{eyebrow="WOLFX SURVIVAL" title="Wolfx Survival Server Rules"}
-Recovered from the June 11, 2026 archive capture. The rules were last updated on January 6, 2026.
+The rules were last updated on January 6, 2026.
 ::
 
 ::content-section{width="reading"}

@@ -10,7 +10,7 @@ export const MINECRAFT_STATUS_REFRESH_MS = 5 * 60 * 1000
 export const MINECRAFT_STATUS_TIMEOUT_MS = 8_000
 
 const endpoint = new URL('https://mcapi.us/server/status')
-endpoint.searchParams.set('ip', wolfxMc.serverAddress)
+endpoint.searchParams.set('ip', wolfxMc.statusAddress)
 export const MINECRAFT_STATUS_ENDPOINT = endpoint.toString()
 
 const responseSchema = z.object({

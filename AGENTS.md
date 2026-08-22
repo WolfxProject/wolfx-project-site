@@ -6,6 +6,7 @@
 - Never guess or rename API fields, endpoints, service behavior, versions, credits, or partner links. Suspicious legacy spellings are part of the public contract until evidence says otherwise.
 - When changing one language, inspect the corresponding Japanese, Simplified Chinese, and English pages.
 - Do not maintain legacy URL aliases or compatibility redirects unless explicitly requested in a future task.
+- `mc.wolfx.jp` is a Minecraft connection endpoint, not a supported website hostname; never use it for website routing, canonicals, or redirects.
 - `../wolfx-project` is a read-only public migration source. Never modify, format, delete, or commit files there.
 - Do not add tracking, ads, third-party font CDNs, automatic external iframes, or forced browser-language redirects.
 - Keep SSR and prerendering safe. Browser-only APIs belong in client lifecycle hooks or `.client` files.

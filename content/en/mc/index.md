@@ -1,13 +1,13 @@
 ---
 title: "Wolfx Survival"
-description: "Pure vanilla survival, a never-reset map, high freedom with few restrictions, and permanently free access. Server IP: Wolfx.jp."
+description: "Pure vanilla survival, a never-reset map, high freedom with few restrictions, and permanently free access since 2019."
 locale: en
-availableLocales: [zh, en]
+availableLocales: [zh, ja, en]
 layout: mc
-updated: 2026-06-11
+updated: 2026-08-22
 ---
 
-::mc-hero{eyebrow="PURE VANILLA · NEVER RESET · FREE" title="Let’s chill in survival ☁️ — Wolfx Survival" copy-label="Copy server IP" rules-label="View rules" join-label="Join guide" minecraft-label="Get Minecraft" version-label="Supported (at capture)" since-label="Open since"}
+::mc-hero{eyebrow="PURE VANILLA · NEVER RESET · FREE" title="Let’s chill in survival ☁️ — Wolfx Survival" main-route-label="Main Route" main-copy-label="Copy main server address" overseas-route-label="Overseas Route" overseas-copy-label="Copy overseas server address" route-notice="The main route does not accept connections from overseas. The overseas route has limited traffic capacity, so please choose the appropriate route and leave it available for players who need it." rules-label="View rules" join-label="Join guide" minecraft-label="Get Minecraft" core-label="Current server core" version-label="Supported versions" since-label="Open since"}
 Focused on vanilla survival with minimal changes. High freedom, few restrictions, stable long-term operation since 2019.
 ::
 
@@ -35,8 +35,4 @@ Do anything you want — as long as it follows the rules.
 Find teammates, share builds, read announcements, and report issues.
 
 ::mc-community-links{discord-title="Discord" discord-description="Recommended: announcements & discussions in one place." qq-title="QQ Group" qq-description="Convenient for CN players & mobile chat." donate-title="Donate" donate-description="Support the server through Afdian." plan-title="Plan" plan-description="Open Wolfx Project Plan."}
-::
-
-::content-notice{type="info" title="Archive note"}
-The supported-version range is a historical value from the June 11, 2026 capture, not live status. After the page loads, the browser requests mcapi.us directly for the current availability and online-player count; when these cannot be determined, the page shows that status is unavailable.
 ::

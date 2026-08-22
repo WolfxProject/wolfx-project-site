@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test'
 
-const mcStatusEndpoint = 'https://mcapi.us/server/status?ip=Wolfx.jp'
+const mcStatusEndpoint = 'https://mcapi.us/server/status?ip=mc.wolfx.jp'
 const mcStatusRoute = 'https://mcapi.us/server/status?*'
 const defaultStatus = {
   status: 'success',
@@ -11,7 +11,8 @@ const defaultStatus = {
 const mcRoutes = [
   '/mc', '/mc/rules', '/mc/join', '/mc/vote',
   '/zh/mc', '/zh/mc/rules', '/zh/mc/join', '/zh/mc/vote',
-  '/en/mc', '/en/mc/rules', '/en/mc/vote',
+  '/ja/mc', '/ja/mc/rules', '/ja/mc/join', '/ja/mc/vote',
+  '/en/mc', '/en/mc/rules', '/en/mc/join', '/en/mc/vote',
 ]
 
 const targetViewports = [
@@ -34,7 +35,7 @@ async function mockMinecraftStatus(page, body = defaultStatus) {
   return requests
 }
 
-test('all recovered WolfxMC pages render as a responsive static site', async ({ page }) => {
+test('all localized WolfxMC pages render as a responsive static site', async ({ page }) => {
   test.setTimeout(90_000)
   await mockMinecraftStatus(page)
   await page.setViewportSize({ width: 390, height: 844 })
@@ -57,47 +58,120 @@ test('WolfxMC remains overflow-free at every target viewport', async ({ page }) 
   await mockMinecraftStatus(page)
   for (const viewport of targetViewports) {
     await page.setViewportSize(viewport)
-    await page.goto('/zh/mc', { waitUntil: 'networkidle' })
-    expect(
-      await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth),
-      `${viewport.width}x${viewport.height}`,
-    ).toBeLessThanOrEqual(1)
-    await expect(page.locator('.mc-hero')).toBeVisible()
-    await expect(page.locator('.mc-server-chip')).toBeVisible()
-    await expect(page.locator('.mc-community-grid')).toBeVisible()
+    for (const route of ['/mc', '/ja/mc', '/en/mc']) {
+      await page.goto(route, { waitUntil: 'networkidle' })
+      expect(
+        await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth),
+        `${route} at ${viewport.width}x${viewport.height}`,
+      ).toBeLessThanOrEqual(1)
+      await expect(page.locator('.mc-hero')).toBeVisible()
+      await expect(page.locator('.mc-server-chip')).toHaveCount(2)
+      await expect(page.locator('.mc-community-grid')).toBeVisible()
+      const sectionGroups = await page.locator('.mc-content > h2').evaluateAll(headings => headings.map((heading) => {
+        const description = heading.nextElementSibling
+        return {
+          descriptionTag: description?.tagName,
+          headingLeft: heading.getBoundingClientRect().left,
+          descriptionLeft: description?.getBoundingClientRect().left,
+        }
+      }))
+      expect(sectionGroups, `${route} at ${viewport.width}x${viewport.height}: section groups`).toHaveLength(2)
+      for (const group of sectionGroups) {
+        expect(group.descriptionTag).toBe('P')
+        expect(Math.abs(group.headingLeft - (group.descriptionLeft ?? Number.NaN))).toBeLessThanOrEqual(1)
+      }
+    }
   }
 })
 
-test('WolfxMC metadata uses the canonical Wolfx Project origin and only recovered languages', async ({ page }) => {
+test('WolfxMC metadata uses Chinese canonicals and all three localized alternates', async ({ page }) => {
   await mockMinecraftStatus(page)
   const cases = [
     { route: '/mc', canonical: 'https://wolfx.jp/mc', lang: 'zh-CN' },
-    { route: '/zh/mc/rules', canonical: 'https://wolfx.jp/zh/mc/rules', lang: 'zh-CN' },
+    { route: '/zh/mc/rules', canonical: 'https://wolfx.jp/mc/rules', lang: 'zh-CN' },
+    { route: '/ja/mc/join', canonical: 'https://wolfx.jp/ja/mc/join', lang: 'ja-JP' },
     { route: '/en/mc/vote', canonical: 'https://wolfx.jp/en/mc/vote', lang: 'en-US' },
   ]
 
   for (const item of cases) {
     await page.goto(item.route)
+    const familyPath = item.route.replace(/^\/(?:ja|zh|en)(?=\/)/, '')
     await expect(page.locator('html')).toHaveAttribute('lang', item.lang)
     await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', item.canonical)
     await expect(page.locator('meta[property="og:url"]')).toHaveAttribute('content', item.canonical)
-    await expect(page.locator('link[rel="alternate"][hreflang="zh-CN"]')).toHaveCount(1)
-    await expect(page.locator('link[rel="alternate"][hreflang="x-default"]')).toHaveCount(1)
-    await expect(page.locator('link[rel="alternate"][hreflang="ja"]')).toHaveCount(0)
-    await expect(page.locator('select[aria-label] option')).toHaveCount(item.route.includes('/join') ? 1 : 2)
+    await expect(page.locator('link[rel="alternate"][hreflang="zh-CN"]')).toHaveAttribute('href', `https://wolfx.jp${familyPath}`)
+    await expect(page.locator('link[rel="alternate"][hreflang="ja"]')).toHaveAttribute('href', `https://wolfx.jp/ja${familyPath}`)
+    await expect(page.locator('link[rel="alternate"][hreflang="en"]')).toHaveAttribute('href', `https://wolfx.jp/en${familyPath}`)
+    await expect(page.locator('link[rel="alternate"][hreflang="x-default"]')).toHaveAttribute('href', `https://wolfx.jp${familyPath}`)
+    await expect(page.locator('select[aria-label] option')).toHaveCount(3)
   }
 })
 
 test('WolfxMC navigation stays inside canonical /mc routes', async ({ page }) => {
   await mockMinecraftStatus(page)
-  await page.goto('/en/mc')
+  await page.goto('/en/mc', { waitUntil: 'networkidle' })
 
   const hrefs = await page.locator('.mc-navigation a').evaluateAll(links => links.map(link => link.getAttribute('href')))
   expect(hrefs).toContain('/en/mc')
   expect(hrefs).toContain('/en/mc/rules')
-  expect(hrefs).toContain('/mc/join')
+  expect(hrefs).toContain('/en/mc/join')
   expect(hrefs).toContain('/en/mc/vote')
   expect(hrefs.every(href => href?.startsWith('/'))).toBeTruthy()
+})
+
+test('WolfxMC serves complete Chinese, Japanese, and English page families', async ({ page }) => {
+  await mockMinecraftStatus(page)
+  const cases = [
+    ['/mc', 'zh-CN', '来玩点轻松的生存吧'],
+    ['/zh/mc', 'zh-CN', '来玩点轻松的生存吧'],
+    ['/ja/mc', 'ja-JP', 'のんびりサバイバルを楽しもう'],
+    ['/en/mc', 'en-US', 'Let’s chill in survival'],
+    ['/mc/rules', 'zh-CN', '一、总则'],
+    ['/ja/mc/rules', 'ja-JP', '1. 総則'],
+    ['/en/mc/rules', 'en-US', 'General Principles'],
+    ['/mc/join', 'zh-CN', '线路选择说明'],
+    ['/ja/mc/join', 'ja-JP', '回線の選び方'],
+    ['/en/mc/join', 'en-US', 'Choosing a route'],
+    ['/mc/vote', 'zh-CN', '可通过以下服务器列表'],
+    ['/ja/mc/vote', 'ja-JP', '以下のサーバーリスト'],
+    ['/en/mc/vote', 'en-US', 'Vote for Wolfx Survival'],
+  ]
+
+  for (const [route, lang, expectedText] of cases) {
+    await page.goto(route)
+    await expect(page.locator('html')).toHaveAttribute('lang', lang)
+    await expect(page.locator('main')).toContainText(expectedText)
+  }
+})
+
+test('WolfxMC language switching preserves the current translated page', async ({ page }) => {
+  await mockMinecraftStatus(page)
+  await page.goto('/mc/rules', { waitUntil: 'networkidle' })
+  const language = page.locator('.language-select select')
+
+  await language.selectOption('ja')
+  await expect(page).toHaveURL(/\/ja\/mc\/rules\/?$/)
+  await page.waitForLoadState('networkidle')
+  await expect(page.locator('html')).toHaveAttribute('lang', 'ja-JP')
+
+  await language.selectOption('en')
+  await expect(page).toHaveURL(/\/en\/mc\/rules\/?$/)
+  await page.waitForLoadState('networkidle')
+  await expect(page.locator('html')).toHaveAttribute('lang', 'en-US')
+
+  await language.selectOption('zh')
+  await expect(page).toHaveURL(/\/mc\/rules\/?$/)
+  await page.waitForLoadState('networkidle')
+  await expect(page.locator('html')).toHaveAttribute('lang', 'zh-CN')
+})
+
+test('visitor-facing WolfxMC pages contain no reconstruction labels', async ({ page }) => {
+  await mockMinecraftStatus(page)
+  for (const route of mcRoutes) {
+    await page.goto(route)
+    const text = await page.locator('main').innerText()
+    expect(text, route).not.toMatch(/Recovered from|archived page|archive capture|归档页面|アーカイブ|Wayback|復元した/i)
+  }
 })
 
 test('WolfxMC loads only the JSON status endpoint and no archived third-party script', async ({ page }) => {
@@ -118,7 +192,7 @@ test('WolfxMC loads only the JSON status endpoint and no archived third-party sc
   expect(await page.locator('body').evaluate(element => element.innerHTML)).not.toMatch(/web\.archive\.org|minecraft\.min\.js/i)
 })
 
-test('server address copies with accessible feedback', async ({ page }) => {
+test('both server addresses copy independently with accessible feedback', async ({ page }) => {
   await mockMinecraftStatus(page)
   await page.addInitScript(() => {
     window.__copiedWolfxMcAddress = ''
@@ -127,19 +201,26 @@ test('server address copies with accessible feedback', async ({ page }) => {
       value: { writeText: async value => (window.__copiedWolfxMcAddress = value) },
     })
   })
-  await page.goto('/en/mc')
-  const copy = page.locator('.mc-server-chip .copy-button')
-  await copy.click()
-  await expect(copy).toHaveAttribute('data-state', 'copied')
-  await expect(copy).toHaveAccessibleName(/Copied/)
-  expect(await page.evaluate(() => window.__copiedWolfxMcAddress)).toBe('Wolfx.jp')
+  await page.goto('/en/mc', { waitUntil: 'networkidle' })
+  for (const [route, expectedAddress, accessibleName] of [
+    ['main', 'Wolfx.jp', /main server address/i],
+    ['overseas', 'mc.wolfx.jp', /overseas server address/i],
+  ]) {
+    const copy = page.locator(`.mc-server-route[data-route="${route}"] .copy-button`)
+    await copy.click()
+    await expect(copy).toHaveAttribute('data-state', 'copied')
+    await expect(copy).toHaveAccessibleName(accessibleName)
+    expect(await page.evaluate(() => window.__copiedWolfxMcAddress)).toBe(expectedAddress)
+  }
+  await expect(page.locator('a[href*="mc.wolfx.jp"]')).toHaveCount(0)
 })
 
-test('WolfxMC is discoverable from Projects and remains readable in dark mode', async ({ page }) => {
+test('WolfxMC is absent from Projects and remains readable in dark mode', async ({ page }) => {
   await mockMinecraftStatus(page)
-  await page.goto('/projects')
-  const project = page.locator('.project-card').filter({ has: page.getByRole('heading', { name: 'Wolfx Survival' }) })
-  await expect(project.getByRole('link')).toHaveAttribute('href', '/mc')
+  for (const route of ['/projects', '/zh/projects', '/en/projects']) {
+    await page.goto(route)
+    await expect(page.locator('.project-card').filter({ hasText: /Wolfx Survival|WolfxMC/ })).toHaveCount(0)
+  }
 
   await page.emulateMedia({ colorScheme: 'dark', reducedMotion: 'reduce' })
   await page.setViewportSize({ width: 1366, height: 768 })
@@ -165,7 +246,8 @@ test('online status displays the current count without maximum slots or map size
   await expect(status).toContainText('Online')
   await expect(status).toContainText('7 players online')
   await expect(status).not.toContainText('100')
-  await expect(page.locator('.mc-hero__facts > div')).toHaveCount(2)
+  await expect(page.locator('.mc-hero__facts > div')).toHaveCount(3)
+  await expect(page.locator('.mc-hero__facts')).toContainText('26.2')
   await expect(page.locator('.mc-hero')).not.toContainText(/Map size/i)
   expect(requests).toEqual([mcStatusEndpoint])
 

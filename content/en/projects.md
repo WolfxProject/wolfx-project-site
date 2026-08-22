@@ -26,9 +26,6 @@ A public viewer for SeisJS observation data.
 :::project-card{title="ACG.kr" eyebrow="URL SHORTENER" href="https://acg.kr" image="/images/ACGKR.png" action="Use service"}
 A public-interest URL shortening service based on YOURLS.
 :::
-:::project-card{title="Wolfx Survival" eyebrow="MINECRAFT" href="/en/mc" icon="i-lucide-box" action="Open WolfxMC"}
-A vanilla-first Minecraft survival server with a never-reset map, high freedom, few restrictions, and continuous operation since 2019.
-:::
 :::project-card{title="GitHub" eyebrow="OPEN SOURCE" href="https://github.com/WolfxProject" icon="i-lucide-github" action="View repositories"}
 Public source code and development activity for Wolfx Project.
 :::

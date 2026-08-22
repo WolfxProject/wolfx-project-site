@@ -1,20 +1,19 @@
 ---
 title: "Wolfx Survival Vote"
-description: "Wolfx Survival 的历史服务器列表投票链接。"
+description: "Wolfx Survival を応援できるサーバーリスト投票ページ。"
 locale: ja
-sourceLocale: zh
-availableLocales: [zh, en]
+availableLocales: [zh, ja, en]
 layout: mc
 updated: 2026-01-13
 ---
 
 ::page-intro{eyebrow="SUPPORT WOLFX SURVIVAL" title="Wolfx Survival Vote"}
-以下为归档页面收录的服务器列表投票入口。
+以下のサーバーリストから Wolfx Survival に投票できます。
 ::
 
 ::content-section{width="reading"}
 ::mc-vote-links
 ::
 
-## Thank you for your Vote!
+## 投票ありがとうございます！
 ::

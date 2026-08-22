@@ -1,27 +1,46 @@
 <script setup lang="ts">
-import type { WolfxLocale } from '~/types/site'
 import { wolfxMc } from '~~/data/wolfxmc'
 
-defineProps<{
+const { t } = useI18n()
+const route = useRoute()
+const { localizeWolfxMc } = usePublicPath()
+const { displayLocale } = useSiteContext()
+const { status } = useMinecraftStatus()
+
+const preservesExplicitChinese = computed(() => /^\/zh(?:\/|$)/.test(route.path))
+const rulesPath = computed(() => localizeWolfxMc('/mc/rules', displayLocale.value, preservesExplicitChinese.value))
+const joinPath = computed(() => localizeWolfxMc('/mc/join', displayLocale.value, preservesExplicitChinese.value))
+
+const props = defineProps<{
   eyebrow: string
   title: string
-  copyLabel: string
+  mainRouteLabel: string
+  mainCopyLabel: string
+  overseasRouteLabel: string
+  overseasCopyLabel: string
+  routeNotice: string
   rulesLabel: string
   joinLabel: string
   minecraftLabel: string
+  coreLabel: string
   versionLabel: string
   sinceLabel: string
 }>()
 
-const { locale, t } = useI18n()
-const { localize } = usePublicPath()
-const { displayLocale } = useSiteContext()
-const { status } = useMinecraftStatus()
-
-const rulesPath = computed(() => localize('/mc/rules', locale.value as WolfxLocale))
-const joinPath = computed(() => locale.value === 'en'
-  ? '/mc/join'
-  : localize('/mc/join', locale.value as WolfxLocale))
+const serverRoutes = computed(() => [
+  {
+    key: 'main' as const,
+    label: props.mainRouteLabel,
+    copyLabel: props.mainCopyLabel,
+    address: wolfxMc.serverAddresses.main,
+  },
+  {
+    key: 'overseas' as const,
+    label: props.overseasRouteLabel,
+    copyLabel: props.overseasCopyLabel,
+    address: wolfxMc.serverAddresses.overseas,
+  },
+])
 
 function tr(key: string) {
   return t(key, {}, { locale: displayLocale.value })
@@ -65,13 +84,23 @@ const playerLabel = computed(() => {
           <slot />
         </div>
         <div class="mc-hero__actions">
-          <div class="mc-server-connect">
-            <div class="mc-server-chip">
-              <code>{{ wolfxMc.serverAddress }}</code>
-              <CopyButton
-                :value="wolfxMc.serverAddress"
-                :aria-label="copyLabel"
-              />
+          <div class="mc-server-access">
+            <div class="mc-server-routes">
+              <div
+                v-for="serverRoute in serverRoutes"
+                :key="serverRoute.key"
+                class="mc-server-route"
+                :data-route="serverRoute.key"
+              >
+                <span class="mc-server-route__label">{{ serverRoute.label }}</span>
+                <div class="mc-server-chip">
+                  <code>{{ serverRoute.address }}</code>
+                  <CopyButton
+                    :value="serverRoute.address"
+                    :aria-label="serverRoute.copyLabel"
+                  />
+                </div>
+              </div>
             </div>
             <div
               class="mc-server-status"
@@ -90,6 +119,9 @@ const playerLabel = computed(() => {
                 class="mc-server-status__players"
               >{{ playerLabel }}</span>
             </div>
+            <p class="mc-route-notice">
+              {{ routeNotice }}
+            </p>
           </div>
           <UButton
             :to="joinPath"
@@ -120,6 +152,10 @@ const playerLabel = computed(() => {
         </div>
       </div>
       <dl class="mc-hero__facts">
+        <div>
+          <dt>{{ coreLabel }}</dt>
+          <dd>{{ wolfxMc.currentCoreVersion }}</dd>
+        </div>
         <div>
           <dt>{{ versionLabel }}</dt>
           <dd>{{ wolfxMc.supportedVersion }}</dd>

@@ -17,26 +17,25 @@ const localizedRoutes = [
 ]
 
 const wolfxMcRouteFamilies = [
-  { path: '/mc', locales: ['zh', 'en'] },
-  { path: '/mc/rules', locales: ['zh', 'en'] },
-  { path: '/mc/join', locales: ['zh'] },
-  { path: '/mc/vote', locales: ['zh', 'en'] },
+  '/mc',
+  '/mc/rules',
+  '/mc/join',
+  '/mc/vote',
 ]
 
-const wolfxMcRoutes = wolfxMcRouteFamilies.flatMap(({ path, locales }) => [
+const wolfxMcRoutes = wolfxMcRouteFamilies.flatMap(path => [
   path,
-  ...locales.map(locale => `/${locale}${path}`),
+  ...['zh', 'ja', 'en'].map(locale => `/${locale}${path}`),
 ])
 
-const wolfxMcSitemapUrls = wolfxMcRouteFamilies.flatMap(({ path, locales }) => {
+const wolfxMcSitemapUrls = wolfxMcRouteFamilies.flatMap((path) => {
   const alternatives = [
     { hreflang: 'x-default', href: path },
-    ...locales.map(locale => ({
-      hreflang: locale === 'zh' ? 'zh-CN' : 'en',
-      href: `/${locale}${path}`,
-    })),
+    { hreflang: 'zh-CN', href: path },
+    { hreflang: 'ja-JP', href: `/ja${path}` },
+    { hreflang: 'en-US', href: `/en${path}` },
   ]
-  return [path, ...locales.map(locale => `/${locale}${path}`)]
+  return [path, `/ja${path}`, `/en${path}`]
     .map(loc => ({ loc, alternatives }))
 })
 

@@ -24,19 +24,15 @@ const routePages = [
   { file: 'legal/privacy.md', route: 'legal/privacy', layout: 'legal' },
   { file: 'legal/terms.md', route: 'legal/terms', layout: 'legal' },
 ]
-const wolfxMcPages = [
-  { route: '/mc', locale: 'zh', htmlLang: 'zh-CN', alternates: ['zh-CN', 'en', 'x-default'] },
-  { route: '/zh/mc', locale: 'zh', htmlLang: 'zh-CN', alternates: ['zh-CN', 'en', 'x-default'] },
-  { route: '/en/mc', locale: 'en', htmlLang: 'en-US', alternates: ['zh-CN', 'en', 'x-default'] },
-  { route: '/mc/rules', locale: 'zh', htmlLang: 'zh-CN', alternates: ['zh-CN', 'en', 'x-default'] },
-  { route: '/zh/mc/rules', locale: 'zh', htmlLang: 'zh-CN', alternates: ['zh-CN', 'en', 'x-default'] },
-  { route: '/en/mc/rules', locale: 'en', htmlLang: 'en-US', alternates: ['zh-CN', 'en', 'x-default'] },
-  { route: '/mc/join', locale: 'zh', htmlLang: 'zh-CN', alternates: ['zh-CN', 'x-default'] },
-  { route: '/zh/mc/join', locale: 'zh', htmlLang: 'zh-CN', alternates: ['zh-CN', 'x-default'] },
-  { route: '/mc/vote', locale: 'zh', htmlLang: 'zh-CN', alternates: ['zh-CN', 'en', 'x-default'] },
-  { route: '/zh/mc/vote', locale: 'zh', htmlLang: 'zh-CN', alternates: ['zh-CN', 'en', 'x-default'] },
-  { route: '/en/mc/vote', locale: 'en', htmlLang: 'en-US', alternates: ['zh-CN', 'en', 'x-default'] },
-]
+const wolfxMcRouteFamilies = ['/mc', '/mc/rules', '/mc/join', '/mc/vote']
+const wolfxMcPages = wolfxMcRouteFamilies.flatMap(path => [
+  { route: path, canonical: path, locale: 'zh', htmlLang: 'zh-CN' },
+  { route: `/zh${path}`, canonical: path, locale: 'zh', htmlLang: 'zh-CN' },
+  { route: `/ja${path}`, canonical: `/ja${path}`, locale: 'ja', htmlLang: 'ja-JP' },
+  { route: `/en${path}`, canonical: `/en${path}`, locale: 'en', htmlLang: 'en-US' },
+])
+const wolfxMcAlternates = ['zh-CN', 'ja', 'en', 'x-default']
+const wolfxMcSitemapRoutes = wolfxMcRouteFamilies.flatMap(path => [path, `/ja${path}`, `/en${path}`])
 const retiredRoutes = [
   '/apidoc', '/apidoc.html', '/apidoc_zh', '/apidoc_zh.html', '/apidoc_en', '/apidoc_en.html',
   '/wsapi', '/wsapi.html', '/wsapi_ja', '/wsapi_zh', '/wsapi_zh.html', '/wsapi_en', '/wsapi_en.html',
@@ -266,6 +262,33 @@ for (const file of retiredArchitectureFiles) {
     fail(`Retired multi-host or redirect artifact still exists: ${file}`)
 }
 
+for (const relative of ['worker/index.ts', 'wrangler.jsonc', 'deploy/nginx-cache.conf']) {
+  const source = await fs.readFile(path.join(root, relative), 'utf8')
+  if (source.includes('mc.wolfx.jp'))
+    fail(`${relative}: Minecraft endpoint must not be used for website routing`)
+}
+
+const wolfxMcData = await fs.readFile(path.join(root, 'data/wolfxmc.ts'), 'utf8')
+if (!wolfxMcData.includes(`main: 'Wolfx.jp'`) || !wolfxMcData.includes(`overseas: 'mc.wolfx.jp'`))
+  fail('WolfxMC data must define the main and overseas Minecraft addresses')
+if (!wolfxMcData.includes('statusAddress: wolfxMcServerAddresses.overseas'))
+  fail('WolfxMC status address must derive from the overseas Minecraft address')
+if (!wolfxMcData.includes(`currentCoreVersion: '26.2'`))
+  fail('WolfxMC data must define current server core 26.2')
+
+const minecraftStatusSource = await fs.readFile(path.join(root, 'app/composables/useMinecraftStatus.ts'), 'utf8')
+if (!minecraftStatusSource.includes(`new URL('https://mcapi.us/server/status')`) || !minecraftStatusSource.includes(`endpoint.searchParams.set('ip', wolfxMc.statusAddress)`))
+  fail('Minecraft status lookup must query mcapi.us with the centralized status address')
+
+for (const locale of ['ja', 'zh', 'en']) {
+  const projects = await fs.readFile(path.join(root, `content/${locale}/projects.md`), 'utf8')
+  if (/Wolfx Survival|WolfxMC|href="\/(?:zh\/|en\/)?mc"/.test(projects))
+    fail(`${locale}: Projects must not promote WolfxMC`)
+  const privacy = await fs.readFile(path.join(root, `content/${locale}/legal/privacy.md`), 'utf8')
+  if (!privacy.includes('mcapi.us'))
+    fail(`${locale}: privacy policy is missing the direct mcapi.us disclosure`)
+}
+
 const sourceIndexFile = path.join(root, 'public/search-index.json')
 if (!await exists(sourceIndexFile)) {
   fail('Missing public/search-index.json; run pnpm search:generate')
@@ -278,8 +301,8 @@ else {
   catch (error) {
     fail(`Invalid public/search-index.json: ${error instanceof Error ? error.message : String(error)}`)
   }
-  if (index.length !== 35)
-    fail(`Expected 35 search entries, found ${index.length}`)
+  if (index.length !== 36)
+    fail(`Expected 36 search entries, found ${index.length}`)
   const paths = new Set()
   for (const [position, entry] of index.entries()) {
     const label = `search entry ${position}`
@@ -300,10 +323,10 @@ else {
     paths.add(entry.path)
     if (/<[^>]+>|^---$|\n#{1,6}\s|```/.test(entry.text))
       fail(`${label}: text contains markup or frontmatter noise`)
-    const contentRoute = /^\/(?:zh\/|en\/)?mc$/.test(entry.path) ? `${entry.path}/index` : entry.path
+    const contentRoute = /^\/(?:(?:ja|zh|en)\/)?mc$/.test(entry.path) ? `${entry.path}/index` : entry.path
     const expectedContent = contentRoute === '/'
       ? path.join(root, 'content/ja/index.md')
-      : path.join(root, 'content', entry.locale, `${contentRoute.replace(/^\/(zh|en)(?=\/|$)/, '').replace(/^\//, '') || 'index'}.md`)
+      : path.join(root, 'content', entry.locale, `${contentRoute.replace(/^\/(ja|zh|en)(?=\/|$)/, '').replace(/^\//, '') || 'index'}.md`)
     if (!await exists(expectedContent))
       fail(`${label}: path does not resolve to content (${entry.path})`)
   }
@@ -330,8 +353,8 @@ else {
       fail(`Static search has no ${locale} result for ${term} at ${expectedPath}`)
   }
   for (const [locale, term, expectedPath] of [
-    ['ja', 'Wolfx Survival', '/mc'],
-    ['zh', 'Wolfx Survival', '/zh/mc'],
+    ['ja', 'Wolfx Survival', '/ja/mc'],
+    ['zh', 'Wolfx Survival', '/mc'],
     ['en', 'Wolfx Survival', '/en/mc'],
   ]) {
     const found = index.some(entry => entry.locale === locale && entry.path === expectedPath
@@ -407,6 +430,9 @@ else {
         if (!html.includes(`href="${donationValues.afdian}"`) || !html.includes('rel="noopener noreferrer"') || !html.includes('target="_blank"'))
           fail(`${route}: generated Afdian link is missing its exact URL or safe external-link attributes`)
       }
+      else if (page.file === 'projects.md' && /Wolfx Survival|WolfxMC/.test(html)) {
+        fail(`${route}: generated Projects page still promotes WolfxMC`)
+      }
       else if (page.layout === 'landing' && !/("@type":"(?:WebSite|CollectionPage)")/.test(html)) {
         fail(`${route}: landing page has wrong JSON-LD type`)
       }
@@ -425,26 +451,37 @@ else {
       fail(`${page.route}: expected html lang ${page.htmlLang}`)
     if (!html.includes('data-site="wolfxmc"'))
       fail(`${page.route}: missing WolfxMC site identity`)
-    if (!html.includes(`<link rel="canonical" href="https://wolfx.jp${page.route}"`))
+    if (!html.includes(`<link rel="canonical" href="https://wolfx.jp${page.canonical}"`))
       fail(`${page.route}: wrong WolfxMC canonical URL`)
-    for (const hreflang of page.alternates) {
+    for (const hreflang of wolfxMcAlternates) {
       if (!html.includes(`hreflang="${hreflang}"`))
         fail(`${page.route}: missing hreflang ${hreflang}`)
     }
-    if (html.includes('hreflang="ja"'))
-      fail(`${page.route}: must not claim an unrecovered Japanese translation`)
+    const canonicalChinesePath = page.route.replace(/^\/(?:ja|zh|en)(?=\/)/, '')
+    if (!html.includes(`hreflang="x-default" href="https://wolfx.jp${canonicalChinesePath}"`))
+      fail(`${page.route}: WolfxMC x-default does not point to the preferred Chinese route`)
     if ((html.match(/<h1(?:\s|>)/g) ?? []).length !== 1)
       fail(`${page.route}: expected exactly one h1`)
     if (!html.includes('property="og:url"') || !html.includes('name="twitter:card"'))
       fail(`${page.route}: missing social metadata`)
-    if (!html.includes(`"url":"https://wolfx.jp${page.route}"`))
+    if (!html.includes(`"url":"https://wolfx.jp${page.canonical}"`))
       fail(`${page.route}: structured data uses the wrong public URL`)
     if (/web\.archive\.org|minecraft\.min\.js/i.test(html))
       fail(`${page.route}: contains an archive or retired live-status script`)
     if (/<script\b[^>]+src=["'][^"']*mcapi\.us/i.test(html))
       fail(`${page.route}: loads mcapi.us as a third-party script`)
-    if (/map size \(at capture\)|地图大小（归档时）/i.test(html))
+    if (/map size \(at capture\)|地图大小（归档时）|マップサイズ（保存時）/i.test(html))
       fail(`${page.route}: exposes the retired world/map storage statistic`)
+    if (/Recovered from|archived page|archive capture|归档页面|アーカイブ|Wayback|復元した/i.test(html))
+      fail(`${page.route}: exposes visitor-facing archive or recovery wording`)
+    if (/href="(?:https?:\/\/)?mc\.wolfx\.jp(?:[/#?"'])/i.test(html) || html.includes('https://mc.wolfx.jp'))
+      fail(`${page.route}: treats the overseas Minecraft address as a website link or origin`)
+    if (page.route === '/mc' || page.route === '/zh/mc' || page.route === '/ja/mc' || page.route === '/en/mc') {
+      if (!html.includes('<code>Wolfx.jp</code>') || !html.includes('<code>mc.wolfx.jp</code>'))
+        fail(`${page.route}: homepage does not expose both Minecraft connection addresses`)
+      if (!html.includes('>26.2<'))
+        fail(`${page.route}: homepage does not expose current server core 26.2`)
+    }
   }
 
   for (const required of ['404.html', 'robots.txt', 'sitemap.xml', 'sitemap_index.xml', '__sitemap__/ja-JP.xml', '__sitemap__/zh-CN.xml', '__sitemap__/en-US.xml', 'search-index.json']) {
@@ -483,8 +520,8 @@ else {
   const sitemapFiles = ['sitemap.xml', 'sitemap_index.xml', ...localeSitemapFiles]
   const sitemapContents = new Map(await Promise.all(sitemapFiles.map(async file => [file, await fs.readFile(path.join(outputRoot, file), 'utf8')])))
   const sitemapText = [...sitemapContents.values()].join('\n')
-  if (sitemapText.includes('https://mc.wolfx.jp'))
-    fail('Sitemap still exposes the retired WolfxMC hostname')
+  if (sitemapText.includes('mc.wolfx.jp'))
+    fail('Sitemap exposes the Minecraft connection endpoint as a website hostname')
   for (const forbidden of [...retiredRoutes, '/api/search', '/search-index.json', '/404']) {
     if (sitemapText.includes(`<loc>https://wolfx.jp${forbidden}</loc>`))
       fail(`Sitemap contains forbidden route ${forbidden}`)
@@ -498,13 +535,13 @@ else {
         fail(`${file} is missing hreflang ${hreflang}`)
     }
   }
-  for (const route of ['/donate', '/zh/donate', '/en/donate', ...wolfxMcPages.map(page => page.route)]) {
+  for (const route of ['/donate', '/zh/donate', '/en/donate', ...wolfxMcSitemapRoutes]) {
     if (!sitemapText.includes(`https://wolfx.jp${route}`))
       fail(`Sitemap is missing ${route}`)
   }
-  for (const urlBlock of sitemapText.matchAll(/<url>.*?<\/url>/gs)) {
-    if (/<loc>https:\/\/wolfx\.jp\/(?:zh\/|en\/)?mc(?:\/|<)/.test(urlBlock[0]) && /hreflang="ja(?:-JP)?"/.test(urlBlock[0]))
-      fail('WolfxMC sitemap entry claims an unrecovered Japanese translation')
+  for (const route of wolfxMcRouteFamilies) {
+    if (sitemapText.includes(`<loc>https://wolfx.jp/zh${route}</loc>`))
+      fail(`Sitemap exposes duplicate explicit-Chinese WolfxMC URL /zh${route}`)
   }
 
   const robots = await fs.readFile(path.join(outputRoot, 'robots.txt'), 'utf8')
@@ -548,8 +585,8 @@ else {
       fail(`${relative}: contains localhost or a development port`)
     if (/(?:CF_API_TOKEN|CLOUDFLARE_API_TOKEN|(?:^|[^A-Za-z])sk-[A-Za-z0-9_-]{20,})/.test(text))
       fail(`${relative}: contains a private token pattern`)
-    if (text.includes('mc.wolfx.jp'))
-      fail(`${relative}: contains the retired WolfxMC hostname`)
+    if (text.includes('https://mc.wolfx.jp'))
+      fail(`${relative}: contains the Minecraft endpoint as an HTTP website origin`)
   }
 }
 

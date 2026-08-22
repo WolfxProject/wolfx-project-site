@@ -1,14 +1,14 @@
 ---
 title: "Wolfx Survival Vote"
-description: "The server-list voting destinations preserved by the Wolfx Survival archive."
+description: "Server-list voting destinations where you can support Wolfx Survival."
 locale: en
-availableLocales: [zh, en]
+availableLocales: [zh, ja, en]
 layout: mc
 updated: 2026-01-13
 ---
 
 ::page-intro{eyebrow="SUPPORT WOLFX SURVIVAL" title="Wolfx Survival Vote"}
-These are the server-list voting destinations preserved by the archived page.
+Vote for Wolfx Survival through any of the server lists below.
 ::
 
 ::content-section{width="reading"}

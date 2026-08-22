@@ -6,15 +6,17 @@ definePageMeta({ layout: false })
 const siteOrigin = 'https://wolfx.jp'
 const route = useRoute()
 const { locale, loadLocaleMessages } = useI18n()
-const { unlocalize } = usePublicPath()
-const { isWolfxMc } = useSiteContext()
+const { localizeWolfxMc, unlocalize } = usePublicPath()
+const { displayLocale, isWolfxMc } = useSiteContext()
 
-if (isWolfxMc.value && locale.value === 'ja')
-  await loadLocaleMessages('zh')
+if (isWolfxMc.value && displayLocale.value !== locale.value)
+  await loadLocaleMessages(displayLocale.value)
 
 const requestedPath = computed(() => {
   const routePath = route.path.replace(/\/$/, '') || '/'
-  const pathLocale = routePath.match(/^\/(zh|en)(?=\/|$)/)?.[1] as WolfxLocale | undefined
+  const pathLocale = routePath.match(/^\/(ja|zh|en)(?=\/|$)/)?.[1] as WolfxLocale | undefined
+  if (isWolfxMc.value)
+    return `/${pathLocale ?? 'zh'}${unlocalize(routePath)}`
   if (!pathLocale)
     return routePath === '/' ? '/ja' : `/ja${routePath}`
   return routePath
@@ -52,6 +54,8 @@ const page = computed(() => result.value!.page as unknown as WolfxContentPage)
 const isFallback = computed(() => result.value?.isFallback ?? false)
 const publicPath = computed(() => unlocalize(route.path))
 const canonicalPath = computed(() => {
+  if (isWolfxMc.value)
+    return localizeWolfxMc(publicPath.value, displayLocale.value)
   if (locale.value === 'ja')
     return publicPath.value
   return `/${locale.value}${publicPath.value === '/' ? '/' : publicPath.value}`
@@ -73,6 +77,8 @@ const ogLocale: Record<WolfxLocale, string> = {
 }
 
 function alternatePath(targetLocale: WolfxLocale) {
+  if (isWolfxMc.value)
+    return localizeWolfxMc(publicPath.value, targetLocale)
   if (targetLocale === 'ja')
     return publicPath.value
   return `/${targetLocale}${publicPath.value === '/' ? '/' : publicPath.value}`
@@ -92,7 +98,7 @@ const alternateLinks = computed(() => {
   links.push({
     rel: 'alternate' as const,
     hreflang: 'x-default',
-    href: new URL(alternatePath('ja'), siteOrigin).toString(),
+    href: new URL(alternatePath(isWolfxMc.value ? 'zh' : 'ja'), siteOrigin).toString(),
   })
   return links
 })

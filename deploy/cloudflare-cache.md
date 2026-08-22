@@ -8,4 +8,4 @@ The deployable site is generated into `.output/public` and served as one `wolfx.
 
 The Worker delegates current locale-root requests to the assets binding without rebuilding response bodies or replacing `Content-Type`, `ETag`, `Range`, or conditional-request headers. Review Cloudflare's active Cache Rules when publishing changes to legal pages, API documentation, or the search index; repository configuration cannot determine dashboard-level cache overrides.
 
-Only `wolfx.jp` should be attached to this deployment. Remove any historical `mc.wolfx.jp` custom domain, Worker route, or proxied DNS record manually in Cloudflare; the repository deliberately provides no redirect or hostname fallback. No separate origin, Pages project, runtime rendering service, or archive proxy is required.
+Only `wolfx.jp` should be attached to this website deployment. `mc.wolfx.jp` may remain a DNS endpoint for Minecraft connections and the mcapi.us status lookup, but it must not be attached as a Worker route, Custom Domain, website origin, redirect, or hostname fallback. No separate web origin, Pages project, runtime rendering service, or archive proxy is required.

@@ -1,9 +1,15 @@
+export const wolfxMcServerAddresses = {
+  main: 'Wolfx.jp',
+  overseas: 'mc.wolfx.jp',
+} as const
+
 export const wolfxMc = {
   name: 'Wolfx Survival',
-  serverAddress: 'Wolfx.jp',
+  serverAddresses: wolfxMcServerAddresses,
+  statusAddress: wolfxMcServerAddresses.overseas,
+  currentCoreVersion: '26.2',
   supportedVersion: '1.9 – 26.2',
   openedOn: '2019-05-18',
-  archiveTimestamp: '2026-06-11T00:25:57Z',
   links: {
     discord: 'https://discord.gg/3jP5Ppn',
     qq: 'https://qm.qq.com/q/bs2kNWwLEk',

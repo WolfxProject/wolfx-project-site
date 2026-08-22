@@ -2,13 +2,13 @@
 title: "Wolfx Survival 服务器游玩规则"
 description: "Wolfx Survival 服务器规则，保障正常游戏体验、服务器稳定运行以及公平性。"
 locale: zh
-availableLocales: [zh, en]
+availableLocales: [zh, ja, en]
 layout: mc
 updated: 2026-01-06
 ---
 
 ::page-intro{eyebrow="WOLFX SURVIVAL" title="Wolfx Survival 服务器游玩规则"}
-以下内容按 2026 年 6 月 11 日归档页面恢复；规则最后更新时间为 2026 年 1 月 6 日。
+规则最后更新时间为 2026 年 1 月 6 日。
 ::
 
 ::content-section{width="reading"}

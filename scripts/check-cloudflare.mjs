@@ -16,9 +16,10 @@ for (const route of [
   '/', '/projects', '/donate', '/zh/', '/en/', '/zh/docs/open-api',
   '/mc', '/mc/rules', '/mc/join', '/mc/vote',
   '/zh/mc', '/zh/mc/rules', '/zh/mc/join', '/zh/mc/vote',
-  '/en/mc', '/en/mc/rules', '/en/mc/vote',
+  '/ja/mc', '/ja/mc/rules', '/ja/mc/join', '/ja/mc/vote',
+  '/en/mc', '/en/mc/rules', '/en/mc/join', '/en/mc/vote',
   '/robots.txt', '/sitemap.xml', '/search-index.json', '/images/logo.png',
-  '/zh/mc/_payload.json', '/zh/mc/rules/_payload.json', '/en/mc/vote/_payload.json',
+  '/zh/mc/_payload.json', '/ja/mc/rules/_payload.json', '/en/mc/vote/_payload.json',
 ])
   await checkStatus(route, 200)
 
@@ -29,7 +30,11 @@ if (!homeBody.includes('data-site="main"') || !homeBody.includes('https://wolfx.
 
 const mc = await checkStatus('/mc?source=cloudflare', 200)
 const mcBody = await mc.text()
-if (!mcBody.includes('data-site="wolfxmc"') || !mcBody.includes('https://wolfx.jp/mc') || mcBody.includes('mc.wolfx.jp'))
+if (!mcBody.includes('data-site="wolfxmc"')
+  || !mcBody.includes('https://wolfx.jp/mc')
+  || !mcBody.includes('<code>Wolfx.jp</code>')
+  || !mcBody.includes('<code>mc.wolfx.jp</code>')
+  || mcBody.includes('https://mc.wolfx.jp'))
   failures.push('/mc: generated response has the wrong site identity or canonical URL')
 if (!mcBody.includes('首页') || mcBody.includes('nav.home') || mcBody.includes('mc.overview'))
   failures.push('/mc: unprefixed Chinese default is missing translated UI messages')
@@ -46,7 +51,7 @@ if ((await head.text()).length)
 for (const route of [
   '/apidoc', '/apidoc.html', '/wsapi', '/seisapi.html',
   '/privacy_policy', '/privacy_policy.html', '/tos.html', '/donate.html',
-  '/mc/rules.html', '/mc/join.html', '/mc/vote.html', '/en/mc/join',
+  '/mc/rules.html', '/mc/join.html', '/mc/vote.html',
   '/nonexistent-path',
 ]) {
   const response = await checkStatus(route, 404)

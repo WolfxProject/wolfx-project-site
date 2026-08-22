@@ -1,9 +1,7 @@
 <script setup lang="ts">
-import type { WolfxLocale } from '~/types/site'
-
 const route = useRoute()
-const { locale, t } = useI18n()
-const { localize, unlocalize } = usePublicPath()
+const { t } = useI18n()
+const { localizeWolfxMc, unlocalize } = usePublicPath()
 const { displayLocale } = useSiteContext()
 
 function tr(key: string) {
@@ -11,10 +9,7 @@ function tr(key: string) {
 }
 
 function mcPath(path: string) {
-  const targetLocale: WolfxLocale = path === '/mc/join' && locale.value === 'en'
-    ? 'ja'
-    : locale.value as WolfxLocale
-  return localize(path, targetLocale)
+  return localizeWolfxMc(path, displayLocale.value, /^\/zh(?:\/|$)/.test(route.path))
 }
 
 const links = computed(() => [

@@ -10,9 +10,15 @@ export function useSiteContext() {
     return path === '/mc' || path.startsWith('/mc/')
   })
 
-  const displayLocale = computed<WolfxLocale>(() => isWolfxMc.value && locale.value === 'ja'
-    ? 'zh'
-    : locale.value as WolfxLocale)
+  const displayLocale = computed<WolfxLocale>(() => {
+    if (!isWolfxMc.value)
+      return locale.value as WolfxLocale
+    if (/^\/ja(?:\/|$)/.test(route.path))
+      return 'ja'
+    if (/^\/en(?:\/|$)/.test(route.path))
+      return 'en'
+    return 'zh'
+  })
 
   function sitePath(path: string) {
     return localize(path, displayLocale.value)

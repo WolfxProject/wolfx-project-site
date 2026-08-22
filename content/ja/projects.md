@@ -26,9 +26,6 @@ SeisJS 観測データを確認する公開ビューアーです。
 :::project-card{title="ACG.kr" eyebrow="URL SHORTENER" href="https://acg.kr" image="/images/ACGKR.png" action="利用する"}
 YOURLS を基盤とした公益 URL 短縮サービスです。
 :::
-:::project-card{title="Wolfx Survival" eyebrow="MINECRAFT" href="/mc" icon="i-lucide-box" action="WolfxMC を開く"}
-2019 年から公開されている Minecraft サバイバルサーバー。復旧した中国語・英語ページを公開しています。
-:::
 :::project-card{title="GitHub" eyebrow="OPEN SOURCE" href="https://github.com/WolfxProject" icon="i-lucide-github" action="リポジトリを見る"}
 Wolfx Project の公開ソースコードと開発活動です。
 :::
