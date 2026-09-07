@@ -3,8 +3,8 @@ title: "Wolfx 防灾（防災）实用类免费 API 接口"
 description: "Wolfx Open API 地震、防灾与实用类接口文档，支持 JSON、GET 与 WebSocket。"
 locale: zh
 layout: docs
-updated: 2026-07-29
-version: v20260729
+updated: 2026-09-07
+version: v20260907
 source: apidoc_zh.html
 ---
 ## Wolfx Open API 使用须知
@@ -46,7 +46,8 @@ wss://ws-api.wolfx.jp/jma_eew
 | `Hypocenter` | 震源地（字符串类型） |
 | `Latitude` | 震源纬度（数值类型） |
 | `Longitude` | 震源经度（数值类型） |
-| `Magunitude` | 震级（数值类型） |
+| `Magnitude` | 震级（数值类型，推荐使用） |
+| `Magunitude` | **Deprecated**：历史拼写错误，仅为兼容旧客户端保留；值始终与 `Magnitude` 相同。新接入请使用 `Magnitude`。该字段未来可能被删除，请尽快迁移。 |
 | `Depth` | 震源深度（数值类型） |
 | `MaxIntensity` | 最大震度（弱/强）（字符串类型） |
 | `Accuracy.Epicenter` | 关于震央精度的信息（字符串类型） |
@@ -161,7 +162,8 @@ wss://ws-api.wolfx.jp/sc_eew
 | `HypoCenter` | 震源地(字符串型) |
 | `Latitude` | 震源地纬度(数值型) |
 | `Longitude` | 震源地经度(数值型) |
-| `Magunitude` | 震级(数值型) |
+| `Magnitude` | 震级(数值型，推荐使用) |
+| `Magunitude` | **Deprecated**：历史拼写错误，仅为兼容旧客户端保留；值始终与 `Magnitude` 相同。新接入请使用 `Magnitude`。该字段未来可能被删除，请尽快迁移。 |
 | `Depth` | 震源深度(可能为null)(数值型) |
 | `MaxIntensity` | 最大烈度(数值型) |
 
@@ -225,7 +227,8 @@ wss://ws-api.wolfx.jp/fj_eew
 | `HypoCenter` | 震源地(字符串型) |
 | `Latitude` | 震源地纬度(数值型) |
 | `Longitude` | 震源地经度(数值型) |
-| `Magunitude` | 震级(数值型) |
+| `Magnitude` | 震级(数值型，推荐使用) |
+| `Magunitude` | **Deprecated**：历史拼写错误，仅为兼容旧客户端保留；值始终与 `Magnitude` 相同。新接入请使用 `Magnitude`。该字段未来可能被删除，请尽快迁移。 |
 | `isFinal` | 是否为最终报(布尔型) |
 
 ## 重庆市地震局 地震预警 JSON API
@@ -280,7 +283,8 @@ https://api.wolfx.jp/cwa_eew.json
 | `HypoCenter` | 震源地(字符串型) |
 | `Latitude` | 震源地纬度(数值型) |
 | `Longitude` | 震源地经度(数值型) |
-| `Magunitude` | 震级(数值型) |
+| `Magnitude` | 震级(数值型，推荐使用) |
+| `Magunitude` | **Deprecated**：历史拼写错误，仅为兼容旧客户端保留；值始终与 `Magnitude` 相同。新接入请使用 `Magnitude`。该字段未来可能被删除，请尽快迁移。 |
 | `Depth` | 震源深度(数值型) |
 | `MaxIntensity` | 最大震度(弱/強)(字符串型) |
 
@@ -384,4 +388,4 @@ https://api.wolfx.jp/img.php?return=<img/json>
 ::api-status-panel{locale="zh"}
 ::
 
-## Doc version: v20260729
+## Doc version: v20260907

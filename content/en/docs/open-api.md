@@ -3,8 +3,8 @@ title: "Wolfx Open API Usage"
 description: "Wolfx Open API documentation for earthquake, EEW, and utility APIs over JSON, GET, and WebSocket."
 locale: en
 layout: docs
-updated: 2026-07-29
-version: v20260729
+updated: 2026-09-07
+version: v20260907
 source: apidoc_en.html
 ---
 ## Wolfx Open API Usage Guidelines
@@ -46,7 +46,8 @@ wss://ws-api.wolfx.jp/jma_eew
 | `Hypocenter` | Hypocenter location (string) |
 | `Latitude` | Latitude of the hypocenter (number) |
 | `Longitude` | Longitude of the hypocenter (number) |
-| `Magunitude` | Magnitude (number) |
+| `Magnitude` | Magnitude (number; recommended) |
+| `Magunitude` | **Deprecated** legacy misspelling retained for backward compatibility with existing clients. Its value is always identical to `Magnitude`. New integrations should use `Magnitude`. This field may be removed in the future, so migration is strongly recommended. |
 | `Depth` | Depth of the hypocenter (number) |
 | `MaxIntensity` | Maximum seismic intensity (lower/upper) (string) |
 | `Accuracy.Epicenter` | Information about epicenter accuracy (string) |
@@ -160,7 +161,8 @@ wss://ws-api.wolfx.jp/sc_eew
 | `HypoCenter` | Hypocenter location (String) |
 | `Latitude` | Latitude of the hypocenter (Number) |
 | `Longitude` | Longitude of the hypocenter (Number) |
-| `Magunitude` | Magnitude (Number) |
+| `Magnitude` | Magnitude (Number; recommended) |
+| `Magunitude` | **Deprecated** legacy misspelling retained for backward compatibility with existing clients. Its value is always identical to `Magnitude`. New integrations should use `Magnitude`. This field may be removed in the future, so migration is strongly recommended. |
 | `Depth` | Depth of hypocenter (may be null) (Number) |
 | `MaxIntensity` | Maximum seismic intensity (Number) |
 
@@ -224,7 +226,8 @@ wss://ws-api.wolfx.jp/fj_eew
 | `HypoCenter` | Hypocenter location (String) |
 | `Latitude` | Latitude of the hypocenter (Number) |
 | `Longitude` | Longitude of the hypocenter (Number) |
-| `Magunitude` | Magnitude (Number) |
+| `Magnitude` | Magnitude (Number; recommended) |
+| `Magunitude` | **Deprecated** legacy misspelling retained for backward compatibility with existing clients. Its value is always identical to `Magnitude`. New integrations should use `Magnitude`. This field may be removed in the future, so migration is strongly recommended. |
 | `isFinal` | True if this is the final report (Boolean) |
 
 ## Chongqing Earthquake Administration - Earthquake Early Warning JSON API
@@ -359,4 +362,4 @@ Client counts and statistical charts load from Wolfx Project's own API service a
 ::api-status-panel{locale="en"}
 ::
 
-## Doc version: v20260729
+## Doc version: v20260907

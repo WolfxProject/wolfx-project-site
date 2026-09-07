@@ -224,7 +224,7 @@ test('API Status renders localized live data and accessible charts in all langua
     const images = await revealStatusCharts(panel)
     await expect(images.last()).toBeVisible()
     expect(await images.evaluateAll(elements => elements.map(image => image.getAttribute('alt')))).toEqual(item.alts)
-    await expect(page.getByRole('heading', { name: 'Doc version: v20260729', exact: true })).toBeAttached()
+    await expect(page.getByRole('heading', { name: 'Doc version: v20260907', exact: true })).toBeAttached()
     const timestamps = await images.evaluateAll(elements => elements.map(image => new URL(image.src).searchParams.get('ts')))
     expect(new Set(timestamps).size).toBe(1)
   }
@@ -265,7 +265,7 @@ test('API Status handles JSON and individual chart failures without hiding the d
   await failedChart.scrollIntoViewIfNeeded()
   await expect(failedChart.getByText('无法加载图表', { exact: true })).toBeVisible()
   await expect(panel.locator('img')).toHaveCount(3)
-  await expect(page.getByRole('heading', { name: 'Doc version: v20260729', exact: true })).toBeAttached()
+  await expect(page.getByRole('heading', { name: 'Doc version: v20260907', exact: true })).toBeAttached()
 })
 
 test('API Status has no hydration warnings, duplicate status requests, or dark/mobile overflow', async ({ page }) => {

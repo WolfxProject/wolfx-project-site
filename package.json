@@ -3,7 +3,7 @@
   "version": "3.0.0",
   "private": true,
   "type": "module",
-  "packageManager": "pnpm@11.11.0",
+  "packageManager": "pnpm@12.3.4",
   "engines": {
     "node": ">=20.19.0"
   },
@@ -31,23 +31,23 @@
     "cf:deploy": "pnpm typecheck && pnpm lint && pnpm content:audit && pnpm generate && pnpm check && wrangler deploy"
   },
   "dependencies": {
-    "@iconify-json/lucide": "^1.2.124",
-    "@nuxt/content": "^3.15.2",
-    "@nuxt/ui": "^4.10.0",
+    "@iconify-json/lucide": "^1.2.129",
+    "@nuxt/content": "^3.16.0",
+    "@nuxt/ui": "^4.11.0",
     "@nuxtjs/i18n": "^10.6.0",
-    "@nuxtjs/sitemap": "^8.3.4",
+    "@nuxtjs/sitemap": "^8.5.0",
     "nuxt": "^4.5.2",
-    "vue": "^3.5.41",
-    "vue-router": "^5.2.0",
-    "zod": "^4.4.3"
+    "vue": "^3.5.42",
+    "vue-router": "^5.3.1",
+    "zod": "^4.5.4"
   },
   "devDependencies": {
     "@nuxt/eslint": "^1.17.0",
     "@playwright/test": "1.62.1",
-    "@types/node": "^26.2.0",
+    "@types/node": "^26.4.1",
     "better-sqlite3": "^12.11.1",
     "debug": "^4.4.3",
-    "eslint": "^10.8.1",
+    "eslint": "^10.10.0",
     "extend": "^3.0.2",
     "oxc-parser": "^0.143.0",
     "parse5": "^8.0.1",
@@ -62,7 +62,7 @@
     "unified": "^11.0.5",
     "unist-util-visit": "^5.1.0",
     "unplugin": "^3.3.0",
-    "vue-tsc": "^3.3.10",
+    "vue-tsc": "^3.3.11",
     "wrangler": "4.124.0"
   }
 }

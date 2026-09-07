@@ -3,8 +3,8 @@ title: "Wolfx Open API 利用説明"
 description: "Wolfx Open API（地震・緊急地震速報 EEW）の利用説明。JSON、GET、WebSocket に対応。"
 locale: ja
 layout: docs
-updated: 2026-07-29
-version: v20260729
+updated: 2026-09-07
+version: v20260907
 source: apidoc.html
 ---
 ## Wolfx Open API ご利用にあたっての注意事項
@@ -46,7 +46,8 @@ wss://ws-api.wolfx.jp/jma_eew
 | `Hypocenter` | 震源地（文字列型） |
 | `Latitude` | 震源地の緯度（数値型） |
 | `Longitude` | 震源地の経度（数値型） |
-| `Magunitude` | マグニチュード（数値型） |
+| `Magnitude` | マグニチュード（数値型、推奨） |
+| `Magunitude` | **Deprecated**：歴史的なスペルミスです。既存クライアントとの後方互換性のため保持されています。値は常に `Magnitude` と同一です。新規実装では `Magnitude` を使用してください。このフィールドは将来削除される可能性があるため、早めの移行を推奨します。 |
 | `Depth` | 震源の深さ（数値型） |
 | `MaxIntensity` | 最大震度（弱/強）（文字列型） |
 | `Accuracy.Epicenter` | 震央の精度に関する情報（文字列型） |
@@ -160,7 +161,8 @@ wss://ws-api.wolfx.jp/sc_eew
 | `HypoCenter` | 震源地（文字列型） |
 | `Latitude` | 震源地の緯度（数値型） |
 | `Longitude` | 震源地の経度（数値型） |
-| `Magunitude` | マグニチュード（数値型） |
+| `Magnitude` | マグニチュード（数値型、推奨） |
+| `Magunitude` | **Deprecated**：歴史的なスペルミスです。既存クライアントとの後方互換性のため保持されています。値は常に `Magnitude` と同一です。新規実装では `Magnitude` を使用してください。このフィールドは将来削除される可能性があるため、早めの移行を推奨します。 |
 | `Depth` | 震源の深さ（nullの可能性がある）（数値型） |
 | `MaxIntensity` | 最大烈度（数値型） |
 
@@ -224,7 +226,8 @@ wss://ws-api.wolfx.jp/fj_eew
 | `HypoCenter` | 震源地（文字列型） |
 | `Latitude` | 震源の緯度（数値型） |
 | `Longitude` | 震源の経度（数値型） |
-| `Magunitude` | マグニチュード（数値型） |
+| `Magnitude` | マグニチュード（数値型、推奨） |
+| `Magunitude` | **Deprecated**：歴史的なスペルミスです。既存クライアントとの後方互換性のため保持されています。値は常に `Magnitude` と同一です。新規実装では `Magnitude` を使用してください。このフィールドは将来削除される可能性があるため、早めの移行を推奨します。 |
 | `isFinal` | 最終報かどうか（真偽型） |
 
 ## 重庆市地震局 地震速報 JSON API
@@ -359,4 +362,4 @@ https://api.wolfx.jp/img.php?return=<img/json>
 ::api-status-panel{locale="ja"}
 ::
 
-## Doc version: v20260729
+## Doc version: v20260907

@@ -75,6 +75,7 @@ function metricsFromMarkdown(markdown) {
   const frontmatter = markdown.match(/^---\n([\s\S]*?)\n---/)?.[1] ?? ''
   return {
     title: JSON.parse(frontmatter.match(/^title:\s*(.+)$/m)?.[1] ?? '""'),
+    version: frontmatter.match(/^version:\s*(.+)$/m)?.[1]?.trim(),
     headings: extract(/^#{1,6}\s+(.+)$/gm, markdown, value => value.replaceAll('\\.', '.').trim()),
     links: unique(extract(/\[[^\]]*\]\(([^)]+)\)/g, markdown)),
     endpoints: unique(extract(/(?:https?|wss):\/\/[^\s<`"')\]]+/g, markdown, value => value.replace(/[),.;]+$/, ''))),
@@ -92,8 +93,13 @@ for (const [legacyFile, markdownFile] of migrations) {
   const source = metricsFromHtml(html)
   const target = metricsFromMarkdown(markdown)
   const apiStatusMigration = apiStatusMigrations[legacyFile]
-  const expectedHeadings = source.headings.filter((heading, index) => !(index === 0 && heading === target.title) && !(apiStatusMigration && heading === 'API Status'))
+  const sourceHasDocVersion = source.headings.some(heading => /^Doc version:\s+/.test(heading))
+  const targetDocVersion = target.headings.find(heading => /^Doc version:\s+/.test(heading))
+  const expectedHeadings = source.headings.filter((heading, index) => !(index === 0 && heading === target.title) && !(apiStatusMigration && heading === 'API Status') && !/^Doc version:\s+/.test(heading))
   const dynamicStatus = []
+  const documentVersion = []
+  if (sourceHasDocVersion && targetDocVersion !== `Doc version: ${target.version}`)
+    documentVersion.push(`front matter version ${target.version ?? '(missing)'} does not match document heading ${targetDocVersion ?? '(missing)'}`)
   if (apiStatusMigration) {
     if (!target.headings.includes(apiStatusMigration.heading))
       dynamicStatus.push(`missing localized heading ${apiStatusMigration.heading}`)
@@ -112,6 +118,7 @@ for (const [legacyFile, markdownFile] of migrations) {
     endpoints: source.endpoints.filter(value => !value.startsWith('https://wolfx.jp/') && !(apiStatusMigration && isApiStatusEndpoint(value)) && !target.endpoints.includes(value)),
     code: source.code.filter(value => !markdown.includes(value)),
     links: source.links.filter(value => !value.startsWith('https://wolfx.jp') && !target.links.includes(value) && !markdown.includes(value)),
+    documentVersion,
     dynamicStatus,
   }
   const ok = source.tables === target.tables && Object.values(missing).every(values => values.length === 0)
