@@ -103,6 +103,7 @@ async function mockApiStatus(page, options = {}) {
 }
 
 test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('wolfx-locale', 'ja'))
   await mockApiStatus(page)
 })
 

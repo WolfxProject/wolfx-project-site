@@ -35,6 +35,13 @@ async function mockMinecraftStatus(page, body = defaultStatus) {
   return requests
 }
 
+test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => {
+    if (localStorage.getItem('wolfx-locale') === null)
+      localStorage.setItem('wolfx-locale', 'zh')
+  })
+})
+
 test('all localized WolfxMC pages render as a responsive static site', async ({ page }) => {
   test.setTimeout(90_000)
   await mockMinecraftStatus(page)
@@ -153,16 +160,19 @@ test('WolfxMC language switching preserves the current translated page', async (
   await expect(page).toHaveURL(/\/ja\/mc\/rules\/?$/)
   await page.waitForLoadState('networkidle')
   await expect(page.locator('html')).toHaveAttribute('lang', 'ja-JP')
+  expect(await page.evaluate(() => localStorage.getItem('wolfx-locale'))).toBe('ja')
 
   await language.selectOption('en')
   await expect(page).toHaveURL(/\/en\/mc\/rules\/?$/)
   await page.waitForLoadState('networkidle')
   await expect(page.locator('html')).toHaveAttribute('lang', 'en-US')
+  expect(await page.evaluate(() => localStorage.getItem('wolfx-locale'))).toBe('en')
 
   await language.selectOption('zh')
   await expect(page).toHaveURL(/\/mc\/rules\/?$/)
   await page.waitForLoadState('networkidle')
   await expect(page.locator('html')).toHaveAttribute('lang', 'zh-CN')
+  expect(await page.evaluate(() => localStorage.getItem('wolfx-locale'))).toBe('zh')
 })
 
 test('visitor-facing WolfxMC pages contain no reconstruction labels', async ({ page }) => {

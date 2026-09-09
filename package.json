@@ -31,9 +31,9 @@
     "cf:deploy": "pnpm typecheck && pnpm lint && pnpm content:audit && pnpm generate && pnpm check && wrangler deploy"
   },
   "dependencies": {
-    "@iconify-json/lucide": "^1.2.129",
+    "@iconify-json/lucide": "^1.2.130",
     "@nuxt/content": "^3.16.0",
-    "@nuxt/ui": "^4.11.0",
+    "@nuxt/ui": "^4.11.1",
     "@nuxtjs/i18n": "^10.6.0",
     "@nuxtjs/sitemap": "^8.5.0",
     "nuxt": "^4.5.2",
@@ -43,13 +43,13 @@
   },
   "devDependencies": {
     "@nuxt/eslint": "^1.17.0",
-    "@playwright/test": "1.62.1",
-    "@types/node": "^26.4.1",
-    "better-sqlite3": "^12.11.1",
+    "@playwright/test": "1.63.0",
+    "@types/node": "^26.5.0",
+    "better-sqlite3": "^13.0.3",
     "debug": "^4.4.3",
     "eslint": "^10.10.0",
     "extend": "^3.0.2",
-    "oxc-parser": "^0.143.0",
+    "oxc-parser": "^0.149.0",
     "parse5": "^8.0.1",
     "rehype-raw": "^7.0.0",
     "remark-emoji": "^5.0.2",
@@ -63,6 +63,6 @@
     "unist-util-visit": "^5.1.0",
     "unplugin": "^3.3.0",
     "vue-tsc": "^3.3.11",
-    "wrangler": "4.124.0"
+    "wrangler": "4.129.1"
   }
 }

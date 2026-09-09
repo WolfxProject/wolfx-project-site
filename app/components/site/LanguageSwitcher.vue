@@ -26,18 +26,18 @@ function tr(key: string) {
 
 async function changeLanguage(event: Event) {
   const target = (event.target as HTMLSelectElement).value as WolfxLocale
-  if (import.meta.client)
-    localStorage.setItem('wolfx-locale', target)
+  writeLocalePreference(target)
   const path = unlocalize(route.path)
   const targetPath = isWolfxMc.value
     ? localizeWolfxMc(path, target)
     : localize(path, target)
+  const targetFullPath = `${targetPath}${route.fullPath.slice(route.path.length)}`
   if (isWolfxMc.value) {
     if (import.meta.client)
-      window.location.assign(targetPath)
+      window.location.assign(targetFullPath)
     return
   }
-  await navigateTo(targetPath)
+  await navigateTo(targetFullPath)
 }
 </script>
 

@@ -33,6 +33,7 @@ const viewportMatrix = [
 ]
 
 test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('wolfx-locale', 'ja'))
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await page.route('https://api.wolfx.jp/**', async (route) => {
     const url = new URL(route.request().url())

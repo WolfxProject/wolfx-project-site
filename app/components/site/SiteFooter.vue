@@ -65,6 +65,12 @@ function tr(key: string) {
           target="_blank"
           rel="noopener noreferrer"
         >RainSummer</NuxtLink>
+        <NuxtLink
+          to="https://weather.raineko.net"
+          external
+          target="_blank"
+          rel="noopener noreferrer"
+        >Raineko Weather</NuxtLink>
       </nav>
     </div>
     <div class="site-footer__bottom site-container">
