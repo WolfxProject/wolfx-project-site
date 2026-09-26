@@ -7,7 +7,7 @@ layout: mc
 updated: 2026-08-22
 ---
 
-::mc-hero{eyebrow="PURE VANILLA · NEVER RESET · FREE" title="のんびりサバイバルを楽しもう ☁️ — Wolfx Survival" main-route-label="メイン回線" main-copy-label="メイン回線のサーバーアドレスをコピー" overseas-route-label="海外向け回線" overseas-copy-label="海外向け回線のサーバーアドレスをコピー" route-notice="メイン回線では海外からの接続を受け付けていません。海外向け回線は利用可能な通信量に限りがあるため、必要に応じて適切な回線を選択し、海外向け回線は必要なプレイヤーのためにご配慮ください。" rules-label="ルールを見る" join-label="参加方法" minecraft-label="Minecraft を入手" core-label="現在のサーバーコア" version-label="対応バージョン" since-label="運営開始"}
+::mc-hero{eyebrow="PURE VANILLA · NEVER RESET · FREE" title="のんびりサバイバルを楽しもう ☁️ — Wolfx Survival" copy-label="サーバーアドレスをコピー" rules-label="ルールを見る" join-label="参加方法" minecraft-label="Minecraft を入手" core-label="現在のサーバーコア" version-label="対応バージョン" since-label="運営開始"}
 バニラサバイバルを中心に、ゲーム本来の仕組みをできるだけ変えないサーバーです。自由度が高く制限は少なめで、2019 年から安定した長期運営を続けています。
 ::
 

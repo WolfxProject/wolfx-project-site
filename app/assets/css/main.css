@@ -391,9 +391,6 @@ button, [role="button"], select, summary { touch-action: manipulation; }
 .mc-hero__description p { margin: 0; }
 .mc-hero__actions { margin-top: 2rem; display: flex; align-items: center; flex-wrap: wrap; gap: .75rem; }
 .mc-server-access { width: min(100%, 45rem); display: grid; gap: .65rem; }
-.mc-server-routes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .75rem; }
-.mc-server-route { min-width: 0; display: grid; gap: .35rem; }
-.mc-server-route__label { color: var(--wolfx-muted); font-size: .78rem; font-weight: 720; }
 .mc-server-chip { min-height: 3rem; padding: .35rem .35rem .35rem 1rem; display: inline-flex; align-items: center; gap: .75rem; border: 1px solid color-mix(in srgb, var(--mc-grass) 45%, var(--wolfx-line)); border-radius: .75rem; background: var(--wolfx-surface); box-shadow: var(--wolfx-shadow); }
 .mc-server-chip code { min-width: 0; color: var(--wolfx-text); font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: .95rem; font-weight: 760; overflow-wrap: anywhere; }
 .mc-server-status { min-height: 1.25rem; padding-inline: .35rem; display: flex; align-items: center; gap: .45rem; color: var(--wolfx-muted); font-size: .78rem; font-weight: 650; }
@@ -402,7 +399,6 @@ button, [role="button"], select, summary { touch-action: manipulation; }
 .mc-server-status[data-state="offline"] { color: var(--wolfx-danger); }
 .mc-server-status[data-state="loading"] .mc-server-status__indicator { animation: mc-status-pulse 1.4s ease-in-out infinite; }
 .mc-server-status__players::before { content: "\00b7"; margin-right: .45rem; }
-.mc-route-notice { margin: 0; padding: .75rem .85rem; border-left: 3px solid var(--wolfx-warning); border-radius: .35rem; background: color-mix(in srgb, var(--wolfx-warning) 9%, transparent); color: var(--wolfx-muted); font-size: .82rem; line-height: 1.55; }
 @keyframes mc-status-pulse { 50% { opacity: .35; } }
 .mc-hero__facts { margin: 0; padding: 1.5rem; display: grid; gap: 0; border: 1px solid var(--wolfx-line); border-radius: 1.15rem; background: color-mix(in srgb, var(--wolfx-surface) 91%, transparent); box-shadow: var(--wolfx-shadow); backdrop-filter: blur(14px); }
 .mc-hero__facts div { padding: 1rem 0; border-bottom: 1px solid var(--wolfx-line); }
@@ -548,7 +544,6 @@ button, [role="button"], select, summary { touch-action: manipulation; }
   .mc-hero__content h1 { font-size: var(--wolfx-display-title-size); line-height: 1.12; }
   .mc-hero__actions { align-items: stretch; flex-direction: column; }
   .mc-hero__actions > * { width: 100%; justify-content: center; }
-  .mc-server-routes { grid-template-columns: 1fr; }
   .mc-server-chip { justify-content: space-between; }
   .mc-server-status { justify-content: center; }
   .mc-hero__facts { grid-template-columns: 1fr; }

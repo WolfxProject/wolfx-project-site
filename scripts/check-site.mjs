@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url'
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const require = createRequire(import.meta.url)
+const retiredMinecraftAddress = ['mc', 'wolfx', 'jp'].join('.')
 
 const localLucideIcons = require('@iconify-json/lucide/icons.json').icons
 
@@ -264,15 +265,16 @@ for (const file of retiredArchitectureFiles) {
 
 for (const relative of ['worker/index.ts', 'wrangler.jsonc', 'deploy/nginx-cache.conf']) {
   const source = await fs.readFile(path.join(root, relative), 'utf8')
-  if (source.includes('mc.wolfx.jp'))
-    fail(`${relative}: Minecraft endpoint must not be used for website routing`)
+  if (source.includes(retiredMinecraftAddress))
+    fail(`${relative}: retired Minecraft address must not be used for website routing`)
 }
 
 const wolfxMcData = await fs.readFile(path.join(root, 'data/wolfxmc.ts'), 'utf8')
-if (!wolfxMcData.includes(`main: 'Wolfx.jp'`) || !wolfxMcData.includes(`overseas: 'mc.wolfx.jp'`))
-  fail('WolfxMC data must define the main and overseas Minecraft addresses')
-if (!wolfxMcData.includes('statusAddress: wolfxMcServerAddresses.overseas'))
-  fail('WolfxMC status address must derive from the overseas Minecraft address')
+if (!wolfxMcData.includes(`export const wolfxMcServerAddress = 'wolfx.jp'`)
+  || !wolfxMcData.includes('serverAddress: wolfxMcServerAddress'))
+  fail('WolfxMC data must define the unified lowercase Minecraft address')
+if (!wolfxMcData.includes('statusAddress: wolfxMcServerAddress'))
+  fail('WolfxMC status address must derive from the unified Minecraft address')
 if (!wolfxMcData.includes(`currentCoreVersion: '26.2'`))
   fail('WolfxMC data must define current server core 26.2')
 
@@ -474,11 +476,13 @@ else {
       fail(`${page.route}: exposes the retired world/map storage statistic`)
     if (/Recovered from|archived page|archive capture|归档页面|アーカイブ|Wayback|復元した/i.test(html))
       fail(`${page.route}: exposes visitor-facing archive or recovery wording`)
-    if (/href="(?:https?:\/\/)?mc\.wolfx\.jp(?:[/#?"'])/i.test(html) || html.includes('https://mc.wolfx.jp'))
-      fail(`${page.route}: treats the overseas Minecraft address as a website link or origin`)
+    if (html.includes(retiredMinecraftAddress))
+      fail(`${page.route}: contains the retired Minecraft address`)
+    if (/(?:^|\/)mc(?:\/join)?$/.test(page.route)) {
+      if ((html.match(/<code>wolfx\.jp<\/code>/g) ?? []).length !== 1)
+        fail(`${page.route}: page does not expose exactly one unified Minecraft address`)
+    }
     if (page.route === '/mc' || page.route === '/zh/mc' || page.route === '/ja/mc' || page.route === '/en/mc') {
-      if (!html.includes('<code>Wolfx.jp</code>') || !html.includes('<code>mc.wolfx.jp</code>'))
-        fail(`${page.route}: homepage does not expose both Minecraft connection addresses`)
       if (!html.includes('>26.2<'))
         fail(`${page.route}: homepage does not expose current server core 26.2`)
     }
@@ -520,8 +524,8 @@ else {
   const sitemapFiles = ['sitemap.xml', 'sitemap_index.xml', ...localeSitemapFiles]
   const sitemapContents = new Map(await Promise.all(sitemapFiles.map(async file => [file, await fs.readFile(path.join(outputRoot, file), 'utf8')])))
   const sitemapText = [...sitemapContents.values()].join('\n')
-  if (sitemapText.includes('mc.wolfx.jp'))
-    fail('Sitemap exposes the Minecraft connection endpoint as a website hostname')
+  if (sitemapText.includes(retiredMinecraftAddress))
+    fail('Sitemap exposes the retired Minecraft address')
   for (const forbidden of [...retiredRoutes, '/api/search', '/search-index.json', '/404']) {
     if (sitemapText.includes(`<loc>https://wolfx.jp${forbidden}</loc>`))
       fail(`Sitemap contains forbidden route ${forbidden}`)
@@ -585,8 +589,8 @@ else {
       fail(`${relative}: contains localhost or a development port`)
     if (/(?:CF_API_TOKEN|CLOUDFLARE_API_TOKEN|(?:^|[^A-Za-z])sk-[A-Za-z0-9_-]{20,})/.test(text))
       fail(`${relative}: contains a private token pattern`)
-    if (text.includes('https://mc.wolfx.jp'))
-      fail(`${relative}: contains the Minecraft endpoint as an HTTP website origin`)
+    if (text.includes(`https://${retiredMinecraftAddress}`))
+      fail(`${relative}: contains the retired Minecraft address as an HTTP website origin`)
   }
 }
 

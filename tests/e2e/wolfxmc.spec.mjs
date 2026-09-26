@@ -1,7 +1,8 @@
 import { expect, test } from '@playwright/test'
 
-const mcStatusEndpoint = 'https://mcapi.us/server/status?ip=mc.wolfx.jp'
+const mcStatusEndpoint = 'https://mcapi.us/server/status?ip=wolfx.jp'
 const mcStatusRoute = 'https://mcapi.us/server/status?*'
+const retiredMinecraftAddress = ['mc', 'wolfx', 'jp'].join('.')
 const defaultStatus = {
   status: 'success',
   online: true,
@@ -72,7 +73,7 @@ test('WolfxMC remains overflow-free at every target viewport', async ({ page }) 
         `${route} at ${viewport.width}x${viewport.height}`,
       ).toBeLessThanOrEqual(1)
       await expect(page.locator('.mc-hero')).toBeVisible()
-      await expect(page.locator('.mc-server-chip')).toHaveCount(2)
+      await expect(page.locator('.mc-server-chip')).toHaveCount(1)
       await expect(page.locator('.mc-community-grid')).toBeVisible()
       const sectionGroups = await page.locator('.mc-content > h2').evaluateAll(headings => headings.map((heading) => {
         const description = heading.nextElementSibling
@@ -136,9 +137,9 @@ test('WolfxMC serves complete Chinese, Japanese, and English page families', asy
     ['/mc/rules', 'zh-CN', '一、总则'],
     ['/ja/mc/rules', 'ja-JP', '1. 総則'],
     ['/en/mc/rules', 'en-US', 'General Principles'],
-    ['/mc/join', 'zh-CN', '线路选择说明'],
-    ['/ja/mc/join', 'ja-JP', '回線の選び方'],
-    ['/en/mc/join', 'en-US', 'Choosing a route'],
+    ['/mc/join', 'zh-CN', '在 Minecraft 中添加下方服务器地址'],
+    ['/ja/mc/join', 'ja-JP', 'Minecraft に下記のサーバーアドレスを追加'],
+    ['/en/mc/join', 'en-US', 'Add the server address below in Minecraft'],
     ['/mc/vote', 'zh-CN', '可通过以下服务器列表'],
     ['/ja/mc/vote', 'ja-JP', '以下のサーバーリスト'],
     ['/en/mc/vote', 'en-US', 'Vote for Wolfx Survival'],
@@ -148,6 +149,21 @@ test('WolfxMC serves complete Chinese, Japanese, and English page families', asy
     await page.goto(route)
     await expect(page.locator('html')).toHaveAttribute('lang', lang)
     await expect(page.locator('main')).toContainText(expectedText)
+  }
+})
+
+test('localized home and join pages expose only the unified server address', async ({ page }) => {
+  await mockMinecraftStatus(page)
+  for (const route of [
+    '/mc', '/zh/mc', '/ja/mc', '/en/mc',
+    '/mc/join', '/zh/mc/join', '/ja/mc/join', '/en/mc/join',
+  ]) {
+    await page.goto(route, { waitUntil: 'networkidle' })
+    const addresses = page.locator('.mc-server-chip code, .mc-server-address code')
+    await expect(addresses, route).toHaveCount(1)
+    await expect(addresses, route).toHaveText('wolfx.jp')
+    await expect(page.locator('main'), route).not.toContainText(retiredMinecraftAddress)
+    await expect(page.locator('main'), route).not.toContainText(/overseas|海外|回線|线路/i)
   }
 })
 
@@ -202,7 +218,7 @@ test('WolfxMC loads only the JSON status endpoint and no archived third-party sc
   expect(await page.locator('body').evaluate(element => element.innerHTML)).not.toMatch(/web\.archive\.org|minecraft\.min\.js/i)
 })
 
-test('both server addresses copy independently with accessible feedback', async ({ page }) => {
+test('server address copies with accessible feedback', async ({ page }) => {
   await mockMinecraftStatus(page)
   await page.addInitScript(() => {
     window.__copiedWolfxMcAddress = ''
@@ -212,17 +228,12 @@ test('both server addresses copy independently with accessible feedback', async 
     })
   })
   await page.goto('/en/mc', { waitUntil: 'networkidle' })
-  for (const [route, expectedAddress, accessibleName] of [
-    ['main', 'Wolfx.jp', /main server address/i],
-    ['overseas', 'mc.wolfx.jp', /overseas server address/i],
-  ]) {
-    const copy = page.locator(`.mc-server-route[data-route="${route}"] .copy-button`)
-    await copy.click()
-    await expect(copy).toHaveAttribute('data-state', 'copied')
-    await expect(copy).toHaveAccessibleName(accessibleName)
-    expect(await page.evaluate(() => window.__copiedWolfxMcAddress)).toBe(expectedAddress)
-  }
-  await expect(page.locator('a[href*="mc.wolfx.jp"]')).toHaveCount(0)
+  const copy = page.locator('.mc-server-chip .copy-button')
+  await copy.click()
+  await expect(copy).toHaveAttribute('data-state', 'copied')
+  await expect(copy).toHaveAccessibleName(/copy server address/i)
+  expect(await page.evaluate(() => window.__copiedWolfxMcAddress)).toBe('wolfx.jp')
+  await expect(page.locator('main')).not.toContainText(retiredMinecraftAddress)
 })
 
 test('WolfxMC is absent from Projects and remains readable in dark mode', async ({ page }) => {

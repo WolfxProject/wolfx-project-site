@@ -7,7 +7,7 @@ layout: mc
 updated: 2026-08-22
 ---
 
-::mc-hero{eyebrow="PURE VANILLA · NEVER RESET · FREE" title="来玩点轻松的生存吧 ☁️ — Wolfx Survival" main-route-label="主线路" main-copy-label="复制主线路服务器地址" overseas-route-label="海外线路" overseas-copy-label="复制海外线路服务器地址" route-notice="主线路禁止海外连接。海外线路流量有限，请根据实际情况合理选择，并尽量将海外线路留给确有需要的玩家。" rules-label="查看规则" join-label="加入教程 / Join Guide" minecraft-label="获取 Minecraft" core-label="当前服务器核心" version-label="支持版本" since-label="持续开放自"}
+::mc-hero{eyebrow="PURE VANILLA · NEVER RESET · FREE" title="来玩点轻松的生存吧 ☁️ — Wolfx Survival" copy-label="复制服务器地址" rules-label="查看规则" join-label="加入教程 / Join Guide" minecraft-label="获取 Minecraft" core-label="当前服务器核心" version-label="支持版本" since-label="持续开放自"}
 以原版生存为核心，尽量不改机制。高自由度、少限制，长期稳定运行，自 2019 年持续开放。
 ::
 

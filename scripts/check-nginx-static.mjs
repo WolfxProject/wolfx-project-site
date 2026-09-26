@@ -1,5 +1,6 @@
 const base = process.env.NGINX_TEST_BASE_URL ?? 'http://127.0.0.1:8790'
 const failures = []
+const retiredMinecraftAddress = ['mc', 'wolfx', 'jp'].join('.')
 
 async function request(route, method = 'GET') {
   return fetch(new URL(route, base), { method, redirect: 'manual' })
@@ -33,9 +34,8 @@ const mc = await checkStatus('/mc?source=static', 200)
 const mcBody = await mc.text()
 if (!mcBody.includes('data-site="wolfxmc"')
   || !mcBody.includes('https://wolfx.jp/mc')
-  || !mcBody.includes('<code>Wolfx.jp</code>')
-  || !mcBody.includes('<code>mc.wolfx.jp</code>')
-  || mcBody.includes('https://mc.wolfx.jp'))
+  || (mcBody.match(/<code>wolfx\.jp<\/code>/g) ?? []).length !== 1
+  || mcBody.includes(retiredMinecraftAddress))
   failures.push('/mc: generated response has the wrong site identity or canonical URL')
 if (!mcBody.includes('首页') || mcBody.includes('nav.home') || mcBody.includes('mc.overview'))
   failures.push('/mc: unprefixed Chinese default is missing translated UI messages')

@@ -14,11 +14,7 @@ const joinPath = computed(() => localizeWolfxMc('/mc/join', displayLocale.value,
 const props = defineProps<{
   eyebrow: string
   title: string
-  mainRouteLabel: string
-  mainCopyLabel: string
-  overseasRouteLabel: string
-  overseasCopyLabel: string
-  routeNotice: string
+  copyLabel: string
   rulesLabel: string
   joinLabel: string
   minecraftLabel: string
@@ -26,21 +22,6 @@ const props = defineProps<{
   versionLabel: string
   sinceLabel: string
 }>()
-
-const serverRoutes = computed(() => [
-  {
-    key: 'main' as const,
-    label: props.mainRouteLabel,
-    copyLabel: props.mainCopyLabel,
-    address: wolfxMc.serverAddresses.main,
-  },
-  {
-    key: 'overseas' as const,
-    label: props.overseasRouteLabel,
-    copyLabel: props.overseasCopyLabel,
-    address: wolfxMc.serverAddresses.overseas,
-  },
-])
 
 function tr(key: string) {
   return t(key, {}, { locale: displayLocale.value })
@@ -85,22 +66,12 @@ const playerLabel = computed(() => {
         </div>
         <div class="mc-hero__actions">
           <div class="mc-server-access">
-            <div class="mc-server-routes">
-              <div
-                v-for="serverRoute in serverRoutes"
-                :key="serverRoute.key"
-                class="mc-server-route"
-                :data-route="serverRoute.key"
-              >
-                <span class="mc-server-route__label">{{ serverRoute.label }}</span>
-                <div class="mc-server-chip">
-                  <code>{{ serverRoute.address }}</code>
-                  <CopyButton
-                    :value="serverRoute.address"
-                    :aria-label="serverRoute.copyLabel"
-                  />
-                </div>
-              </div>
+            <div class="mc-server-chip">
+              <code>{{ wolfxMc.serverAddress }}</code>
+              <CopyButton
+                :value="wolfxMc.serverAddress"
+                :aria-label="props.copyLabel"
+              />
             </div>
             <div
               class="mc-server-status"
@@ -119,9 +90,6 @@ const playerLabel = computed(() => {
                 class="mc-server-status__players"
               >{{ playerLabel }}</span>
             </div>
-            <p class="mc-route-notice">
-              {{ routeNotice }}
-            </p>
           </div>
           <UButton
             :to="joinPath"

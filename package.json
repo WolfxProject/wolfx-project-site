@@ -31,23 +31,23 @@
     "cf:deploy": "pnpm typecheck && pnpm lint && pnpm content:audit && pnpm generate && pnpm check && wrangler deploy"
   },
   "dependencies": {
-    "@iconify-json/lucide": "^1.2.130",
-    "@nuxt/content": "^3.16.0",
-    "@nuxt/ui": "^4.11.1",
+    "@iconify-json/lucide": "^1.2.136",
+    "@nuxt/content": "^3.16.1",
+    "@nuxt/ui": "^4.11.2",
     "@nuxtjs/i18n": "^10.6.0",
-    "@nuxtjs/sitemap": "^8.5.0",
+    "@nuxtjs/sitemap": "^8.5.1",
     "nuxt": "^4.5.2",
-    "vue": "^3.5.42",
+    "vue": "^3.5.43",
     "vue-router": "^5.3.1",
-    "zod": "^4.5.4"
+    "zod": "^4.6.5"
   },
   "devDependencies": {
     "@nuxt/eslint": "^1.17.0",
     "@playwright/test": "1.63.0",
-    "@types/node": "^26.5.0",
+    "@types/node": "^26.6.2",
     "better-sqlite3": "^13.0.3",
     "debug": "^4.4.3",
-    "eslint": "^10.10.0",
+    "eslint": "^10.11.0",
     "extend": "^3.0.2",
     "oxc-parser": "^0.149.0",
     "parse5": "^8.0.1",
@@ -61,8 +61,8 @@
     "typescript": "^6.0.3",
     "unified": "^11.0.5",
     "unist-util-visit": "^5.1.0",
-    "unplugin": "^3.3.0",
+    "unplugin": "^3.4.0",
     "vue-tsc": "^3.3.11",
-    "wrangler": "4.129.1"
+    "wrangler": "4.139.0"
   }
 }

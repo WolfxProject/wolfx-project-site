@@ -1,12 +1,9 @@
-export const wolfxMcServerAddresses = {
-  main: 'Wolfx.jp',
-  overseas: 'mc.wolfx.jp',
-} as const
+export const wolfxMcServerAddress = 'wolfx.jp' as const
 
 export const wolfxMc = {
   name: 'Wolfx Survival',
-  serverAddresses: wolfxMcServerAddresses,
-  statusAddress: wolfxMcServerAddresses.overseas,
+  serverAddress: wolfxMcServerAddress,
+  statusAddress: wolfxMcServerAddress,
   currentCoreVersion: '26.2',
   supportedVersion: '1.9 – 26.2',
   openedOn: '2019-05-18',

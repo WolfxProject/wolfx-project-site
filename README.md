@@ -156,7 +156,7 @@ server {
 
 `deploy/nginx-cache.conf` 对 `/_nuxt/*` 使用一年 `immutable` 缓存，对 HTML 和 `search-index.json` 使用重新验证策略，并以 `try_files ... =404` 保证不存在的路径不是首页 200。`/mc` 与其子页面和其他 Nuxt 静态路由一样由同一 `wolfx.jp` 站点提供，不需要单独的 server block。实际路径可按服务器布局调整；部署前用 `nginx -t` 检查完整 Nginx 配置。
 
-WolfxMC 网站与 Minecraft 连接端点是不同概念：网站仅位于 `https://wolfx.jp/mc`；玩家通常连接 `Wolfx.jp`，海外玩家连接 `mc.wolfx.jp`，浏览器中的 mcapi.us 状态查询也使用 `mc.wolfx.jp`。`mc.wolfx.jp` 不得作为网站 origin、canonical、跳转目标或 Worker/Nginx 网站路由。
+WolfxMC 网站页面位于 `https://wolfx.jp/mc`；Minecraft 玩家使用统一服务器地址 `wolfx.jp`，浏览器中的 mcapi.us 状态查询也以 `wolfx.jp` 为目标服务器。
 
 ## Cloudflare Workers Assets 部署
 
