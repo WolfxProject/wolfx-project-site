@@ -95,6 +95,15 @@ export default defineNuxtConfig({
       failOnError: true,
     },
   },
+  vite: {
+    optimizeDeps: {
+      rolldownOptions: {
+        // Nuxt 4.6 scans module components before its #components transform runs.
+        // Remove when upstream scanning handles this virtual import (nuxt/nuxt#36208).
+        external: ['#components'],
+      },
+    },
+  },
   typescript: {
     strict: true,
     typeCheck: false,
