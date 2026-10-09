@@ -27,7 +27,7 @@ export const wolfxMc = {
     ['Servers-Minecraft', 'https://servers-minecraft.com/vote/1910'],
     ['MineList', 'https://minelist.net/vote/5430'],
     ['PlanetMinecraft', 'https://www.planetminecraft.com/server/wolfx-survival/vote/'],
-    ['MinecraftServerBUZZ', '#'],
+    ['MinecraftServerBUZZ', 'https://minecraftserver.buzz/servers/wolfx-survival-1/vote'],
     ['Minecraft-ServerList', 'https://minecraft-serverlist.com/server/6736/vote'],
   ],
 } as const
