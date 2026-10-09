@@ -268,7 +268,7 @@ test('online status displays the current count without maximum slots or map size
   await expect(status).toContainText('7 players online')
   await expect(status).not.toContainText('100')
   await expect(page.locator('.mc-hero__facts > div')).toHaveCount(3)
-  await expect(page.locator('.mc-hero__facts')).toContainText('26.2')
+  await expect(page.locator('.mc-hero__facts')).toContainText('26.3')
   await expect(page.locator('.mc-hero')).not.toContainText(/Map size/i)
   expect(requests).toEqual([mcStatusEndpoint])
 

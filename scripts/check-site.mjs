@@ -275,8 +275,8 @@ if (!wolfxMcData.includes(`export const wolfxMcServerAddress = 'wolfx.jp'`)
   fail('WolfxMC data must define the unified lowercase Minecraft address')
 if (!wolfxMcData.includes('statusAddress: wolfxMcServerAddress'))
   fail('WolfxMC status address must derive from the unified Minecraft address')
-if (!wolfxMcData.includes(`currentCoreVersion: '26.2'`))
-  fail('WolfxMC data must define current server core 26.2')
+if (!wolfxMcData.includes(`currentCoreVersion: '26.3'`))
+  fail('WolfxMC data must define current server core 26.3')
 
 const minecraftStatusSource = await fs.readFile(path.join(root, 'app/composables/useMinecraftStatus.ts'), 'utf8')
 if (!minecraftStatusSource.includes(`new URL('https://mcapi.us/server/status')`) || !minecraftStatusSource.includes(`endpoint.searchParams.set('ip', wolfxMc.statusAddress)`))
@@ -483,8 +483,8 @@ else {
         fail(`${page.route}: page does not expose exactly one unified Minecraft address`)
     }
     if (page.route === '/mc' || page.route === '/zh/mc' || page.route === '/ja/mc' || page.route === '/en/mc') {
-      if (!html.includes('>26.2<'))
-        fail(`${page.route}: homepage does not expose current server core 26.2`)
+      if (!html.includes('>26.3<'))
+        fail(`${page.route}: homepage does not expose current server core 26.3`)
     }
   }
 

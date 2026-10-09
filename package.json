@@ -31,19 +31,19 @@
     "cf:deploy": "pnpm typecheck && pnpm lint && pnpm content:audit && pnpm generate && pnpm check && wrangler deploy"
   },
   "dependencies": {
-    "@iconify-json/lucide": "^1.2.140",
+    "@iconify-json/lucide": "^1.2.141",
     "@nuxt/content": "^3.16.1",
     "@nuxt/ui": "^4.11.3",
     "@nuxtjs/i18n": "^10.6.0",
     "@nuxtjs/sitemap": "^8.6.1",
     "nuxt": "^4.6.0",
     "vue": "^3.5.43",
-    "vue-router": "^5.3.1",
+    "vue-router": "^5.4.0",
     "zod": "^4.6.5"
   },
   "devDependencies": {
     "@nuxt/eslint": "^1.17.0",
-    "@playwright/test": "1.63.0",
+    "@playwright/test": "1.64.0",
     "@types/node": "^26.6.4",
     "better-sqlite3": "^13.0.3",
     "debug": "^4.4.3",
@@ -63,6 +63,6 @@
     "unist-util-visit": "^5.1.0",
     "unplugin": "^3.4.0",
     "vue-tsc": "^3.3.12",
-    "wrangler": "4.147.0"
+    "wrangler": "4.148.0"
   }
 }
