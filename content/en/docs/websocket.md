@@ -16,7 +16,7 @@ source: wsapi_en.html
 - As a general rule, each client should maintain only one active connection to the Wolfx Project EEW WebSocket service at a time. Avoid unnecessary duplicate connections, including separate connections for multiple UI components, and reuse an existing connection wherever possible.
 - Manage reconnections reasonably to avoid unnecessary repeated connections and resource waste. A brief overlap between old and new connections during a normal connection transition does not in itself constitute malicious duplication. This is a client reasonable-use requirement, not a statement that the server enforces an exact one-connection limit.
 - If multiple EEW data sources are needed simultaneously, consider the existing `all_eew` aggregate channel first, according to your actual requirements and the endpoint descriptions below. This guidance does not guarantee coverage of unverified data.
-- Unauthorized data redistribution, re-provision to third parties, and publication of standalone data APIs are prohibited. Other usage conditions are governed by the [Terms of Service](/en/legal/terms) and the applicable Service-Specific Documentation.
+- Ordinary information use that complies with Section 6 of the [Terms of Service](/en/legal/terms), including processing and transmission through your own servers, requires no individual permission. Independent data provision as defined in that Section requires prior express permission. All other usage conditions and applicable data-source conditions must also be followed.
 
 ## WebSocket Call URLs
 
