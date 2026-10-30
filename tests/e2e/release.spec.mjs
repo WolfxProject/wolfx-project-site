@@ -145,6 +145,12 @@ test('critical pages make no unexpected third-party requests', async ({ page }) 
 
 test('all 24 content pages preserve the shared layout and typography invariants', async ({ page }) => {
   test.setTimeout(120_000)
+  const problems = []
+  page.on('console', (message) => {
+    if (message.type() === 'error' || /hydration|\[Vue warn\]|unhandled/i.test(message.text()))
+      problems.push(`${page.url()}: ${message.text()}`)
+  })
+  page.on('pageerror', error => problems.push(error.message))
   await page.setViewportSize({ width: 1366, height: 768 })
 
   for (const route of allContentRoutes) {
@@ -187,6 +193,7 @@ test('all 24 content pages preserve the shared layout and typography invariants'
     for (let index = 0; index < await tableWrappers.count(); index++)
       expect(await tableWrappers.nth(index).evaluate(element => getComputedStyle(element).overflowX), `${route}: table scrolling`).toBe('auto')
   }
+  expect(problems).toEqual([])
 })
 
 test('API Status renders localized live data and accessible charts in all languages', async ({ page }) => {
@@ -225,7 +232,7 @@ test('API Status renders localized live data and accessible charts in all langua
     const images = await revealStatusCharts(panel)
     await expect(images.last()).toBeVisible()
     expect(await images.evaluateAll(elements => elements.map(image => image.getAttribute('alt')))).toEqual(item.alts)
-    await expect(page.getByRole('heading', { name: 'Doc version: v20260907', exact: true })).toBeAttached()
+    await expect(page.locator('.prose-document')).toContainText('https://api.wolfx.jp/jma_eew.json')
     const timestamps = await images.evaluateAll(elements => elements.map(image => new URL(image.src).searchParams.get('ts')))
     expect(new Set(timestamps).size).toBe(1)
   }
@@ -266,7 +273,36 @@ test('API Status handles JSON and individual chart failures without hiding the d
   await failedChart.scrollIntoViewIfNeeded()
   await expect(failedChart.getByText('无法加载图表', { exact: true })).toBeVisible()
   await expect(panel.locator('img')).toHaveCount(3)
-  await expect(page.getByRole('heading', { name: 'Doc version: v20260907', exact: true })).toBeAttached()
+  await expect(page.locator('.prose-document')).toContainText('https://api.wolfx.jp/jma_eew.json')
+})
+
+test('all nine API documents show only their existing last-updated date and preserve API version fields', async ({ page }) => {
+  const locales = [
+    { prefix: '', label: '最終更新' },
+    { prefix: '/zh', label: '最后更新' },
+    { prefix: '/en', label: 'Last updated' },
+  ]
+  const documents = [
+    { path: '/docs/open-api', updated: '2026-09-07' },
+    { path: '/docs/websocket', updated: '2026-10-30', field: 'ver' },
+    { path: '/docs/seisjs-api', updated: '2025-07-04', field: 'version' },
+  ]
+
+  for (const locale of locales) {
+    for (const document of documents) {
+      await page.goto(`${locale.prefix}${document.path}`, { waitUntil: 'networkidle' })
+      const metadata = page.locator('.document-meta')
+      await expect(metadata.locator('div')).toHaveCount(1)
+      await expect(metadata.locator('dt')).toHaveText(locale.label)
+      await expect(metadata.locator('time')).toHaveText(document.updated)
+      await expect(metadata.locator('time')).toHaveAttribute('datetime', document.updated)
+      await expect(page.locator('.prose-document')).not.toContainText(/Doc version:|API Documentation Version:|APIドキュメントバージョン:|API文档版本:/i)
+      const article = await page.locator('script[type="application/ld+json"]').evaluateAll(scripts => scripts.map(script => JSON.parse(script.textContent)).find(data => data['@type'] === 'TechArticle'))
+      expect(article?.dateModified).toBe(document.updated)
+      if (document.field)
+        await expect(page.locator('td:first-child code').filter({ hasText: new RegExp(`^${document.field}$`) })).not.toHaveCount(0)
+    }
+  }
 })
 
 test('API Status has no hydration warnings, duplicate status requests, or dark/mobile overflow', async ({ page }) => {

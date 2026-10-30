@@ -5,6 +5,11 @@ const { locales, t } = useI18n()
 const route = useRoute()
 const { localize, localizeWolfxMc, unlocalize } = usePublicPath()
 const { displayLocale, isWolfxMc } = useSiteContext()
+const mounted = ref(false)
+
+onMounted(() => {
+  mounted.value = true
+})
 
 const localeCode: Record<WolfxLocale, string> = {
   ja: 'JA',
@@ -59,6 +64,7 @@ async function changeLanguage(event: Event) {
     <select
       :value="displayLocale"
       :aria-label="tr('language.label')"
+      :disabled="!mounted"
       @change="changeLanguage"
     >
       <option

@@ -4,7 +4,6 @@ description: "SeisJS 测站、WebSocket 连接与观测数据字段说明。"
 locale: zh
 layout: docs
 updated: 2025-07-04
-version: v20250704
 source: seisapi_zh.html
 ---
 ## 简介
@@ -110,5 +109,3 @@ ping
 | --- | --- |
 | `type` | pong(字符串型) |
 | `timestamp` | Pong包发送毫秒级时间戳(字符串型) |
-
-## API文档版本: v20250704

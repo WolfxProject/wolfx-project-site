@@ -4,7 +4,6 @@ description: "SeisJS 観測点、WebSocket 接続、観測データフィール�
 locale: ja
 layout: docs
 updated: 2025-07-04
-version: v20250704
 source: seisapi.html
 ---
 ## 概要
@@ -110,5 +109,3 @@ ping
 | --- | --- |
 | `type` | pong（文字列型） |
 | `timestamp` | ミリ秒単位の送信タイムスタンプ（文字列型） |
-
-## APIドキュメントバージョン: v20250704

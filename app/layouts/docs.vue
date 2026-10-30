@@ -39,14 +39,13 @@ defineProps<{
           <p class="document-header__description">
             {{ page.description }}
           </p>
-          <dl class="document-meta">
-            <div v-if="page.updated">
+          <dl
+            v-if="page.updated"
+            class="document-meta"
+          >
+            <div>
               <dt>{{ $t('docs.updated') }}</dt>
               <dd><time :datetime="page.updated">{{ page.updated }}</time></dd>
-            </div>
-            <div v-if="page.version">
-              <dt>{{ $t('docs.version') }}</dt>
-              <dd>{{ page.version }}</dd>
             </div>
           </dl>
         </header>

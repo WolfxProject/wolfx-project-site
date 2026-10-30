@@ -4,7 +4,6 @@ description: "Wolfx WebSocket API の接続先、手動クエリ、JSON デー�
 locale: ja
 layout: docs
 updated: 2026-10-30
-version: v20260415
 source: wsapi.html
 ---
 ## WebSocket の概要
@@ -144,5 +143,3 @@ query_jmaeqlist
 | --- | --- |
 | `type` | pong（文字列型） |
 | `timestamp` | Pongパケット送信のミリ秒単位タイムスタンプ（文字列型） |
-
-## Doc version: v20260415

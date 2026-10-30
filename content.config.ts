@@ -12,7 +12,6 @@ export default defineContentConfig({
         sourceLocale: z.enum(['ja', 'zh', 'en']).optional(),
         availableLocales: z.array(z.enum(['ja', 'zh', 'en'])).optional(),
         updated: z.string().optional(),
-        version: z.string().optional(),
         source: z.string().optional(),
       }),
     }),

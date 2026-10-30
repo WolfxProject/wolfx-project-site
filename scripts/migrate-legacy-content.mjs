@@ -8,21 +8,21 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const legacyRoot = path.resolve(root, '../wolfx-project')
 
 const pages = [
-  ['apidoc.html', 'ja', 'docs/open-api.md', 'Wolfx Open API 利用説明', 'Wolfx Open API（地震・緊急地震速報 EEW）の利用説明。JSON、GET、WebSocket に対応。', 'docs', 'v20260729', '2026-07-29'],
-  ['apidoc_zh.html', 'zh', 'docs/open-api.md', 'Wolfx 防灾（防災）实用类免费 API 接口', 'Wolfx Open API 地震、防灾与实用类接口文档，支持 JSON、GET 与 WebSocket。', 'docs', 'v20260729', '2026-07-29'],
-  ['apidoc_en.html', 'en', 'docs/open-api.md', 'Wolfx Open API Usage', 'Wolfx Open API documentation for earthquake, EEW, and utility APIs over JSON, GET, and WebSocket.', 'docs', 'v20260729', '2026-07-29'],
-  ['wsapi.html', 'ja', 'docs/websocket.md', 'Wolfx WebSocket API 利用説明', 'Wolfx WebSocket API の接続先、手動クエリ、JSON データ仕様。', 'docs', 'v20260415', '2026-04-15'],
-  ['wsapi_zh.html', 'zh', 'docs/websocket.md', 'Wolfx WebSocket API 调用说明', 'Wolfx WebSocket API 连接地址、手动查询指令与 JSON 数据说明。', 'docs', 'v20260415', '2026-04-15'],
-  ['wsapi_en.html', 'en', 'docs/websocket.md', 'Wolfx WebSocket API Call Instructions', 'Wolfx WebSocket endpoints, manual query commands, and JSON data specification.', 'docs', 'v20260415', '2026-04-15'],
-  ['seisapi.html', 'ja', 'docs/seisjs-api.md', 'Wolfx SeisJS API 利用ガイド', 'SeisJS 観測点、WebSocket 接続、観測データフィールドの仕様。', 'docs', 'v20250704', '2025-07-04'],
-  ['seisapi_zh.html', 'zh', 'docs/seisjs-api.md', 'Wolfx SeisJS API 调用说明', 'SeisJS 测站、WebSocket 连接与观测数据字段说明。', 'docs', 'v20250704', '2025-07-04'],
-  ['seisapi_en.html', 'en', 'docs/seisjs-api.md', 'Wolfx SeisJS API Documentation', 'SeisJS station, WebSocket connection, and observation data field documentation.', 'docs', 'v20250704', '2025-07-04'],
-  ['privacy_policy.html', 'ja', 'legal/privacy.md', 'Wolfx Project プライバシーポリシー', 'Wolfx Project のサービスにおける情報の取扱いについて説明します。', 'legal', undefined, '2026-07-28'],
-  ['privacy_policy_zh.html', 'zh', 'legal/privacy.md', 'Wolfx Project 隐私政策', '说明 Wolfx Project 各项服务中的信息处理方式。', 'legal', undefined, '2026-07-28'],
-  ['privacy_policy_en.html', 'en', 'legal/privacy.md', 'Wolfx Project Privacy Policy', 'How Wolfx Project handles information across its public services.', 'legal', undefined, '2026-07-28'],
-  ['tos.html', 'ja', 'legal/terms.md', 'Wolfx Project 利用規約', 'Wolfx Project が提供するサービスの利用条件。', 'legal', undefined, '2026-07-28'],
-  ['tos_zh.html', 'zh', 'legal/terms.md', 'Wolfx Project 服务条款', 'Wolfx Project 所提供服务的使用条件。', 'legal', undefined, '2026-07-28'],
-  ['tos_en.html', 'en', 'legal/terms.md', 'Wolfx Project Terms of Service', 'Terms governing use of services provided by Wolfx Project.', 'legal', undefined, '2026-07-28'],
+  ['apidoc.html', 'ja', 'docs/open-api.md', 'Wolfx Open API 利用説明', 'Wolfx Open API（地震・緊急地震速報 EEW）の利用説明。JSON、GET、WebSocket に対応。', 'docs', '2026-07-29'],
+  ['apidoc_zh.html', 'zh', 'docs/open-api.md', 'Wolfx 防灾（防災）实用类免费 API 接口', 'Wolfx Open API 地震、防灾与实用类接口文档，支持 JSON、GET 与 WebSocket。', 'docs', '2026-07-29'],
+  ['apidoc_en.html', 'en', 'docs/open-api.md', 'Wolfx Open API Usage', 'Wolfx Open API documentation for earthquake, EEW, and utility APIs over JSON, GET, and WebSocket.', 'docs', '2026-07-29'],
+  ['wsapi.html', 'ja', 'docs/websocket.md', 'Wolfx WebSocket API 利用説明', 'Wolfx WebSocket API の接続先、手動クエリ、JSON データ仕様。', 'docs', '2026-04-15'],
+  ['wsapi_zh.html', 'zh', 'docs/websocket.md', 'Wolfx WebSocket API 调用说明', 'Wolfx WebSocket API 连接地址、手动查询指令与 JSON 数据说明。', 'docs', '2026-04-15'],
+  ['wsapi_en.html', 'en', 'docs/websocket.md', 'Wolfx WebSocket API Call Instructions', 'Wolfx WebSocket endpoints, manual query commands, and JSON data specification.', 'docs', '2026-04-15'],
+  ['seisapi.html', 'ja', 'docs/seisjs-api.md', 'Wolfx SeisJS API 利用ガイド', 'SeisJS 観測点、WebSocket 接続、観測データフィールドの仕様。', 'docs', '2025-07-04'],
+  ['seisapi_zh.html', 'zh', 'docs/seisjs-api.md', 'Wolfx SeisJS API 调用说明', 'SeisJS 测站、WebSocket 连接与观测数据字段说明。', 'docs', '2025-07-04'],
+  ['seisapi_en.html', 'en', 'docs/seisjs-api.md', 'Wolfx SeisJS API Documentation', 'SeisJS station, WebSocket connection, and observation data field documentation.', 'docs', '2025-07-04'],
+  ['privacy_policy.html', 'ja', 'legal/privacy.md', 'Wolfx Project プライバシーポリシー', 'Wolfx Project のサービスにおける情報の取扱いについて説明します。', 'legal', '2026-07-28'],
+  ['privacy_policy_zh.html', 'zh', 'legal/privacy.md', 'Wolfx Project 隐私政策', '说明 Wolfx Project 各项服务中的信息处理方式。', 'legal', '2026-07-28'],
+  ['privacy_policy_en.html', 'en', 'legal/privacy.md', 'Wolfx Project Privacy Policy', 'How Wolfx Project handles information across its public services.', 'legal', '2026-07-28'],
+  ['tos.html', 'ja', 'legal/terms.md', 'Wolfx Project 利用規約', 'Wolfx Project が提供するサービスの利用条件。', 'legal', '2026-07-28'],
+  ['tos_zh.html', 'zh', 'legal/terms.md', 'Wolfx Project 服务条款', 'Wolfx Project 所提供服务的使用条件。', 'legal', '2026-07-28'],
+  ['tos_en.html', 'en', 'legal/terms.md', 'Wolfx Project Terms of Service', 'Terms governing use of services provided by Wolfx Project.', 'legal', '2026-07-28'],
 ]
 
 const turndown = new TurndownService({
@@ -130,7 +130,7 @@ function rewriteInternalLinks(markdown, locale) {
   return replacements.reduce((result, [pattern, target]) => result.replace(pattern, target), markdown)
 }
 
-for (const [source, locale, destination, title, description, layout, version, updated] of pages) {
+for (const [source, locale, destination, title, description, layout, updated] of pages) {
   const html = await fs.readFile(path.join(legacyRoot, source), 'utf8')
   let bodyHtml = extractAds(html, source)
     .replaceAll(/<p>\s*<\/p>/gi, '')
@@ -142,6 +142,8 @@ for (const [source, locale, destination, title, description, layout, version, up
     bodyHtml = bodyHtml.slice(firstHeading[0].length)
 
   let markdown = rewriteInternalLinks(decodeEntities(turndown.turndown(bodyHtml)), locale)
+    // Remove only document-version headings, never response-field tables or code.
+    .replaceAll(/^#{1,6}\s+(?:Doc version|API Documentation Version|APIドキュメントバージョン|API文档版本|文档版本|ドキュメントバージョン)\s*[:：]\s*v\d{8}[\t ]*$/gm, '')
     .replaceAll(/\n{3,}/g, '\n\n')
     .replaceAll(/^-\s{3}/gm, '- ')
     .replaceAll(/^(##\s+\d+)\\\./gm, '$1.')
@@ -154,7 +156,6 @@ for (const [source, locale, destination, title, description, layout, version, up
     `locale: ${locale}`,
     `layout: ${layout}`,
     `updated: ${updated}`,
-    version ? `version: ${version}` : undefined,
     `source: ${source}`,
     '---',
     '',

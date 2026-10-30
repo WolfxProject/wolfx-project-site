@@ -4,7 +4,6 @@ description: "Wolfx Open API（地震・緊急地震速報 EEW）の利用説明
 locale: ja
 layout: docs
 updated: 2026-09-07
-version: v20260907
 source: apidoc.html
 ---
 ## Wolfx Open API ご利用にあたっての注意事項
@@ -361,5 +360,3 @@ https://api.wolfx.jp/img.php?return=<img/json>
 
 ::api-status-panel{locale="ja"}
 ::
-
-## Doc version: v20260907

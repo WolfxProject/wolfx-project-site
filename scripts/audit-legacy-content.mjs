@@ -57,6 +57,12 @@ function extract(pattern, text, transform = value => value) {
   return [...text.matchAll(pattern)].map(match => transform(match[1] ?? match[0]))
 }
 
+// Only obsolete document-version headings are exempt from the legacy heading audit.
+// API response fields such as version and ver remain part of the field/code checks.
+function isDocumentVersionHeading(heading) {
+  return /^(?:Doc version|API Documentation Version|APIドキュメントバージョン|API文档版本|文档版本|ドキュメントバージョン)\s*[:：]\s*v\d{8}$/u.test(heading)
+}
+
 function metricsFromHtml(html) {
   const body = html.match(/<div\s+class=["']ads["'][^>]*>([\s\S]*?)<div\s+class=["']footer["']/i)?.[1] ?? html
   return {
@@ -75,7 +81,7 @@ function metricsFromMarkdown(markdown) {
   const frontmatter = markdown.match(/^---\n([\s\S]*?)\n---/)?.[1] ?? ''
   return {
     title: JSON.parse(frontmatter.match(/^title:\s*(.+)$/m)?.[1] ?? '""'),
-    version: frontmatter.match(/^version:\s*(.+)$/m)?.[1]?.trim(),
+    hasDocumentVersion: /^version\s*:/m.test(frontmatter),
     headings: extract(/^#{1,6}\s+(.+)$/gm, markdown, value => value.replaceAll('\\.', '.').trim()),
     links: unique(extract(/\[[^\]]*\]\(([^)]+)\)/g, markdown)),
     endpoints: unique(extract(/(?:https?|wss):\/\/[^\s<`"')\]]+/g, markdown, value => value.replace(/[),.;]+$/, ''))),
@@ -93,13 +99,18 @@ for (const [legacyFile, markdownFile] of migrations) {
   const source = metricsFromHtml(html)
   const target = metricsFromMarkdown(markdown)
   const apiStatusMigration = apiStatusMigrations[legacyFile]
-  const sourceHasDocVersion = source.headings.some(heading => /^Doc version:\s+/.test(heading))
-  const targetDocVersion = target.headings.find(heading => /^Doc version:\s+/.test(heading))
-  const expectedHeadings = source.headings.filter((heading, index) => !(index === 0 && heading === target.title) && !(apiStatusMigration && heading === 'API Status') && !/^Doc version:\s+/.test(heading))
+  const isApiDocument = markdownFile.includes('/docs/')
+  const expectedHeadings = source.headings.filter((heading, index) => !(index === 0 && heading === target.title) && !(apiStatusMigration && heading === 'API Status') && !(isApiDocument && isDocumentVersionHeading(heading)))
   const dynamicStatus = []
-  const documentVersion = []
-  if (sourceHasDocVersion && targetDocVersion !== `Doc version: ${target.version}`)
-    documentVersion.push(`front matter version ${target.version ?? '(missing)'} does not match document heading ${targetDocVersion ?? '(missing)'}`)
+  const documentMetadata = []
+  if (isApiDocument) {
+    if (target.hasDocumentVersion)
+      documentMetadata.push('deprecated document version front matter remains')
+    if (target.headings.some(isDocumentVersionHeading))
+      documentMetadata.push('deprecated document version heading remains')
+    if (!/^updated:\s*\d{4}-\d{2}-\d{2}\s*$/m.test(markdown))
+      documentMetadata.push('missing last-updated date')
+  }
   if (apiStatusMigration) {
     if (!target.headings.includes(apiStatusMigration.heading))
       dynamicStatus.push(`missing localized heading ${apiStatusMigration.heading}`)
@@ -118,7 +129,7 @@ for (const [legacyFile, markdownFile] of migrations) {
     endpoints: source.endpoints.filter(value => !value.startsWith('https://wolfx.jp/') && !(apiStatusMigration && isApiStatusEndpoint(value)) && !target.endpoints.includes(value)),
     code: source.code.filter(value => !markdown.includes(value)),
     links: source.links.filter(value => !value.startsWith('https://wolfx.jp') && !target.links.includes(value) && !markdown.includes(value)),
-    documentVersion,
+    documentMetadata,
     dynamicStatus,
   }
   const ok = source.tables === target.tables && Object.values(missing).every(values => values.length === 0)

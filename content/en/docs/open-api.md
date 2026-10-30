@@ -4,7 +4,6 @@ description: "Wolfx Open API documentation for earthquake, EEW, and utility APIs
 locale: en
 layout: docs
 updated: 2026-09-07
-version: v20260907
 source: apidoc_en.html
 ---
 ## Wolfx Open API Usage Guidelines
@@ -361,5 +360,3 @@ Client counts and statistical charts load from Wolfx Project's own API service a
 
 ::api-status-panel{locale="en"}
 ::
-
-## Doc version: v20260907

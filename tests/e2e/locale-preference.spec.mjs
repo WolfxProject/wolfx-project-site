@@ -23,7 +23,7 @@ async function configureLocale(page, { languages, language, storedLocale }) {
 async function expectStablePath(page, path) {
   const normalizePath = value => value === '/' ? value : value.replace(/\/$/, '')
   await expect.poll(() => normalizePath(new URL(page.url()).pathname)).toBe(normalizePath(path))
-  await page.waitForTimeout(100)
+  await expect(page.locator('.language-select select')).toBeEnabled()
   expect(normalizePath(new URL(page.url()).pathname)).toBe(normalizePath(path))
 }
 
@@ -136,6 +136,7 @@ for (const scenario of mainSiteCases) {
     page.on('pageerror', error => problems.push(error.message))
     await configureLocale(page, scenario)
     await page.goto(scenario.route, { waitUntil: 'domcontentloaded' })
+    await expectStablePath(page, scenario.expected)
     expect(await page.evaluate(() => ({
       languages: navigator.languages,
       language: navigator.language,
@@ -145,7 +146,6 @@ for (const scenario of mainSiteCases) {
       language: scenario.language,
       storedLocale: scenario.storedLocale,
     })
-    await expectStablePath(page, scenario.expected)
     expect(problems).toEqual([])
     if (scenario.storedLocale === null)
       expect(await page.evaluate(() => localStorage.getItem('wolfx-locale'))).toBeNull()
@@ -225,4 +225,38 @@ test('manual choices persist, preserve location details, and control later entri
   await language.selectOption('ja')
   await expectStablePath(page, '/projects')
   expect(await page.evaluate(() => localStorage.getItem('wolfx-locale'))).toBe('ja')
+})
+
+test('language selection waits for hydration when locale messages are delayed', async ({ page }) => {
+  await configureLocale(page, {
+    languages: ['ja-JP'],
+    language: 'ja-JP',
+    storedLocale: 'ja',
+  })
+  let releaseMessages
+  const messagesGate = new Promise(resolve => (releaseMessages = resolve))
+  let pendingMessages = 0
+  await page.route('**/_i18n/**', async (route) => {
+    pendingMessages += 1
+    await messagesGate
+    await route.continue()
+  })
+
+  try {
+    await page.goto('/zh/projects?foo=1#bar', { waitUntil: 'domcontentloaded' })
+    await expect.poll(() => pendingMessages).toBeGreaterThan(0)
+    const language = page.locator('.language-select select')
+    await expect(language).toBeDisabled()
+
+    releaseMessages()
+    await expect(language).toBeEnabled()
+    await language.selectOption('en')
+    await expect(page).toHaveURL(/\/en\/projects\/?\?foo=1#bar$/)
+    await expect(language).toHaveValue('en')
+    await expect(page.locator('html')).toHaveAttribute('lang', 'en-US')
+    expect(await page.evaluate(() => localStorage.getItem('wolfx-locale'))).toBe('en')
+  }
+  finally {
+    releaseMessages()
+  }
 })

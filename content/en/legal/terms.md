@@ -29,7 +29,7 @@ This priority does not relax the obligations in Section 6 concerning free access
 
 ## 3. Independent and Unofficial Service
 
-Wolfx Project is an independently operated, unofficial project. It is not affiliated with and does not represent any government agency, meteorological agency, earthquake monitoring organization, earthquake warning authority, or other official organization, including the Japan Meteorological Agency (JMA). Unless expressly stated otherwise, references to third-party names or data sources do not imply partnership, endorsement, warranty, or official authorization.
+Wolfx Project is an independently operated, unofficial project. It is not affiliated with and does not represent any government agency, meteorological agency, earthquake monitoring organization, earthquake warning authority, or other official organization. Unless expressly stated otherwise, references to third-party names or data sources do not imply partnership, endorsement, warranty, or official authorization.
 
 ## 4. Earthquake Information and Emergency Use
 
@@ -57,7 +57,7 @@ The corresponding features provided to end users on the basis of Wolfx Project d
 - limiting data content, feature completeness, usage counts, earthquake events, warning categories, or the seismic intensity information provided according to payment status or subscription tier; and
 - deliberately delaying information for free users while providing it in real time to paying users, or imposing other differential restrictions based on payment status.
 
-The absence of a separate price for a feature is insufficient if a paywall for the app as a whole or the route used to access the feature prevents ordinary users from using it free of charge. Features (including separate premium features), products, or services unrelated to Wolfx Project data do not have to be free. Advertising revenue is not prohibited in itself. Both free and paying users must be able to use features based on Wolfx Project data fully and promptly, without differential restrictions based on payment status. For example, charging for advanced map features while making EEW displays or notifications free for all users is permitted. Restricting EEW to paid members or delaying it by 10 seconds only for free users is prohibited.
+The absence of a separate price for a feature is insufficient if a paywall for the app as a whole or the route used to access the feature prevents ordinary users from using it free of charge. Features (including separate premium features), products, or services unrelated to Wolfx Project data do not have to be free. Advertising revenue is not prohibited in itself. Both free and paying users must be able to use features based on Wolfx Project data fully and promptly, without differential restrictions based on payment status. For example, charging for independent advanced map features unrelated to Wolfx Project data while making EEW displays or notifications free for all users is permitted. Restricting EEW to paid members or delaying it by 10 seconds only for free users is prohibited.
 
 ### Data Integrity and Reasonable Processing
 
@@ -67,7 +67,7 @@ Reasonable presentation processing is not tampering. Processing that materially 
 
 ### Data-Source Attribution
 
-When displaying information or sending notifications based on Wolfx Project data to third-party end users, Users must clearly and recognizably identify "Wolfx Project" as the data provider, for example, "Data provided by Wolfx Project." Attribution must not be deliberately hidden. Users must distinguish the original issuing authority (such as JMA), Wolfx Project as the data provider, and their own role in presentation, notifications, or other processing. Wolfx Project must not be presented as an official JMA organization, and no official partnership, certification, authorization, or guarantee may be implied unless expressly confirmed. Space-limited push notifications may combine reasonable abbreviated attribution with full source details on the notification's details page, provided the actual source is not misrepresented. The unofficial status and safety warnings in Sections 3 and 4 also apply.
+When displaying information or sending notifications based on Wolfx Project data to third-party end users, Users must clearly and recognizably identify "Wolfx Project" as the data provider, for example, "Data provided by Wolfx Project." Attribution must not be deliberately hidden. Users must distinguish the original issuing authority, Wolfx Project as the data provider, and their own role in presentation, notifications, or other processing. Users must not impersonate any official organization, present Wolfx Project or their own service as an official organization's service, or imply any official partnership, certification, approval, authorization, or guarantee unless expressly confirmed. Space-limited push notifications may combine reasonable abbreviated attribution with full source details on the notification's details page, provided the actual source is not misrepresented. The unofficial status and safety warnings in Sections 3 and 4 also apply.
 
 ### Prohibition on Redistribution and Limited Individual Permission
 
@@ -122,7 +122,7 @@ The Project may restrict or suspend access where a User violates these Terms or 
 
 The Services are provided on an “as is” and “as available” basis. Users are responsible for independently checking official information and maintaining safeguards and alternative information sources appropriate to their intended use.
 
-To the maximum extent permitted by applicable law, the Project is not liable for indirect, special, incidental, or consequential loss arising from use of or inability to use the Services, delayed, incorrect, or missing information, loss of data, third-party services, or force majeure. This provision does not exclude or limit liability for the Project’s intentional misconduct or gross negligence where such liability cannot lawfully be excluded or limited, and it does not affect consumer-protection rights that cannot be excluded in the User’s place of habitual residence.
+To the maximum extent permitted by applicable law, the Project is not liable for indirect, special, incidental, or consequential loss arising from use of or inability to use the Services, delayed, incorrect, or missing information, loss of data, third-party services, or force majeure. This provision does not exclude or limit liability for the Project’s intentional misconduct or gross negligence, or any other liability that cannot lawfully be excluded or limited, and it does not affect consumer-protection rights that cannot be excluded in the User’s place of habitual residence.
 
 ## 12. Governing Law and Disputes
 

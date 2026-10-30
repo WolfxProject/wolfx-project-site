@@ -18,7 +18,6 @@ export interface WolfxContentPage {
   availableLocales?: WolfxLocale[]
   layout: WolfxLayout
   updated?: string
-  version?: string
   source?: string
   body: {
     toc?: {

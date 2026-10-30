@@ -45,6 +45,12 @@ test.beforeEach(async ({ page }) => {
 
 test('all localized WolfxMC pages render as a responsive static site', async ({ page }) => {
   test.setTimeout(90_000)
+  const problems = []
+  page.on('console', (message) => {
+    if (message.type() === 'error' || /hydration|\[Vue warn\]|unhandled/i.test(message.text()))
+      problems.push(`${page.url()}: ${message.text()}`)
+  })
+  page.on('pageerror', error => problems.push(error.message))
   await mockMinecraftStatus(page)
   await page.setViewportSize({ width: 390, height: 844 })
 
@@ -60,6 +66,7 @@ test('all localized WolfxMC pages render as a responsive static site', async ({ 
       expect(box?.width ?? 0, `${route}: community label width`).toBeGreaterThan(70)
     }
   }
+  expect(problems).toEqual([])
 })
 
 test('WolfxMC remains overflow-free at every target viewport', async ({ page }) => {

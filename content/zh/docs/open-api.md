@@ -4,7 +4,6 @@ description: "Wolfx Open API 地震、防灾与实用类接口文档，支持 JS
 locale: zh
 layout: docs
 updated: 2026-09-07
-version: v20260907
 source: apidoc_zh.html
 ---
 ## Wolfx Open API 使用须知
@@ -387,5 +386,3 @@ https://api.wolfx.jp/img.php?return=<img/json>
 
 ::api-status-panel{locale="zh"}
 ::
-
-## Doc version: v20260907

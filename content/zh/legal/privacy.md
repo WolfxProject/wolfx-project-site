@@ -3,7 +3,7 @@ title: "Wolfx Project 隐私政策"
 description: "说明 Wolfx Project 各项服务中的信息处理方式。"
 locale: zh
 layout: legal
-updated: 2026-08-21
+updated: 2026-10-30
 source: privacy_policy_zh.html
 ---
 Wolfx Project（以下简称“本项目”）是独立运营的非官方项目。本政策说明本项目在提供网站、公开 API、WebSocket、地震及地震预警相关信息、SeisJS、网络诊断和其他服务（以下统称“本服务”）过程中如何处理相关信息。
@@ -45,7 +45,7 @@ Wolfx Project（以下简称“本项目”）是独立运营的非官方项目�
 
 本服务可能使用以下第三方服务或服务类别：
 
-- **Cloudflare**：用于DNS、内容分发、反向代理、安全防护及网络错误报告。根据部署环境，本网站通过Workers Assets分发静态文件，并由Worker处理旧URL的永久重定向。通信时Cloudflare可能接收IP地址、HTTP请求头、User-Agent、Referrer、Cookie或标识符，以及通信和错误信息，并自行处理访问及安全日志。相关日志的保留期限取决于Cloudflare侧配置、合同和适用政策，本政策不承诺固定天数。
+- **Cloudflare**：用于DNS、内容分发、反向代理、安全防护及网络错误报告。根据部署环境，本网站通过Workers Assets分发静态文件，Worker仅执行静态文件分发所需的请求处理。通信时Cloudflare可能接收IP地址、HTTP请求头、User-Agent、Referrer、Cookie或标识符，以及通信和错误信息，并自行处理访问及安全日志。相关日志的保留期限取决于Cloudflare侧配置、合同和适用政策，本政策不承诺固定天数。
 - **STUN/WebRTC服务**：用户执行IP检测或网络诊断时，浏览器可能直接连接已配置的Cloudflare、Google、MiWiFi或哔哩哔哩STUN服务，并发送网络地址和连接信息。
 - **第三方反向地理编码服务**：仅当用户使用相应的位置或反向地理编码功能时，SeisJS才会使用BigDataCloud作为Browser GPS的主要反向地理编码服务，并使用GeoNames作为GPS获取位置时的备用服务，以及手动输入坐标或已存储坐标的反向地理编码服务。这些服务可能接收精确纬度和经度、语言参数，以及IP地址、HTTP请求头和其他正常的网络连接元数据。相关第三方对信息的处理同时受其自身隐私政策约束。
 - **WolfxMC服务器状态**：用户访问WolfxMC首页时，浏览器会向mcapi.us直接发出请求，以获取当前在线状态和在线人数。因此，mcapi.us可能接收用户的IP地址、HTTP请求头和其他常规请求元数据。mcapi.us对信息的处理适用该服务自身的方针。
@@ -53,6 +53,8 @@ Wolfx Project（以下简称“本项目”）是独立运营的非官方项目�
 - **外部链接**：Service Status、GitHub、Donate及其他外部链接，仅在用户主动选择打开时连接目标网站。离开本网站后，相关信息由目标网站依照其自身隐私政策处理。
 
 本网站初始加载时不会自动请求Google Fonts、jsDelivr，不使用Bootstrap、jQuery、访问分析或行为追踪脚本，也不加载广告或推广iframe。站内搜索仅在浏览器中查询构建时生成的静态索引，不会将搜索词发送给外部搜索服务或本项目的搜索API。
+
+Open API 文档页面会由浏览器自动连接本项目的 api.wolfx.jp，获取 WebSocket 连接数，并按显示需要加载状态图表。此类请求会发送 IP 地址、HTTP 请求头及其他常规请求元数据。
 
 上述浏览器直接连接不一定构成本项目将其已保存的个人数据提供给第三方，但第三方可能按照其自身政策处理连接产生的技术信息，并可能在日本境外进行处理或保存。
 
@@ -88,4 +90,4 @@ SeisJS及本项目其他服务可能使用localStorage在用户设备上保存UU
 
 如果您对我们的隐私政策或数据处理方式有任何疑问，可以通过以下邮箱与我们取得联系：[contact@mtf.edu.kg](mailto:contact@mtf.edu.kg)
 
-本隐私政策最后更新于：2026年08月21日
+本隐私政策最后更新于：2026年10月30日

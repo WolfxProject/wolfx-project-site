@@ -4,7 +4,6 @@ description: "Wolfx WebSocket API 连接地址、手动查询指令与 JSON 数�
 locale: zh
 layout: docs
 updated: 2026-10-30
-version: v20260415
 source: wsapi_zh.html
 ---
 ## WebSocket 简介
@@ -144,5 +143,3 @@ query_jmaeqlist
 | --- | --- |
 | `type` | pong(字符串型) |
 | `timestamp` | Pong包发送毫秒级时间戳(字符串型) |
-
-## Doc version: v20260415

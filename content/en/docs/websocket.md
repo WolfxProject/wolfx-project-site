@@ -4,7 +4,6 @@ description: "Wolfx WebSocket endpoints, manual query commands, and JSON data sp
 locale: en
 layout: docs
 updated: 2026-10-30
-version: v20260415
 source: wsapi_en.html
 ---
 ## Introduction to WebSocket
@@ -144,5 +143,3 @@ query_jmaeqlist
 | --- | --- |
 | `type` | pong (String) |
 | `timestamp` | Pong sent timestamp in milliseconds (String) |
-
-## Doc version: v20260415

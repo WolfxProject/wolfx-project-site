@@ -4,7 +4,6 @@ description: "SeisJS station, WebSocket connection, and observation data field d
 locale: en
 layout: docs
 updated: 2025-07-04
-version: v20250704
 source: seisapi_en.html
 ---
 ## Overview
@@ -110,5 +109,3 @@ ping
 | --- | --- |
 | `type` | pong (String) |
 | `timestamp` | Timestamp in milliseconds (String) |
-
-## API Documentation Version: v20250704

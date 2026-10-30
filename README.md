@@ -66,7 +66,7 @@ content/
 ### 新增或编辑页面
 
 1. 在 `content/ja`、`content/zh`、`content/en` 的相同相对路径创建文件。
-2. 使用 `title`、`description`、`locale`、`layout`、`updated` frontmatter；文档可以再写 `version`。
+2. 使用 `title`、`description`、`locale`、`layout`、`updated` frontmatter；API 文档仅以 `updated` 标记最后更新日期，不再维护文档版本元数据或正文版本标题。
 3. 若新增公开路由，把三语路径加入 `nuxt.config.ts` 的 `contentRoutes`，确保静态预渲染和 sitemap 收录。
 4. 更新文档导航（`app/components/site/DocsSidebar.vue`）并运行完整验证。
 
