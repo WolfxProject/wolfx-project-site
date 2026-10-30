@@ -3,7 +3,7 @@ title: "Wolfx WebSocket API 调用说明"
 description: "Wolfx WebSocket API 连接地址、手动查询指令与 JSON 数据说明。"
 locale: zh
 layout: docs
-updated: 2026-04-15
+updated: 2026-10-30
 version: v20260415
 source: wsapi_zh.html
 ---
@@ -11,6 +11,13 @@ source: wsapi_zh.html
 
 - WebSocket API 将在服务端收到EEW后自动向所有客户端推送相关信息
 - 心跳包机制：服务端将在每分钟和建立连接后发送一个heartbeat心跳包以保持连接，客户端可选回复ping包（推荐）
+
+## 连接及使用规范
+
+- 原则上，同一个客户端同时只应向 Wolfx Project 的 EEW WebSocket 服务保持一条有效连接。避免因多个 UI 组件等原因建立不必要的重复连接，并尽可能复用已有连接。
+- 应合理管理断线重连，避免无必要的反复连接和资源浪费。正常连接切换时短暂的新旧连接重叠，本身不被视为恶意重复连接。这是客户端合理使用要求，不表示服务端已实现精确限制为一条连接的强制机制。
+- 如需同时获取多个 EEW 数据源，可根据实际需求及下方连接地址说明，优先考虑现有 `all_eew` 聚合频道；此说明不保证覆盖未经确认的数据。
+- 禁止未经许可的数据再分发、向第三方再提供及公开独立数据 API。其他使用条件以[服务条款](/zh/legal/terms)及相应专项说明为准。
 
 ## WebSocket 调用地址
 

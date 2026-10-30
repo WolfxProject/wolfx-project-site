@@ -31,25 +31,25 @@
     "cf:deploy": "pnpm typecheck && pnpm lint && pnpm content:audit && pnpm generate && pnpm check && wrangler deploy"
   },
   "dependencies": {
-    "@iconify-json/lucide": "^1.2.141",
-    "@nuxt/content": "^3.16.1",
-    "@nuxt/ui": "^4.11.3",
+    "@iconify-json/lucide": "^1.2.148",
+    "@nuxt/content": "^3.16.2",
+    "@nuxt/ui": "^4.12.0",
     "@nuxtjs/i18n": "^10.6.0",
-    "@nuxtjs/sitemap": "^8.6.1",
-    "nuxt": "^4.6.0",
-    "vue": "^3.5.43",
+    "@nuxtjs/sitemap": "^9.1.0",
+    "nuxt": "^4.6.3",
+    "vue": "^3.5.44",
     "vue-router": "^5.4.0",
-    "zod": "^4.6.5"
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@nuxt/eslint": "^1.17.0",
-    "@playwright/test": "1.64.0",
-    "@types/node": "^26.6.4",
+    "@playwright/test": "1.64.1",
+    "@types/node": "^26.6.6",
     "better-sqlite3": "^13.0.3",
     "debug": "^4.4.3",
-    "eslint": "^10.12.0",
+    "eslint": "^10.13.0",
     "extend": "^3.0.2",
-    "oxc-parser": "^0.149.0",
+    "oxc-parser": "^0.156.0",
     "parse5": "^8.0.1",
     "rehype-raw": "^7.0.0",
     "remark-emoji": "^5.0.2",
@@ -60,9 +60,9 @@
     "turndown-plugin-gfm": "^1.0.2",
     "typescript": "^6.0.3",
     "unified": "^11.0.5",
-    "unist-util-visit": "^5.1.0",
-    "unplugin": "^3.4.0",
-    "vue-tsc": "^3.3.12",
-    "wrangler": "4.148.0"
+    "unist-util-visit": "^5.2.0",
+    "unplugin": "^3.7.0",
+    "vue-tsc": "^3.3.13",
+    "wrangler": "4.155.0"
   }
 }
