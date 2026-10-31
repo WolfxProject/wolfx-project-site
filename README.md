@@ -1,22 +1,22 @@
-# Wolfx Project website
+# Wolfx Project ウェブサイト
 
-Wolfx Project 的官方网站与公共文档站。站点以日语为默认语言，同时提供简体中文和英语；首页、API 文档与法律正文均由 Markdown / Nuxt Content MDC 驱动，并静态生成给 Nginx 或 Cloudflare Workers Assets 部署。
+Wolfx Project の公式ウェブサイトおよび公開ドキュメントサイトです。日本語をデフォルト言語とし、簡体字中国語と英語にも対応しています。トップページ、API ドキュメント、法的文書の本文はすべて Markdown / Nuxt Content MDC で管理し、Nginx または Cloudflare Workers Assets にデプロイするために静的生成します。
 
-## 技术栈
+## 技術スタック
 
-- Nuxt 4、Vue 3、TypeScript（严格模式）
+- Nuxt 4、Vue 3、TypeScript（厳格モード）
 - Nuxt Content 3、Nuxt UI 4
 - `@nuxtjs/i18n`、`@nuxtjs/sitemap`
-- pnpm、ESLint、Playwright 发布验收
-- Nitro 静态生成，生产目录为 `.output/public`
+- pnpm、ESLint、Playwright によるリリース前検証
+- Nitro による静的生成。本番用の出力ディレクトリは `.output/public`
 
-## 环境要求
+## 動作要件
 
-- Node.js 20.19 或更高版本（推荐当前 LTS）
-- pnpm 11
-- Wrangler 4（已作为项目开发依赖锁定）
+- Node.js 20.19 以降（現行の LTS を推奨）
+- pnpm 12.3.4
+- Wrangler 4（プロジェクトの開発依存関係としてバージョンを固定済み）
 
-## 开发与验证
+## 開発と検証
 
 ```bash
 pnpm install
@@ -31,20 +31,20 @@ pnpm test:e2e
 pnpm cf:dry-run
 ```
 
-`pnpm check` 检查三语文件、静态搜索、关键 API 端点、SEO、外部资源、生成产物、当前路由与 404 行为。`pnpm test:e2e` 会启动普通静态服务器，在 360–2560px 的七档视口检查搜索、移动导航、明暗主题、页面溢出、标题层级、内容对齐和初始外部请求；浏览器二进制只需首次安装。`pnpm content:audit` 只读对比同级的 `../wolfx-project` 旧站，检查标题、章节、链接、端点、代码、表格与字段。
+`pnpm check` は、3 言語のファイル、静的検索、主要な API エンドポイント、SEO、外部リソース、生成物、現行ルート、404 の挙動を検証します。`pnpm test:e2e` は通常の静的 HTTP サーバーを起動し、360–2560px の 7 段階のビューポートで、検索、モバイルナビゲーション、ライト／ダークテーマ、ページのはみ出し、見出し階層、コンテンツの配置、初回読み込み時の外部リクエストを検証します。ブラウザーのバイナリをインストールする必要があるのは初回のみです。`pnpm content:audit` は、同じ親ディレクトリにある旧サイト `../wolfx-project` を読み取り専用で比較し、タイトル、セクション、リンク、エンドポイント、コード、表、フィールドを検証します。
 
-## 内容目录
+## コンテンツのディレクトリ構成
 
 ```text
 content/
-├── ja/                    # 默认语言，对外不带前缀
+├── ja/                    # デフォルト言語。公開 URL にプレフィックスなし
 ├── zh/                    # /zh/...
 └── en/                    # /en/...
 
 <locale>/
-├── index.md               # 首页
-├── donate.md              # 捐赠页
-├── projects.md            # 项目列表
+├── index.md               # トップページ
+├── donate.md              # 寄付ページ
+├── projects.md            # プロジェクト一覧
 ├── docs/
 │   ├── open-api.md
 │   ├── websocket.md
@@ -59,88 +59,88 @@ content/
     └── vote.md
 ```
 
-大段正文、API 字段表和法律文本只能在 Markdown 中维护。Vue 组件只负责布局、交互与可复用展示。
+長文の本文、API フィールドの表、法的文書は Markdown のみで管理してください。Vue コンポーネントは、レイアウト、操作への応答、再利用可能な表示のみを担当します。
 
-主站继续以无前缀日语为默认语言；WolfxMC 则有意采用不同的公开语言模型：`/mc` 为首选简体中文入口，`/zh/mc` 为显式简体中文，`/ja/mc` 为日语，`/en/mc` 为英语。显式中文页面 canonical 到对应的无前缀 `/mc` 页面。
+メインサイトは引き続き、プレフィックスのない日本語をデフォルト言語とします。WolfxMC では意図的に異なる言語別 URL 構成を採用しています。`/mc` は簡体字中国語の優先 URL、`/zh/mc` は言語を明示した簡体字中国語、`/ja/mc` は日本語、`/en/mc` は英語です。言語を明示した中国語ページの canonical は、対応するプレフィックスのない `/mc` ページを指します。
 
-### 新增或编辑页面
+### ページの追加・編集
 
-1. 在 `content/ja`、`content/zh`、`content/en` 的相同相对路径创建文件。
-2. 使用 `title`、`description`、`locale`、`layout`、`updated` frontmatter；API 文档仅以 `updated` 标记最后更新日期，不再维护文档版本元数据或正文版本标题。
-3. 若新增公开路由，把三语路径加入 `nuxt.config.ts` 的 `contentRoutes`，确保静态预渲染和 sitemap 收录。
-4. 更新文档导航（`app/components/site/DocsSidebar.vue`）并运行完整验证。
+1. `content/ja`、`content/zh`、`content/en` の同じ相対パスにファイルを作成します。
+2. frontmatter に `title`、`description`、`locale`、`layout`、`updated` を指定します。API ドキュメントでは `updated` のみで最終更新日を示し、ドキュメントのバージョンメタデータや本文中のバージョン見出しは管理しません。
+3. 公開ルートを追加する場合は、`nuxt.config.ts` の `mainContentRoutes`（WolfxMC の場合は `wolfxMcRouteFamilies`）にパスを追加し、3 言語のルートが静的プリレンダリングと sitemap に含まれるようにします。
+4. ドキュメントナビゲーション（`app/components/site/DocsSidebar.vue`）を更新し、すべての検証を実行します。
 
-### 新增项目
+### プロジェクトの追加
 
-首页和项目页的卡片位于对应语言的 `index.md` / `projects.md`。使用 MDC：
+トップページとプロジェクトページのカードは、各言語の `index.md` / `projects.md` に記述します。MDC を使用します。
 
 ```mdc
 ::project-grid
 :::project-card{title="Project" eyebrow="API" href="https://example.com" icon="i-lucide-activity" action="Open"}
-项目说明写在 Markdown 中。
+プロジェクトの説明は Markdown に記述します。
 :::
 ::
 ```
 
-请同时更新三种语言；项目名和外链必须来自可核对的公开信息。
+3 言語を同時に更新してください。プロジェクト名と外部リンクには、確認可能な公開情報を使用する必要があります。
 
-### 编辑 API 文档
+### API ドキュメントの編集
 
-API 字段继续使用 Markdown 表格，第一列保持原始字段名，不要修正看似可疑的拼写。HTTP / HTTPS / WSS 地址使用代码块或 `ApiEndpoint`：
+API フィールドには引き続き Markdown の表を使用し、1 列目には元のフィールド名をそのまま記載してください。誤りに見えるスペルも修正しないでください。HTTP / HTTPS / WSS のアドレスには、コードブロックまたは `ApiEndpoint` を使用します。
 
 ```mdc
 ::api-endpoint{method="GET" address="https://api.example.com/data.json" label="Endpoint"}
 ::
 ```
 
-现有迁移文档可由 `node scripts/migrate-legacy-content.mjs` 重建。该命令会覆盖 15 个 `docs/` 与 `legal/` Markdown 文件；除非确实要重新从旧站迁移，否则不要运行。重建后必须审查 Git diff，且不得修改 `../wolfx-project`。
+既存の移行済みドキュメントは、`node scripts/migrate-legacy-content.mjs` で再生成できます。このコマンドは `docs/` と `legal/` にある 15 個の Markdown ファイルを上書きするため、旧サイトから再移行する必要がある場合にのみ実行してください。再生成後は必ず Git diff を確認し、`../wolfx-project` は変更しないでください。
 
-### 编辑法律文本
+### 法的文書の編集
 
-隐私政策和使用条款分别在 `content/*/legal/privacy.md` 与 `terms.md`。法律文本不得概括、自动统一三语差异或在没有依据时改写。修改一种语言时必须检查另外两种语言，并保留更新时间、免责声明与联系信息。
+プライバシーポリシーと利用規約は、それぞれ `content/*/legal/privacy.md` と `terms.md` にあります。法的文書を要約したり、3 言語間の差異を機械的に統一したり、根拠なく書き換えたりしないでください。いずれかの言語を変更する場合は、残りの 2 言語も必ず確認し、更新日時、免責事項、連絡先情報を維持してください。
 
-修改隐私政策前后应检查生成页面的实际网络请求、浏览器存储、Cookie 和部署配置。新增第三方资源、外部脚本或服务时必须同步检查三种语言；本站不得自动加载外部字体、追踪脚本、广告或推广 iframe。
+プライバシーポリシーの変更前後には、生成されたページの実際のネットワークリクエスト、ブラウザーストレージ、Cookie、デプロイ設定を確認してください。サードパーティーのリソース、外部スクリプト、サービスを追加する場合は、3 言語を併せて確認する必要があります。このサイトでは、外部フォント、トラッキングスクリプト、広告、宣伝用 iframe を自動的に読み込んではいけません。
 
-### 静态搜索
+### 静的検索
 
-`pnpm generate` 的生命周期会先运行 `scripts/generate-search-index.mjs`，从 36 份 Markdown 生成 `public/search-index.json`，再复制到 `.output/public/search-index.json`。搜索在浏览器本地执行，不需要 Server API、数据库或外部搜索服务。修改内容后直接重新执行 `pnpm generate`；也可单独运行：
+`pnpm generate` のライフサイクルでは、先に `scripts/generate-search-index.mjs` を実行し、36 個の Markdown ファイルから `public/search-index.json` を生成して、`.output/public/search-index.json` にコピーします。検索はブラウザー内で実行され、Server API、データベース、外部検索サービスは不要です。コンテンツを変更した後は、`pnpm generate` を再実行してください。次のコマンドを単独で実行することもできます。
 
 ```bash
 pnpm search:generate
 ```
 
-不要手工维护搜索索引，也不要重新引入运行时文件扫描或 `/api/search`。
+検索インデックスを手動で管理したり、実行時のファイル走査や `/api/search` を再導入したりしないでください。
 
-### 可用 MDC 组件
+### 利用可能な MDC コンポーネント
 
 - `HeroSection`、`PageIntro`
 - `ProjectGrid`、`ProjectCard`
 - `ServiceLinks`、`ServiceLink`
 - `ContentNotice`（`info` / `warning` / `note` / `danger`）
-- `ContentSection`（`reading` / `wide` 内容容器与 Markdown 排版作用域）
+- `ContentSection`（`reading` / `wide` のコンテンツコンテナーと Markdown のスタイル適用範囲）
 - `ApiEndpoint`、`DonationAddress`、`ExternalLink`
 
-页面骨架使用 `site-container`，长篇正文使用 `reading-container`；Hero、Markdown 章节和组件内部标题分别由各自作用域控制。需要把连续的 Markdown 与 MDC 组件放在同一阅读宽度时，使用 `ContentSection`，不要为相邻节点分别添加宽度或依赖生成后的 `nth-child` 结构。
+ページ全体の構造には `site-container`、長文の本文には `reading-container` を使用します。Hero、Markdown のセクション、コンポーネント内部の見出しは、それぞれのスコープで制御します。連続する Markdown と MDC コンポーネントを同じ本文幅にそろえる場合は `ContentSection` を使用し、隣接するノードに個別に幅を指定したり、生成後の `nth-child` 構造に依存したりしないでください。
 
-## 新增语言
+## 言語の追加
 
-1. 在 `i18n/locales/` 新增界面短文案。
-2. 在 `nuxt.config.ts` 的 `i18n.locales` 添加语言与前缀策略。
-3. 创建完整的 `content/<locale>` 对应页面。
-4. 更新 `usePublicPath`、canonical / hreflang、sitemap 路由与检查脚本。
+1. `i18n/locales/` に UI テキストを追加します。
+2. `nuxt.config.ts` の `i18n.locales` に言語を追加し、プレフィックスの方針を設定します。
+3. `content/<locale>` に対応するすべてのページを作成します。
+4. `usePublicPath`、canonical / hreflang、sitemap のルート、検証スクリプトを更新します。
 
-不要启用基于浏览器语言的强制全局跳转。语言页面必须始终可被直接访问和抓取。
+ブラウザーの言語に基づいてサイト全体で強制リダイレクトを行う機能は有効にしないでください。各言語のページには、常に直接アクセスでき、クローラーが取得できる必要があります。
 
-## Nginx 静态部署
+## Nginx への静的デプロイ
 
-构建产物：
+ビルド成果物：
 
 ```bash
 pnpm generate
-# 将 .output/public 上传到服务器
+# .output/public をサーバーにアップロード
 ```
 
-Nginx 示例：
+Nginx の設定例：
 
 ```nginx
 server {
@@ -154,52 +154,52 @@ server {
 }
 ```
 
-`deploy/nginx-cache.conf` 对 `/_nuxt/*` 使用一年 `immutable` 缓存，对 HTML 和 `search-index.json` 使用重新验证策略，并以 `try_files ... =404` 保证不存在的路径不是首页 200。`/mc` 与其子页面和其他 Nuxt 静态路由一样由同一 `wolfx.jp` 站点提供，不需要单独的 server block。实际路径可按服务器布局调整；部署前用 `nginx -t` 检查完整 Nginx 配置。
+`deploy/nginx-cache.conf` は、`/_nuxt/*` に 1 年間の `immutable` キャッシュを適用し、HTML と `search-index.json` には再検証を求める方針を適用します。また、`try_files ... =404` により、存在しないパスにトップページをステータス 200 で返さないようにします。`/mc` とその配下のページも、他の Nuxt 静的ルートと同様に同じ `wolfx.jp` サイトから配信するため、個別の server ブロックは不要です。実際のパスはサーバーのディレクトリ構成に合わせて調整できます。デプロイ前に `nginx -t` で Nginx 設定全体を検証してください。
 
-WolfxMC 网站页面位于 `https://wolfx.jp/mc`；Minecraft 玩家使用统一服务器地址 `wolfx.jp`，浏览器中的 mcapi.us 状态查询也以 `wolfx.jp` 为目标服务器。
+WolfxMC のウェブページは `https://wolfx.jp/mc` にあります。Minecraft プレイヤーが使用するサーバーアドレスは `wolfx.jp` に統一しており、ブラウザーからの mcapi.us へのステータス問い合わせも `wolfx.jp` を対象とします。
 
-## Cloudflare Workers Assets 部署
+## Cloudflare Workers Assets へのデプロイ
 
-默认 Cloudflare 形态是“Nuxt 静态生成 + 极小 Worker + Workers Assets”，只服务 `wolfx.jp`：
+Cloudflare でのデフォルト構成は「Nuxt による静的生成 + 最小限の Worker + Workers Assets」で、配信対象は `wolfx.jp` のみです。
 
-- 静态资源目录：`.output/public`
-- Worker 入口：`worker/index.ts`
-- 普通内容页面：直接由 Workers Assets 提供，不经过动态 SSR
-- Worker：仅保留当前 `/zh/`、`/en/` 首页形式并把请求交给 Workers Assets
-- 不需要常驻 Node.js 服务器，也不需要 SSR Worker 渲染普通页面
+- 静的アセットのディレクトリ：`.output/public`
+- Worker のエントリーポイント：`worker/index.ts`
+- 通常のコンテンツページ：動的 SSR を介さず、Workers Assets から直接配信
+- Worker：現行の `/zh/`、`/en/` のトップページ URL 形式を維持し、`.html` パスへの GET / HEAD を 404 として処理し、リクエストを Workers Assets に渡す
+- 常駐する Node.js サーバーも、通常のページをレンダリングする SSR Worker も不要
 
-本地预览和 HTTP 验收：
+ローカルプレビューと HTTP 検証：
 
 ```bash
 pnpm cf:dev
-# 另一个终端
+# 別のターミナルで実行
 pnpm cf:test
 ```
 
-`cf:dev` 会先完整生成站点，再启动本地 Workers Assets 服务。历史 URL 没有兼容别名，应按普通不存在路径返回 404。
+`cf:dev` は、サイト全体を生成してからローカルの Workers Assets サービスを起動します。旧 URL には互換エイリアスを設けず、通常の存在しないパスと同様に 404 を返す必要があります。
 
-只打包、不发布：
+デプロイせずにパッケージングのみを実行：
 
 ```bash
 pnpm cf:dry-run
 ```
 
-首次由人工在可信终端登录，然后正式部署：
+初回は信頼できるターミナルで手動ログインした後、本番環境にデプロイします。
 
 ```bash
 pnpm exec wrangler login
 pnpm cf:deploy
 ```
 
-`cf:deploy` 会先执行类型检查、lint、旧内容审计、静态生成与发布检查，再调用 Wrangler。不要把 API Token、账户 ID、`.dev.vars` 或其他凭据写入仓库；CI 应通过 Cloudflare 支持的密钥存储注入凭据。本任务和常规代码修改不得执行真实部署。
+`cf:deploy` は、型チェック、lint、旧コンテンツの監査、静的生成、リリース前検証を実行してから Wrangler を呼び出します。API Token、アカウント ID、`.dev.vars`、その他の認証情報をリポジトリに書き込まないでください。CI では、Cloudflare がサポートするシークレットストアを通じて認証情報を注入してください。この作業および通常のコード変更では、実際のデプロイを実行してはいけません。
 
-Cloudflare 缓存建议见 `deploy/cloudflare-cache.md`。仅 `/_nuxt/*` 适合长期 `immutable`；HTML、法律文本、API 文档、sitemap 和搜索索引必须允许重新验证。
+Cloudflare のキャッシュに関する推奨設定は `deploy/cloudflare-cache.md` を参照してください。長期間の `immutable` キャッシュに適しているのは `/_nuxt/*` のみです。HTML、法的文書、API ドキュメント、sitemap、検索インデックスは再検証が可能でなければなりません。
 
-## 内容与隐私约定
+## コンテンツとプライバシーに関するルール
 
-- 不加载 Google Fonts、分析、广告或推广 iframe。
-- 主题与语言选择仅保存在浏览器本地。
-- 不在组件里硬编码大段多语言正文。
-- 不修改只读迁移来源 `../wolfx-project`。
-- 不维护旧 URL 别名或兼容重定向；除非未来任务明确要求，历史路径应保持 404。
-- 发布前运行 `pnpm typecheck && pnpm lint && pnpm content:audit && pnpm generate && pnpm check && pnpm test:e2e && pnpm cf:dry-run`。
+- Google Fonts、アクセス解析、広告、宣伝用 iframe を読み込まない。
+- テーマと言語の選択はブラウザー内にのみ保存する。
+- コンポーネントに長文の多言語本文をハードコードしない。
+- 読み取り専用の移行元 `../wolfx-project` を変更しない。
+- 旧 URL のエイリアスや互換リダイレクトを維持しない。今後の作業で明示的に要求されない限り、旧パスは 404 のままにする。
+- リリース前に `pnpm typecheck && pnpm lint && pnpm content:audit && pnpm generate && pnpm check && pnpm test:e2e && pnpm cf:dry-run` を実行する。

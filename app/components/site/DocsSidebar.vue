@@ -9,7 +9,6 @@ const groups = computed(() => [
     items: [
       { label: 'Wolfx Open API', to: localize('/docs/open-api'), icon: 'i-lucide-braces' },
       { label: 'WebSocket API', to: localize('/docs/websocket'), icon: 'i-lucide-radio-tower' },
-      { label: 'SeisJS API', to: localize('/docs/seisjs-api'), icon: 'i-lucide-audio-waveform' },
     ],
   },
   {
