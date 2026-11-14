@@ -7,7 +7,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const require = createRequire(import.meta.url)
 const retiredMinecraftAddress = ['mc', 'wolfx', 'jp'].join('.')
 
-const localLucideIcons = require('@iconify-json/lucide/icons.json').icons
+const localLucideCollection = require('@iconify-json/lucide/icons.json')
 
 const outputRoot = path.join(root, '.output/public')
 const locales = [
@@ -118,12 +118,23 @@ function sourcePosition(text, offset) {
   return { line, column: offset - lastBreak }
 }
 
+function hasLocalLucideIcon(name) {
+  const visited = new Set()
+  while (name && !visited.has(name)) {
+    if (localLucideCollection.icons[name])
+      return true
+    visited.add(name)
+    name = localLucideCollection.aliases?.[name]?.parent
+  }
+  return false
+}
+
 for (const file of await sourceFiles(root)) {
   const source = await fs.readFile(file, 'utf8')
   const relative = path.relative(root, file)
   for (const match of source.matchAll(/\b(?:i-)?lucide(?::|-)([a-z0-9][a-z0-9-]*)\b/g)) {
     const name = match[1]
-    if (localLucideIcons[name])
+    if (hasLocalLucideIcon(name))
       continue
     const position = sourcePosition(source, match.index)
     fail(`${relative}:${position.line}:${position.column}: unknown local Lucide icon ${match[0]}`)

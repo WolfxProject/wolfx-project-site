@@ -3,7 +3,7 @@ title: "Wolfx WebSocket API Call Instructions"
 description: "Wolfx WebSocket endpoints, manual query commands, and JSON data specification."
 locale: en
 layout: docs
-updated: 2026-10-30
+updated: 2026-11-14
 source: wsapi_en.html
 ---
 ## Introduction to WebSocket
@@ -13,10 +13,8 @@ source: wsapi_en.html
 
 ## Connection and Usage Guidelines
 
-- As a general rule, each client should maintain only one active connection to the Wolfx Project EEW WebSocket service at a time. Avoid unnecessary duplicate connections, including separate connections for multiple UI components, and reuse an existing connection wherever possible.
-- Manage reconnections reasonably to avoid unnecessary repeated connections and resource waste. A brief overlap between old and new connections during a normal connection transition does not in itself constitute malicious duplication. This is a client reasonable-use requirement, not a statement that the server enforces an exact one-connection limit.
-- If multiple EEW data sources are needed simultaneously, consider the existing `all_eew` aggregate channel first, according to your actual requirements and the endpoint descriptions below. This guidance does not guarantee coverage of unverified data.
-- Ordinary information use that complies with Section 6 of the [Terms of Service](/en/legal/terms), including processing and transmission through your own servers, requires no individual permission. Independent data provision as defined in that Section requires prior express permission. All other usage conditions and applicable data-source conditions must also be followed.
+- Reuse connections where possible and avoid unnecessary duplicate connections or rapid repeated reconnection attempts.
+- When you need multiple data sources, consider the `all_eew` aggregate channel based on the endpoint descriptions below.
 
 ## WebSocket Call URLs
 

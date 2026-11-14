@@ -212,14 +212,14 @@ test('manual choices persist, preserve location details, and control later entri
   await expect(page).toHaveURL(/\/en\/projects\/?\?foo=1#bar$/)
   expect(await page.evaluate(() => localStorage.getItem('wolfx-locale'))).toBe('en')
 
-  await page.goto('/projects?again=1', { waitUntil: 'domcontentloaded' })
+  await page.goto('/projects?again=1', { waitUntil: 'networkidle' })
   await expect(page).toHaveURL(/\/en\/projects\/?\?again=1$/)
 
   await language.selectOption('zh')
   await expect(page).toHaveURL(/\/zh\/projects\/?\?again=1$/)
   expect(await page.evaluate(() => localStorage.getItem('wolfx-locale'))).toBe('zh')
 
-  await page.goto('/projects', { waitUntil: 'domcontentloaded' })
+  await page.goto('/projects', { waitUntil: 'networkidle' })
   await expectStablePath(page, '/zh/projects')
 
   await language.selectOption('ja')

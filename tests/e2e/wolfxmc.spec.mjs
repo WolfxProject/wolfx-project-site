@@ -246,7 +246,8 @@ test('server address copies with accessible feedback', async ({ page }) => {
 test('WolfxMC is absent from Projects and remains readable in dark mode', async ({ page }) => {
   await mockMinecraftStatus(page)
   for (const route of ['/projects', '/zh/projects', '/en/projects']) {
-    await page.goto(route)
+    await page.goto(route, { waitUntil: 'networkidle' })
+    await expect(page.locator('.project-card').first()).toBeVisible()
     await expect(page.locator('.project-card').filter({ hasText: /Wolfx Survival|WolfxMC/ })).toHaveCount(0)
   }
 

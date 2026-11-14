@@ -1,3 +1,4 @@
+import { readFile } from 'node:fs/promises'
 import { expect, test } from '@playwright/test'
 
 const baseOrigin = (process.env.PLAYWRIGHT_BASE_URL || 'http://127.0.0.1:4381').replace(/\/$/, '')
@@ -276,29 +277,32 @@ test('API Status handles JSON and individual chart failures without hiding the d
   await expect(page.locator('.prose-document')).toContainText('https://api.wolfx.jp/jma_eew.json')
 })
 
-test('all nine API documents show only their existing last-updated date and preserve API version fields', async ({ page }) => {
+test('all nine API documents show their content revision date and preserve API version fields', async ({ page }) => {
   const locales = [
-    { prefix: '', label: '最終更新' },
-    { prefix: '/zh', label: '最后更新' },
-    { prefix: '/en', label: 'Last updated' },
+    { code: 'ja', prefix: '', label: '最終更新' },
+    { code: 'zh', prefix: '/zh', label: '最后更新' },
+    { code: 'en', prefix: '/en', label: 'Last updated' },
   ]
   const documents = [
-    { path: '/docs/open-api', updated: '2026-09-07' },
-    { path: '/docs/websocket', updated: '2026-10-30', field: 'ver' },
-    { path: '/docs/seisjs-api', updated: '2025-07-04', field: 'version' },
+    { path: '/docs/open-api' },
+    { path: '/docs/websocket', field: 'ver' },
+    { path: '/docs/seisjs-api', field: 'version' },
   ]
 
   for (const locale of locales) {
     for (const document of documents) {
+      const markdown = await readFile(new URL(`../../content/${locale.code}${document.path}.md`, import.meta.url), 'utf8')
+      const updated = markdown.match(/^updated: (\d{4}-\d{2}-\d{2})$/m)?.[1]
+      expect(updated).toBeTruthy()
       await page.goto(`${locale.prefix}${document.path}`, { waitUntil: 'networkidle' })
       const metadata = page.locator('.document-meta')
       await expect(metadata.locator('div')).toHaveCount(1)
       await expect(metadata.locator('dt')).toHaveText(locale.label)
-      await expect(metadata.locator('time')).toHaveText(document.updated)
-      await expect(metadata.locator('time')).toHaveAttribute('datetime', document.updated)
+      await expect(metadata.locator('time')).toHaveText(updated)
+      await expect(metadata.locator('time')).toHaveAttribute('datetime', updated)
       await expect(page.locator('.prose-document')).not.toContainText(/Doc version:|API Documentation Version:|APIドキュメントバージョン:|API文档版本:/i)
       const article = await page.locator('script[type="application/ld+json"]').evaluateAll(scripts => scripts.map(script => JSON.parse(script.textContent)).find(data => data['@type'] === 'TechArticle'))
-      expect(article?.dateModified).toBe(document.updated)
+      expect(article?.dateModified).toBe(updated)
       if (document.field)
         await expect(page.locator('td:first-child code').filter({ hasText: new RegExp(`^${document.field}$`) })).not.toHaveCount(0)
     }
@@ -341,10 +345,11 @@ test('API Status has no hydration warnings, duplicate status requests, or dark/m
 })
 
 test('static search works in Japanese, Chinese, and English after navigation and reload', async ({ page }) => {
+  const index = JSON.parse(await readFile(new URL('../../public/search-index.json', import.meta.url), 'utf8'))
   const cases = [
-    { route: '/', query: '緊急地震速報', pathPrefix: '/docs/' },
-    { route: '/zh/', query: '地震预警', pathPrefix: '/zh/docs/' },
-    { route: '/en/', query: 'earthquake', pathPrefix: '/en/docs/' },
+    { locale: 'ja', route: '/', query: '緊急地震速報', apiPath: '/docs/open-api' },
+    { locale: 'zh', route: '/zh/', query: '地震预警', apiPath: '/zh/docs/open-api' },
+    { locale: 'en', route: '/en/', query: 'earthquake', apiPath: '/en/docs/open-api' },
   ]
 
   for (const item of cases) {
@@ -354,13 +359,21 @@ test('static search works in Japanese, Chinese, and English after navigation and
     await input.fill(item.query)
     const firstResult = page.locator('#search-results a').first()
     await expect(firstResult).toBeVisible()
-    await expect(firstResult).toHaveAttribute('href', new RegExp(`^${item.pathPrefix}`))
+    // Legal pages can also match an API query; ranking is content-dependent.
+    const matchingPaths = index.filter(entry => entry.locale === item.locale
+      && `${entry.title} ${(entry.headings ?? []).join(' ')} ${entry.text}`.toLocaleLowerCase().includes(item.query.toLocaleLowerCase()))
+      .map(entry => entry.path)
+    const resultPaths = await page.locator('#search-results a').evaluateAll(links => links.map(link => link.getAttribute('href')))
+    for (const path of resultPaths)
+      expect(matchingPaths).toContain(path)
+    expect(resultPaths).toContain(item.apiPath)
+    const firstPath = resultPaths[0]
     await input.press('ArrowDown')
     await expect(input).toHaveAttribute('aria-activedescendant', /^search-result-\d+$/)
     await input.press('ArrowUp')
     await expect(input).toHaveAttribute('aria-activedescendant', 'search-result-0')
     await firstResult.click()
-    await expect(page).toHaveURL(new RegExp(item.pathPrefix))
+    await expect.poll(() => new URL(page.url()).pathname.replace(/\/$/, '')).toBe(firstPath.replace(/\/$/, ''))
     await page.reload({ waitUntil: 'networkidle' })
     await expect(page.locator('.search-trigger')).toBeVisible()
     await page.locator('.search-trigger').click()

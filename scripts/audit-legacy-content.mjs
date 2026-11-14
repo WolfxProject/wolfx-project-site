@@ -100,7 +100,11 @@ for (const [legacyFile, markdownFile] of migrations) {
   const target = metricsFromMarkdown(markdown)
   const apiStatusMigration = apiStatusMigrations[legacyFile]
   const isApiDocument = markdownFile.includes('/docs/')
-  const expectedHeadings = source.headings.filter((heading, index) => !(index === 0 && heading === target.title) && !(apiStatusMigration && heading === 'API Status') && !(isApiDocument && isDocumentVersionHeading(heading)))
+  // The 2026-11-14 TOS rewrite replaces the legacy structure and policy.
+  // Its current headings/navigation are checked against Markdown in legal.spec.mjs.
+  // Retain all other migration checks, including Privacy and API contracts.
+  const isRewrittenTerms = markdownFile.endsWith('/legal/terms.md')
+  const expectedHeadings = isRewrittenTerms ? [] : source.headings.filter((heading, index) => !(index === 0 && heading === target.title) && !(apiStatusMigration && heading === 'API Status') && !(isApiDocument && isDocumentVersionHeading(heading)))
   const dynamicStatus = []
   const documentMetadata = []
   if (isApiDocument) {

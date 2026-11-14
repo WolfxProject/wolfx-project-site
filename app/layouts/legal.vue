@@ -7,8 +7,6 @@ const props = defineProps<{
 }>()
 
 const tocLinks = computed(() => (props.page.body.toc?.links ?? [])
-  // Terms start with an introductory heading before the numbered sections.
-  .filter(link => !link.text.includes('(TOS)'))
   .map(({ id, text, depth }) => ({ id, text, depth })))
 </script>
 
