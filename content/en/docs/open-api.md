@@ -3,7 +3,7 @@ title: "Wolfx Open API Usage"
 description: "Wolfx Open API documentation for earthquake, EEW, and utility APIs over JSON, GET, and WebSocket."
 locale: en
 layout: docs
-updated: 2026-09-07
+updated: 2026-11-15
 source: apidoc_en.html
 ---
 ## Wolfx Open API Usage Guidelines
@@ -34,40 +34,40 @@ wss://ws-api.wolfx.jp/jma_eew
 | Field | Description |
 | --- | --- |
 | `type` | (WebSocket only) jma_eew (string) |
-| `Title` | Header of the Earthquake Early Warning (string) |
-| `CodeType` | Description of the announcement category (string) |
-| `Issue.Source` | Location of the issuing agency (string) |
+| `Title` | Earthquake Early Warning (EEW) title (string) |
+| `CodeType` | EEW announcement category. Reports issued using the level method with only the maximum predicted seismic intensity are labeled "最大予測震度のみの緊急地震速報". This field does not provide a comprehensive classification of hypocenter estimation methods (string) |
+| `Issue.Source` | Issuing meteorological office (string) |
 | `Issue.Status` | Announcement status (string) |
 | `EventID` | Earthquake Early Warning event ID (string) |
 | `Serial` | Report number (number) |
 | `AnnouncedTime` | Announcement time (UTC+9) (string) |
-| `OriginTime` | Earthquake origin time (UTC+9) (string) |
+| `OriginTime` | Earthquake origin time (UTC+9). For the level method, this compatibility field contains detection time and may not represent the actual earthquake origin time (string) |
 | `Hypocenter` | Hypocenter location (string) |
 | `Latitude` | Latitude of the hypocenter (number) |
 | `Longitude` | Longitude of the hypocenter (number) |
-| `Magnitude` | Magnitude (number; recommended) |
+| `Magnitude` | Magnitude. The compatibility value 0 for unknown magnitude and the fixed value 1.0 for formal assumed hypocenter parameters are not measured values (number; recommended) |
 | `Magunitude` | **Deprecated** legacy misspelling retained for backward compatibility with existing clients. Its value is always identical to `Magnitude`. New integrations should use `Magnitude`. This field may be removed in the future, so migration is strongly recommended. |
-| `Depth` | Depth of the hypocenter (number) |
-| `MaxIntensity` | Maximum seismic intensity (lower/upper) (string) |
+| `Depth` | Hypocenter depth (km). The 10 km value for the level method or formal assumed hypocenter parameters is assumed; unknown depth also maps to the compatibility value 0. These values are not necessarily measurements (number) |
+| `MaxIntensity` | Maximum predicted seismic intensity (lower/upper) (string) |
 | `Accuracy.Epicenter` | Information about epicenter accuracy (string) |
 | `Accuracy.Depth` | Information about depth accuracy (string) |
 | `Accuracy.Magnitude` | Information about magnitude accuracy (string) |
 | `MaxIntChange.String` | Description of the maximum intensity change (string) |
 | `MaxIntChange.Reason` | Reason for the maximum intensity change (string) |
-| `WarnArea` | List of warning target areas (array / JSON value) |
-| `WarnArea[].Chiiki` | Warning target area (string) |
+| `WarnArea` | List of forecast and warning areas (array / JSON value) |
+| `WarnArea[].Chiiki` | Forecast or warning area (string) |
 | `WarnArea[].Shindo1` | Maximum seismic intensity in the area (lower/upper) (string) |
 | `WarnArea[].Shindo2` | Minimum seismic intensity in the area (lower/upper) (string) |
-| `WarnArea[].Time` | Warning announcement time for the area (string) |
+| `WarnArea[].Time` | Predicted principal-motion arrival time; for a PLUM category, the time this intensity was first predicted. This is not the warning announcement time (UTC+9, HHMMSS, ////// when unknown; string) |
 | `WarnArea[].Type` | Announcement type for the area, either "Forecast" or "Warning" (string) |
-| `WarnArea[].Arrive` | Whether seismic waves have arrived in the area (based on the actual response) |
+| `WarnArea[].Arrive` | Description of the regional arrival prediction or PLUM category (string) |
 | `isSea` | Whether the earthquake occurred in a sea area (boolean) |
 | `isTraining` | Whether this is a training report (boolean) |
-| `isAssumption` | Whether assumed hypocenter parameters are used (Boolean) |
+| `isAssumption` | Indicates the use of formally designated assumed hypocenter parameters as defined by JMA. The level method alone does not set this flag, and false does not rule out PLUM-based predictions in some areas. Cancellation retains the value from the previous valid report (boolean) |
 | `isWarn` | Whether this is a warning (boolean) |
 | `isFinal` | Whether this is the final report (boolean) |
 | `isCancel` | Whether this is a cancellation report (boolean) |
-| `OriginalText` | Original text published by the Japan Meteorological Agency (string) |
+| `OriginalText` | Emergency Earthquake Warning (EEW) telegram text. An empty string is returned when unavailable (string) |
 
 ## JMA Earthquake Information JSON API
 

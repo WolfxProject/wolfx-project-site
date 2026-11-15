@@ -3,7 +3,7 @@ title: "Wolfx 防灾（防災）实用类免费 API 接口"
 description: "Wolfx Open API 地震、防灾与实用类接口文档，支持 JSON、GET 与 WebSocket。"
 locale: zh
 layout: docs
-updated: 2026-09-07
+updated: 2026-11-15
 source: apidoc_zh.html
 ---
 ## Wolfx Open API 使用须知
@@ -35,39 +35,39 @@ wss://ws-api.wolfx.jp/jma_eew
 | --- | --- |
 | `type` | （WebSocket专用）jma_eew（字符串类型） |
 | `Title` | 紧急地震速报的标题（字符串类型） |
-| `CodeType` | 发布分类的说明（字符串类型） |
-| `Issue.Source` | 发布机构的位置（字符串类型） |
+| `CodeType` | 紧急地震速报的发布类别。采用レベル法仅发布最大预测震度时，显示「最大予測震度のみの緊急地震速報」。该字段不代表完整的震源推定方法分类（字符串类型） |
+| `Issue.Source` | 发布机构（字符串类型） |
 | `Issue.Status` | 发布状态（字符串类型） |
 | `EventID` | 紧急地震速报的事件 ID（字符串类型） |
 | `Serial` | 速报序号（数值类型） |
 | `AnnouncedTime` | 发布时间（UTC+9）（字符串类型） |
-| `OriginTime` | 地震发生时间（UTC+9）（字符串类型） |
+| `OriginTime` | 地震发生时间（UTC+9）。レベル法为保持兼容会填入检知时间，不一定是准确的地震发生时间（字符串类型） |
 | `Hypocenter` | 震源地（字符串类型） |
 | `Latitude` | 震源纬度（数值类型） |
 | `Longitude` | 震源经度（数值类型） |
-| `Magnitude` | 震级（数值类型，推荐使用） |
+| `Magnitude` | 震级。未知值的兼容值 0，以及正式「仮定震源要素」的固定值 1.0，均不是实测值（数值类型，推荐使用） |
 | `Magunitude` | **Deprecated**：历史拼写错误，仅为兼容旧客户端保留；值始终与 `Magnitude` 相同。新接入请使用 `Magnitude`。该字段未来可能被删除，请尽快迁移。 |
-| `Depth` | 震源深度（数值类型） |
-| `MaxIntensity` | 最大震度（弱/强）（字符串类型） |
+| `Depth` | 震源深度（km）。レベル法及正式「仮定震源要素」的 10 km 为假定值，未知值也会映射为兼容值 0，不能一概视为实测结果（数值类型） |
+| `MaxIntensity` | 最大预测震度（弱/强）（字符串类型） |
 | `Accuracy.Epicenter` | 关于震央精度的信息（字符串类型） |
 | `Accuracy.Depth` | 关于深度精度的信息（字符串类型） |
 | `Accuracy.Magnitude` | 关于震级精度的信息（字符串类型） |
 | `MaxIntChange.String` | 关于最大震度变化的说明（字符串类型） |
 | `MaxIntChange.Reason` | 最大震度变更的原因（字符串类型） |
-| `WarnArea` | 警报对象地区列表（数组类型 / JSON 值） |
-| `WarnArea[].Chiiki` | 警报对象地区（字符串类型） |
+| `WarnArea` | 预报及警报对象地区列表（数组类型 / JSON 值） |
+| `WarnArea[].Chiiki` | 预报及警报对象地区（字符串类型） |
 | `WarnArea[].Shindo1` | 地区最大震度（弱/强）（字符串类型） |
 | `WarnArea[].Shindo2` | 地区最小震度（弱/强）（字符串类型） |
-| `WarnArea[].Time` | 该地区警报发布时间（字符串类型） |
+| `WarnArea[].Time` | 主要动预计到达时间；PLUM 类别中表示首次预测该震度的时间，并非警报发布时间（UTC+9，HHMMSS，未知为 //////，字符串类型） |
 | `WarnArea[].Type` | 地区发布类型，“预报”或“警报”（字符串类型） |
-| `WarnArea[].Arrive` | 该地区地震波是否已经到达（以实际响应为准） |
+| `WarnArea[].Arrive` | 地区到达预测或 PLUM 类别的说明（字符串类型） |
 | `isSea` | 是否为海域地震（布尔类型） |
 | `isTraining` | 是否为训练报（布尔类型） |
-| `isAssumption` | 是否使用假定震源要素（布尔类型） |
+| `isAssumption` | 日本气象厅正式定义的「仮定震源要素」使用标志，不包含仅采用レベル法发布的情况。false 也不代表部分地区未采用 PLUM 法。取消时保留此前有效信息中的值（布尔类型） |
 | `isWarn` | 是否为警报（布尔类型） |
 | `isFinal` | 是否为最终报（布尔类型） |
 | `isCancel` | 是否为取消报（布尔类型） |
-| `OriginalText` | 气象厅发布的原文（字符串类型） |
+| `OriginalText` | 紧急地震速报电文文本。无法提供时为空字符串（字符串类型） |
 
 ## JMA 地震情報 JSON API
 

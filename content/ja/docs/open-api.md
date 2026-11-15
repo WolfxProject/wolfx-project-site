@@ -3,7 +3,7 @@ title: "Wolfx Open API 利用説明"
 description: "Wolfx Open API（地震・緊急地震速報 EEW）の利用説明。JSON、GET、WebSocket に対応。"
 locale: ja
 layout: docs
-updated: 2026-09-07
+updated: 2026-11-15
 source: apidoc.html
 ---
 ## Wolfx Open API ご利用にあたっての注意事項
@@ -34,40 +34,40 @@ wss://ws-api.wolfx.jp/jma_eew
 | Field | Description |
 | --- | --- |
 | `type` | （WebSocket専用）jma_eew（文字列型） |
-| `Title` | 緊急地震速報のヘッダー（文字列型） |
-| `CodeType` | 発表区分の説明（文字列型） |
-| `Issue.Source` | 発表機関の位置（文字列型） |
+| `Title` | 緊急地震速報の表題（文字列型） |
+| `CodeType` | 緊急地震速報の発表区分。レベル法による最大予測震度のみの発表は「最大予測震度のみの緊急地震速報」と表示します。震源推定方法そのものを網羅的に示すものではありません（文字列型） |
+| `Issue.Source` | 発表官署（文字列型） |
 | `Issue.Status` | 発表ステータス（文字列型） |
 | `EventID` | 緊急地震速報のイベントID（文字列型） |
 | `Serial` | 速報回数（数値型） |
 | `AnnouncedTime` | 発表時刻（UTC+9）（文字列型） |
-| `OriginTime` | 地震発生時刻（UTC+9）（文字列型） |
+| `OriginTime` | 地震発生時刻（UTC+9）。レベル法では互換性のため検知時刻が入るため、正確な発震時刻とは限りません（文字列型） |
 | `Hypocenter` | 震源地（文字列型） |
 | `Latitude` | 震源地の緯度（数値型） |
 | `Longitude` | 震源地の経度（数値型） |
-| `Magnitude` | マグニチュード（数値型、推奨） |
+| `Magnitude` | マグニチュード。未知値の互換値 0 や「仮定震源要素」の固定値 1.0 は実測値ではありません（数値型、推奨） |
 | `Magunitude` | **Deprecated**：歴史的なスペルミスです。既存クライアントとの後方互換性のため保持されています。値は常に `Magnitude` と同一です。新規実装では `Magnitude` を使用してください。このフィールドは将来削除される可能性があるため、早めの移行を推奨します。 |
-| `Depth` | 震源の深さ（数値型） |
-| `MaxIntensity` | 最大震度（弱/強）（文字列型） |
+| `Depth` | 震源の深さ（km）。レベル法や「仮定震源要素」の 10 km は仮定値で、未知値も互換値 0 になるため、実測値とは限りません（数値型） |
+| `MaxIntensity` | 最大予測震度（弱/強）（文字列型） |
 | `Accuracy.Epicenter` | 震央の精度に関する情報（文字列型） |
 | `Accuracy.Depth` | 深さの精度に関する情報（文字列型） |
 | `Accuracy.Magnitude` | マグニチュードの精度に関する情報（文字列型） |
 | `MaxIntChange.String` | 最大震度の変化に関する説明（文字列型） |
 | `MaxIntChange.Reason` | 最大震度変更の理由（文字列型） |
-| `WarnArea` | 警報対象地域の一覧（配列型 / JSON値） |
-| `WarnArea[].Chiiki` | 警報対象地域（文字列型） |
+| `WarnArea` | 予報・警報対象地域の一覧（配列型 / JSON値） |
+| `WarnArea[].Chiiki` | 予報・警報対象地域（文字列型） |
 | `WarnArea[].Shindo1` | 地域の最大震度（弱/強）（文字列型） |
 | `WarnArea[].Shindo2` | 地域の最小震度（弱/強）（文字列型） |
-| `WarnArea[].Time` | 地域における警報発表時刻（文字列型） |
+| `WarnArea[].Time` | 主要動到達予測時刻。PLUM の区分では、その震度を初めて予測した時刻です。警報発表時刻ではありません（UTC+9、HHMMSS、不明は //////、文字列型） |
 | `WarnArea[].Type` | 地域の発表種別、「予報」または「警報」（文字列型） |
-| `WarnArea[].Arrive` | その地域に地震波が到達したかどうか（実際のレスポンスに準拠） |
+| `WarnArea[].Arrive` | 地域の到達予測・PLUM の区分を表す説明（文字列型） |
 | `isSea` | 海域地震かどうか（真偽型） |
 | `isTraining` | 訓練報かどうか（真偽型） |
-| `isAssumption` | 仮定震源要素の使用有無（真偽型） |
+| `isAssumption` | 気象庁が定義する正式な「仮定震源要素」の使用有無。レベル法による発表は対象外であり、false でも一部地域での PLUM 法の使用を否定するものではありません。取消時は直前の有効な情報の値を保持します（真偽型） |
 | `isWarn` | 警報かどうか（真偽型） |
 | `isFinal` | 最終報かどうか（真偽型） |
 | `isCancel` | 取消報かどうか（真偽型） |
-| `OriginalText` | 気象庁が発表した原文（文字列型） |
+| `OriginalText` | 緊急地震速報の電文テキスト。提供できない場合は空文字列となります（文字列型） |
 
 ## 気象庁 地震情報 JSON API
 

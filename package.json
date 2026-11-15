@@ -38,16 +38,16 @@
     "@nuxtjs/sitemap": "^9.1.0",
     "nuxt": "^4.6.4",
     "vue": "^3.5.45",
-    "vue-router": "^5.5.0",
+    "vue-router": "^5.5.1",
     "zod": "^4.6.7"
   },
   "devDependencies": {
     "@nuxt/eslint": "^1.17.0",
-    "@playwright/test": "1.65.0",
+    "@playwright/test": "1.65.1",
     "@types/node": "^26.6.6",
-    "better-sqlite3": "^13.1.1",
+    "better-sqlite3": "^13.2.0",
     "debug": "^4.4.3",
-    "eslint": "^10.14.0",
+    "eslint": "^10.15.0",
     "extend": "^3.0.2",
     "oxc-parser": "^0.158.0",
     "parse5": "^8.1.1",
@@ -63,6 +63,6 @@
     "unist-util-visit": "^5.2.0",
     "unplugin": "^3.7.0",
     "vue-tsc": "^3.3.14",
-    "wrangler": "4.161.0"
+    "wrangler": "4.162.0"
   }
 }
