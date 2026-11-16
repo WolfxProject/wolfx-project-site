@@ -82,7 +82,7 @@ wss://ws-api.wolfx.jp/jma_special_eq
 
 ## WebSocket 手动查询指令
 
-手动查询可在对应数据源连接或 `all_eew` 中获取该源缓存的 JSON，不是要求官方发布新报告。自动广播则随对应业务 JSON 的更新发送。
+手动查询可在对应数据源或 `all_eew` 连接中取得该源缓存的 JSON。
 
 - Ping:
 
@@ -145,8 +145,6 @@ query_jmaspecialeq
 ```
 
 ## WebSocket JSON 资料说明
-
-业务消息的 `type` 是 WebSocket 添加的数据源标识，不表示 HTTP JSON 必然有此字段。
 
 - 共有JSON字段解析:
 

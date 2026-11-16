@@ -82,7 +82,7 @@ wss://ws-api.wolfx.jp/jma_special_eq
 
 ## WebSocket Manual Query Commands
 
-Manual queries return the source’s cached JSON on that source’s connection or on `all_eew`; they do not request a new official report. Automatic broadcasts are sent when the corresponding business JSON changes.
+Manual queries return the source’s cached JSON on its own connection or on `all_eew`.
 
 - Ping:
 
@@ -145,8 +145,6 @@ query_jmaspecialeq
 ```
 
 ## WebSocket JSON Data Specification
-
-The business-message `type` is a source identifier added by WebSocket delivery, not a field guaranteed to exist in HTTP JSON.
 
 - Common JSON Field Description:
 

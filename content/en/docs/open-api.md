@@ -107,141 +107,47 @@ Fields from `Title` through `info` belong to each `NoN`. Neither `time` nor `tim
 
 ## JMA Earthquake Detail JSON API
 
-- Description: Retrieves earthquake events with official hypocenters, seismic intensity and long-period ground motion observations, comments, corrections, cancellations, and history recovery status. Issued by JMA / Delivered via DMDATA.JP / Processed and provided by Wolfx Project. The tsunami and special earthquake information APIs below use the same sources.
+- Description: Retrieves earthquake events with hypocenters, seismic intensity and long-period observations, official comments, and report status
 - HTTP GET API Endpoint:
 
 ```text
 https://api.wolfx.jp/jma_earthquake_detail.json
 ```
 
-This API is available over HTTP only. It has no separate WebSocket endpoint or manual query command and is not included in `all_eew`.
+- JSON Field Descriptions (Data Types):
 
-### Shared format for the three new APIs
-
-These rules apply to earthquake detail, tsunami information, and special earthquake information. They differ from the legacy string fields and JST timestamps in `jma_eqlist.json`.
-
-- Times use UTC RFC 3339, for example `2026-11-15T00:00:00.000Z`. Coordinates are decimal degrees; depth is in km, positive downwards; tsunami height is in m; long-period ground motion `sva` is in cm/s.
-- Codes, event IDs, and serial numbers are strings that preserve leading zeros. Seismic intensity retains official strings such as `5-` and `5+`. Long-period ground motion classes are also strings; unknown values are not converted to zero.
-- `null` means unknown or a value that cannot be reliably converted to a number or time. An omitted field is not supplied by that report, or is supplied by another effective report of the same product. Omission does not mean zero or cancellation.
-- Array references are zero-based integers. `0` is valid and is not a persistent identifier. An empty array only means there are no items available to publish; it does not establish safety.
-
-Report objects use the following shared metadata. Fields marked optional may be omitted.
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `id` | string | DMDATA telegram ID; the official-sample examples below use offline identifiers |
-| `product` | string | Official product code, such as `VXSE53` |
-| `time` | string / null | Official publication time (Head/ReportDateTime), separate from origin time |
-| `status` | string | `issued`, `corrected`, or `cancelled` |
-| `issuedAt` | string / null, optional | Control/DateTime, included when different from `time`; used to order reports and process corrections |
-| `targetTime` | string / null, optional | Head/TargetDateTime, included when different from `time`; not a substitute for origin time |
-| `title` | string, optional | Official title; the legacy title normalization renders 震源・震度に関する情報 as 震源・震度情報 |
-| `serial` | string, optional | Official report serial number |
-| `validUntil` | string / null, optional | Official Head/ValidDateTime; distinct from the tsunami root field with the same name |
-
-Optional `comments` objects contain official text: `forecast`, `warning`, `note`, and `text` are strings; `urls` is a string array. Multiple passages of the same kind are joined in their original order with blank lines.
-
-### Content updates and MD5
-
-The root `md5` (string) in these three APIs is a 32-character lowercase hexadecimal content-change identifier. It is calculated after removing the root `md5`, serializing the remaining object as compact UTF-8 JSON in the service's actual output key order, and hashing those bytes. It is not a cross-language canonical JSON hash, digital signature, or authentication mechanism.
-
-Earthquake detail and special earthquake information normally retain the same content and MD5 until business data changes. Tsunami MD5 may change when `validUntil` needs renewal even without a new official warning. A changed MD5 alone does not mean a new earthquake or tsunami report. The legacy earthquake list retains the existing MD5 rules described in the preceding section. Files are not guaranteed to form one transactionally consistent snapshot.
-
-### Events, hypocenters, and reports
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `events` | object[] | Up to 100 recent events, including cancelled events and events with only long-period observations; broader than the legacy 50-entry list. Ordered by known origin time, then event ID, descending |
-| `events[].eventId` | string | JMA event ID |
-| `events[].status` | string | `preliminary`: GD summary only; `reported`: at least one effective product report; `cancelled`: all retained product reports have been cancelled |
-| `events[].completeness` | string | `pending`: history recovery in progress; `complete`: available history recovered; `partial`: some history falls outside the recoverable range and cannot be reliably replayed |
-| `events[].hypocenters` | object[] | Deduplicated official hypocenters, referenced by individual reports and their revisions |
-| `events[].reports` | object[] | Latest state of each product and reports still supplying effective fields, ordered by official transmission time ascending; not a complete archive |
-| `events[].summary` | object, optional | Provisional GD (earthquake event list/detail) summary before raw telegrams arrive: `originTime`, `hypocenter`, `magnitude`, `maxIntensity`, and optional `magnitudeText` |
-| `md5` | string | Content identifier described above |
-
-`complete` describes history recovery, not a guarantee that every official field has a value.
-
-Fields in `events[].hypocenters[]`:
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `name`, `code` | string / null | Hypocenter area name and official code |
-| `latitude`, `longitude`, `depth` | number / null | Coordinates in decimal degrees and depth in km; missing depth is not converted to zero |
-| `detail`, `detailCode`, `location` | string, optional | Detailed area name/code and location relative to a reference place |
-| `source` | string, optional | Official hypocenter determination agency, such as PTWC |
-| `description` | string, optional | Official qualitative descriptions such as ごく浅い (very shallow), 700km以上 (700 km or deeper), or unknown values |
-
-In addition to shared metadata, `events[].reports[]` may provide:
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `originTime` | string / null, optional | Official earthquake origin time |
-| `arrivalTime` | string / null, optional | Official detection time; VXSE51 target time is exposed here, not as origin time |
-| `hypocenter` | integer, optional | Index into this event's `hypocenters`; `0` is valid |
-| `magnitude` | number / null, optional | Official magnitude; unknown or qualitative giant-earthquake descriptions are not represented as zero |
-| `magnitudeType` | string, optional | Magnitude scale, such as `Mj` |
-| `magnitudeText`, `magnitudeCondition` | string, optional | Official qualitative magnitude description and condition |
-| `observation` | object, optional | Seismic intensity and long-period observations belonging to this report |
-| `comments`, `text` | object / string, optional | Official comments, body text, or cancellation explanation |
-
-Products include VXSE51 (rapid seismic intensity reports), VXSE52 (hypocenter information), VXSE53 (hypocenter/intensity and distant-earthquake information), VXSE61 (updated hypocentral elements for significant earthquakes), and VXSE62 (long-period ground motion observations). Within a product, a correction replaces the immediately preceding version and cancellation clears that product's effective series. Reports from other products may remain effective. An older report still supplying official comments or other fields retains its own ID and time.
-
-### Seismic intensity and long-period observations
-
-`events[].reports[].observation` is retained separately for each report. Do not combine observations from different products or publication times as if they were simultaneous measurements.
-
-- `maxIntensity`, `maxLongPeriod`, `longPeriodCategory` (optional string): maximum seismic intensity, maximum long-period ground motion class, and official long-period category.
-- `prefs[]`: prefectures, with `code` and `name` (string); optional `int` (intensity), `lg` (long-period class), `condition` (observation condition), and `revise` (revision indicator) are strings.
-- `areas[]`: seismic information subregions with the same fields and `pref`, an integer index into this observation's `prefs`. Long-period stations belong to the area's `stations[]`.
-- `cities[]`: municipalities with the same fields and `area`, an integer index into this observation's `areas`. Seismic intensity stations belong to the municipality's `stations[]`.
-- `stations[]`: `code`, `name`, and optional `int`, `lg`, `condition`, `revise`; long-period stations may also include `sva` (number / null, cm/s) and `periods[]`.
-- `periods[]`: `period` (number, second bands 1–7), optional `class` (string) and `sva` (number / null, cm/s). Empty observation arrays are omitted.
-
-### Earthquake detail JSON example
-
-This reduced structural example comes from a public response. Event and observation arrays and some optional fields have been shortened while preserving parent indices. MD5 has been recalculated for this example. It is not live earthquake information.
-
-```json
-{
-  "events": [
-    {
-      "eventId": "20261116132447",
-      "status": "reported",
-      "completeness": "complete",
-      "hypocenters": [{"name":"石川県能登地方","code":"390","latitude":37.3,"longitude":137,"depth":280}],
-      "reports": [
-        {
-          "id": "2184996cd2b67304661c5461e1e2f41a8f53ce84f8f663a87f53ba253e83b08a00da334789d890022c9018fbdebed11a",
-          "product": "VXSE53",
-          "time": "2026-11-16T04:29:00.000Z",
-          "status": "issued",
-          "issuedAt": "2026-11-16T04:29:02.000Z",
-          "title": "震源・震度情報",
-          "serial": "1",
-          "originTime": "2026-11-16T04:24:00.000Z",
-          "arrivalTime": "2026-11-16T04:24:00.000Z",
-          "hypocenter": 0,
-          "magnitude": 5.1,
-          "magnitudeType": "Mj",
-          "observation": {
-            "maxIntensity": "1",
-            "prefs": [{"code":"02","name":"青森県","int":"1"}],
-            "areas": [{"code":"202","name":"青森県三八上北","int":"1","pref":0}],
-            "cities": [{"code":"0220300","name":"八戸市","int":"1","area":0,"stations":[{"code":"0220302","name":"八戸市湊町","int":"1"}]}]
-          },
-          "comments": {"note":"＊印は気象庁以外の震度観測点についての情報です。","forecast":"この地震による津波の心配はありません。"}
-        }
-      ]
-    }
-  ],
-  "md5": "b5ccb8340333f0b3d1682416a8ca9074"
-}
-```
+| Field | Description |
+| --- | --- |
+| `events` | Up to 100 recent events, including cancelled and long-period-only events; HTTP only, with no WebSocket delivery (Object array) |
+| `events[].eventId` | Official event ID (String) |
+| `events[].status` | `preliminary`: provisional summary only; `reported`: effective reports exist; `cancelled`: all retained product reports are cancelled (String) |
+| `events[].completeness` | `pending`: history recovery in progress; `complete`: available history recovered; `partial`: some history cannot be recovered. `complete` does not guarantee values for every field (String) |
+| `events[].hypocenters` | Deduplicated hypocenters; `name` and `code` are strings or null, with optional `description` for official wording such as ごく浅い (very shallow) (Object array) |
+| `events[].hypocenters[].latitude`, `events[].hypocenters[].longitude` | Coordinates in decimal degrees; null when unknown (Number / null) |
+| `events[].hypocenters[].depth` | Depth in km, positive downwards; null when unknown (Number / null) |
+| `events[].reports` | Latest state of each product and reports still supplying effective fields; not a complete archive (Object array) |
+| `events[].reports[].id` | Report telegram ID (String) |
+| `events[].reports[].product` | Product code: `VXSE51`, `VXSE52`, `VXSE53`, `VXSE61`, or `VXSE62` (String) |
+| `events[].reports[].time`, `events[].reports[].issuedAt`, `events[].reports[].targetTime` | Publication time and optional transmission/target times; UTC RFC 3339, null when unknown (String / null) |
+| `events[].reports[].status` | `issued`, `corrected`, or `cancelled`; cancellation applies to the corresponding product (String) |
+| `events[].reports[].originTime`, `events[].reports[].arrivalTime` | Origin and detection times in UTC RFC 3339; do not treat them as interchangeable (String / null; optional) |
+| `events[].reports[].hypocenter` | Index into this event's `hypocenters`; `0` is valid (Integer; optional) |
+| `events[].reports[].magnitude` | Magnitude; null for unknown or nonnumeric qualitative descriptions (Number / null; optional) |
+| `events[].reports[].magnitudeType`, `events[].reports[].magnitudeText`, `events[].reports[].magnitudeCondition` | Magnitude scale, such as `Mj`, qualitative description, and condition (String; optional) |
+| `events[].reports[].observation` | This report's observations; do not merge different products or times into simultaneous measurements (Object; optional) |
+| `events[].reports[].observation.maxIntensity`, `events[].reports[].observation.maxLongPeriod` | Maximum seismic intensity and long-period class; intensity retains official strings such as `5-` and `5+` (String; optional) |
+| `events[].reports[].observation.prefs` | Prefectures with `code`, `name`, and optional `int` (intensity), `lg` (long-period class), and related fields (Object array; optional) |
+| `events[].reports[].observation.areas` | Subregions; `pref` indexes this observation's `prefs`, with `0` valid (Object array; optional) |
+| `events[].reports[].observation.cities` | Municipalities; `area` indexes this observation's `areas`, with `0` valid (Object array; optional) |
+| `events[].reports[].observation.areas[].stations`, `events[].reports[].observation.cities[].stations` | Area/municipal stations with `code`, `name`, and optional `int`, `lg`; long-period data may include `sva` (number/null, cm/s) and `periods` (per-band `period`, `class`, `sva`) (Object array; optional) |
+| `events[].reports[].comments` | Official comments: optional `forecast`, `warning`, `note`, `text` strings and a `urls` string array (Object; optional) |
+| `events[].reports[].text` | Official body text or cancellation explanation (String; optional) |
+| `events[].summary` | Provisional summary before raw telegrams are available: `originTime`, `hypocenter` index, `magnitude`, `maxIntensity`, and optional `magnitudeText` (Object; optional) |
+| `md5` | Hash identifying content changes (String) |
 
 ## JMA Tsunami Information JSON API
 
-- Description: Retrieves the nationwide official warning/forecast state and separate tsunami observation reports. Issued by JMA / Delivered via DMDATA.JP / Processed and provided by Wolfx Project.
+- Description: Retrieves the nationwide tsunami warning/forecast state and official tsunami observation reports
 - HTTP GET API Endpoint:
 
 ```text
@@ -254,122 +160,31 @@ https://api.wolfx.jp/jma_tsunami.json
 wss://ws-api.wolfx.jp/jma_tsunami
 ```
 
-The WebSocket `type` is `jma_tsunami` and the manual query is `query_jmatsunami`. Updates are also broadcast on `all_eew`. HTTP JSON does not acquire a `type` field.
+- JSON Field Descriptions (Data Types):
 
-### Tsunami root fields
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `status`, `reason` | string | State and reason; distinguish the states below |
-| `trusted` | boolean | Whether the conditions for trust after reconciliation with the upstream official state are satisfied |
-| `validUntil` | string / null | Root trust deadline; clients must enforce expiry themselves |
-| `report` | object / null | Shared metadata and `eventIds` (string[]) for the latest VTSE41 nationwide warning/forecast snapshot |
-| `areas` | object[] | Trusted warning, forecast, cleared, or no-tsunami areas; empty when untrusted or officially expired |
-| `observations` | object[] | Latest relevant VTSE51 and VTSE52 reports, at most one per product |
-| `comments`, `text` | object / string, optional | Current official comments and body text |
-| `lastKnown` | object, optional | Last known `areas`, `observations`, and optional `comments`, `text`, retained only when untrusted; not a currently valid warning |
-| `md5` | string | Content identifier, also affected by trust-deadline renewal |
-
-| status | Meaning |
+| Field | Description |
 | --- | --- |
-| `uninitialized` | Ingestion is healthy but no authoritative VTSE41 snapshot has been obtained |
-| `unknown` | Current state cannot be established because of disconnection, failed reconciliation, parsing failure, conflict, cancellation, or trust expiry; does not mean no tsunami risk |
-| `active` | Major Tsunami Warning, Tsunami Warning, or Tsunami Advisory present |
-| `forecast_only` | Tsunami forecast only |
-| `cleared` | Officially lifted |
-| `expired` | Official ValidDateTime has passed; not an official lifting of warnings |
-| `none_reported` | Official area classification explicitly states 津波なし (no tsunami); never inferred from an empty array |
-
-`reason` is one of `no_authoritative_snapshot`, `official_snapshot`, `report_cancelled`, `unsupported_or_conflicting_report`, `warning_requires_revalidation`, `clock_skew`, or `source_unverified`. Do not use the reason alone to assess risk.
-
-### Enforcing the trust deadline
-
-The public trust window is at most about 90 seconds and is renewed only after successful reconciliation with the authoritative upstream state. Official expiry and other conditions may shorten it. Checking `trusted=true` alone is insufficient: require a valid, nonempty deadline and check the current time, then interpret `status`.
-
-```js
-const deadline = typeof data.validUntil === 'string' && data.validUntil.length > 0
-  ? Date.parse(data.validUntil)
-  : NaN
-const usable = data.trusted === true
-  && Number.isFinite(deadline)
-  && Date.now() < deadline
-```
-
-`usable` only indicates that the trust deadline has not passed; it does not establish safety. An active warning or a verified `expired` state can have `trusted=true`. Clients must expire their cached state even after WebSocket disconnection, a lack of new messages, or an HTTP cache ceasing to update. `areas=[]` does not mean safe.
-
-### Areas, waves, and observations
-
-`areas[]` contains `code`, `name`, `level`, and `kind` (all string), plus optional `previousKind` (previous official category code), `firstWave`, `maxWave`, and `stations[]`. `kind` retains the official code; `level` maps as follows:
-
-| level | kind | Meaning |
-| --- | --- | --- |
-| `major_warning` | `52`, `53` | Major Tsunami Warning |
-| `warning` | `51` | Tsunami Warning |
-| `advisory` | `62` | Tsunami Advisory |
-| `forecast` | `71`, `72`, `73` | Tsunami forecast |
-| `cleared` | `50`, `60` | Officially lifted |
-| `none` | `00` | No tsunami |
-
-`firstWave` and `maxWave` are wave objects whose meaning depends on the official forecast, observation, or estimation context. They are not always measurements.
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `time` | string / null, optional | Official arrival or observation time |
-| `height` | number / null, optional | Height in m; interpret together with `text` |
-| `text`, `heightCondition` | string, optional | Official height description and condition, such as 巨大 (huge), 高い (high), 10m超 (over 10 m), or 不明 (unknown) |
-| `condition` | string, optional | Arrival/observation condition, such as 観測中 (observation ongoing) or 欠測 (missing observation) |
-| `initial`, `revise` | string, optional | Initial motion (rise/fall) and revision indicator |
-
-`height=10` with `text=１０ｍ超` expresses a lower bound, not an exact height of 10 m. Do not convert 巨大, 高い, 不明, 観測中, or 欠測 into ordinary numbers or zero.
-
-`stations[]` contains `code`, `name` (string), and optional `sensor` (string), `highTide` (string / null, high-tide time), `firstWave`, and `maxWave`.
-
-`observations[]` contains shared report metadata, `eventIds` (string[]), and optional `areas` (that report's arrival forecasts and high-tide information), `observed` (measurements), `estimated` (coastal estimates), `comments`, and `text`. `observed[]` and `estimated[]` contain `code`, `name`, and optional `stations`, `firstWave`, `maxWave`; empty area codes in offshore observations remain empty strings.
-
-These separate VTSE51/52 reports do not overwrite the root VTSE41 nationwide snapshot. The latest observation sharing an event ID with a warning may have an earlier publication time and must not reactivate a lifted warning. Corrections update the relevant version; cancelled observations retain cancellation metadata and text without the cancelled measurements. Cancelling VTSE41 itself produces `unknown` and does not restore an older warning. After failed reconciliation or disconnection, `lastKnown` is reference information only, not a currently valid warning.
-
-### Tsunami JSON example
-
-This reduced structural example is based on JMA's official format sample `32-39_11_02_250206_VTSE41.xml`. It shows an unverified state: warning areas appear only inside `lastKnown`. MD5 has been recalculated for the example. It does not describe current tsunami conditions.
-
-```json
-{
-  "status": "unknown",
-  "reason": "source_unverified",
-  "trusted": false,
-  "validUntil": null,
-  "report": {
-    "id": "71fc2503ab7b8688052c52722c93dfa5",
-    "product": "VTSE41",
-    "time": "2011-03-11T05:49:00.000Z",
-    "status": "issued",
-    "issuedAt": "2011-03-11T05:49:59.000Z",
-    "title": "大津波警報・津波警報・津波注意報・津波予報",
-    "eventIds": ["20110311144640"]
-  },
-  "areas": [],
-  "observations": [],
-  "lastKnown": {
-    "areas": [
-      {
-        "code": "210",
-        "name": "岩手県",
-        "level": "major_warning",
-        "kind": "53",
-        "previousKind": "00",
-        "firstWave": {"condition":"津波到達中と推測"},
-        "maxWave": {"height":null,"text":"巨大","heightCondition":"不明"}
-      }
-    ],
-    "observations": []
-  },
-  "md5": "08c2827ce954f62bbed80484e44c17fd"
-}
-```
+| `type` | (WebSocket only) jma_tsunami (String) |
+| `status` | `uninitialized`: not yet obtained; `unknown`: state unknown, no assurance of safety; `active`: warning/advisory present; `forecast_only`: forecast only; `cleared`: officially lifted; `expired`: official validity elapsed, not lifted; `none_reported`: explicitly classified as no tsunami (String) |
+| `reason` | Reason for the state; not an independent risk assessment (String) |
+| `trusted` | Whether trust conditions following reconciliation with the current authoritative state are met; true does not mean no tsunami risk (Boolean) |
+| `validUntil` | Trust deadline (UTC RFC 3339). Trust is current only when `trusted=true`, the deadline is valid and nonempty, and the current time is before it; clients must enforce expiry after disconnection or without new messages (String / null) |
+| `report` | Latest nationwide `VTSE41` snapshot: `id`, `product`, `time`, `status`, and `eventIds` (string array); timestamps use UTC RFC 3339 (Object / null) |
+| `areas` | Official warning/forecast areas with `code`, `name`, categories, wave information, and stations; an empty array does not mean safe (Object array) |
+| `areas[].level` | `major_warning`: Major Tsunami Warning; `warning`: Tsunami Warning; `advisory`: Tsunami Advisory; `forecast`: forecast; `cleared`: lifted; `none`: no tsunami (String) |
+| `areas[].kind`, `areas[].previousKind` | Official category code and previous category code; `previousKind` is optional (String) |
+| `areas[].firstWave`, `areas[].maxWave` | First/maximum wave, with optional `time` (UTC RFC 3339), `height` (number/null, m), `text`, and conditions; 巨大, 高い, 10m超, and 以上 are qualitative/lower-bound descriptions, not precise measurements (Object; optional) |
+| `areas[].stations` | Area stations with `code`, `name`, and optional high-tide time `highTide`, `firstWave`, `maxWave`, and related fields (Object array; optional) |
+| `observations` | Latest relevant `VTSE51` and `VTSE52` observation reports with their own IDs, times, and cancellation states; do not overwrite `VTSE41` warning areas (Object array) |
+| `observations[].observed`, `observations[].estimated` | Measured/coastal-estimated areas, stations, and wave information; observation times may differ between reports (Object array; optional) |
+| `lastKnown` | Last known areas, observations, and comments when untrusted; reference only, not a currently valid warning (Object; optional) |
+| `comments` | Official comments: optional `forecast`, `warning`, `note`, `text` strings and a `urls` string array (Object; optional) |
+| `text` | Official body text (String; optional) |
+| `md5` | Content-change identifier; trust-deadline renewal can also change it without a new JMA warning (String) |
 
 ## JMA Special Earthquake Information JSON API
 
-- Description: Retrieves the latest official report for each product, not a determination of currently valid alert status or a complete archive. Issued by JMA / Delivered via DMDATA.JP / Processed and provided by Wolfx Project.
+- Description: Retrieves the latest official reports concerning the Nankai Trough and the areas off Hokkaido and Sanriku
 - HTTP GET API Endpoint:
 
 ```text
@@ -382,62 +197,22 @@ https://api.wolfx.jp/jma_special_eq.json
 wss://ws-api.wolfx.jp/jma_special_eq
 ```
 
-The WebSocket `type` is `jma_special_eq` and the manual query is `query_jmaspecialeq`. Updates are also broadcast on `all_eew`.
+- JSON Field Descriptions (Data Types):
 
-| product | Official product |
+| Field | Description |
 | --- | --- |
-| `VYSE50` | Nankai Trough Earthquake Extra Information (南海トラフ地震臨時情報) |
-| `VYSE51` | Commentary on Nankai Trough Earthquake Extra Information (南海トラフ地震臨時情報に関する解説情報) |
-| `VYSE52` | Nankai Trough Earthquake-Related Commentary, including regular commentary (南海トラフ地震関連解説情報) |
-| `VYSE60` | Off the Coast of Hokkaido and Sanriku Subsequent Earthquake Advisory (北海道・三陸沖後発地震注意情報) |
-
-### Special earthquake information fields
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `reports` | object[] | Latest official report per product, at most four reports in total |
-| `appendices` | string[] | Deduplicated official appendices |
-| `md5` | string | Content identifier |
-
-`reports[]` uses shared `id`, `product`, `time`, `status`, and optional `issuedAt`, `targetTime`, `title`, `serial`, `validUntil`, plus:
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `eventIds` | string[] | Official associated event IDs |
-| `kind` | string, optional | Official information kind in the body (EarthquakeInfo/InfoKind) |
-| `code`, `label` | string, optional | Official information serial code and name (InfoSerial) |
-| `text` | string, optional | Official body text |
-| `notice` | string, optional | Body/Text when different from the main text, such as a cancellation explanation |
-| `next` | string, optional | Official statement about the next publication |
-| `appendix` | integer, optional | Index into root `appendices`; `0` is valid |
-
-Corrections and cancellations retain the latest report's corresponding status and official text without reverting to an older alert report. Regular VYSE52 commentary does not mean a temporary earthquake alert is currently in effect. Do not infer current risk from a retained old report; check the official publication time, status, and text.
-
-### Special earthquake information JSON example
-
-This structural example is based on official format sample `75_01_04_200512_VYSE52.xml`. Optional `text` and some other fields are omitted; the full appendix and valid index `0` are retained. MD5 has been recalculated for the example. Its historical dates do not indicate a current alert.
-
-```json
-{
-  "reports": [
-    {
-      "id": "2182f774aed16953ae288f821cb0aaf0",
-      "product": "VYSE52",
-      "time": "2020-05-12T07:44:00.000Z",
-      "status": "issued",
-      "issuedAt": "2020-05-12T07:44:52.000Z",
-      "title": "南海トラフ地震関連解説情報",
-      "eventIds": ["20200512164400"],
-      "kind": "南海トラフ地震関連解説情報",
-      "code": "200",
-      "label": "定例解説",
-      "appendix": 0
-    }
-  ],
-  "appendices": ["＊＊　（参考）　南海トラフ地震に関連する情報の種類　＊＊\n【南海トラフ地震臨時情報】\n情報発表条件：\n○南海トラフ沿いで異常な現象が観測され、その現象が南海トラフ沿いの大規模な地震と関連するかどうか調査を開始した場合、または調査を継続している場合\n○観測された異常な現象の調査結果を発表する場合\n\n情報名に付記するキーワード：\n○「調査中」　下記のいずれかにより臨時に「南海トラフ沿いの地震に関する評価検討会」を開催する場合\n・監視領域内※１でマグニチュード６．８以上の地震※２が発生\n・１カ所以上のひずみ計での有意な変化と共に、他の複数の観測点でもそれに関係すると思われる変化が観測され、想定震源域内のプレート境界で通常と異なるゆっくりすべりが発生している可能性がある場合など、ひずみ計で南海トラフ地震との関連性の検討が必要と認められる変化を観測\n・その他、想定震源域内のプレート境界の固着状態の変化を示す可能性のある現象が観測される等、南海トラフ地震との関連性の検討が必要と認められる現象を観測\n○「巨大地震警戒」　想定震源域内のプレート境界において、モーメントマグニチュード８．０以上の地震が発生したと評価した場合\n○「巨大地震注意」\n・監視領域内※１において、モーメントマグニチュード７．０以上の地震※２が発生したと評価した場合（巨大地震警戒に該当する場合は除く）\n・想定震源域内のプレート境界において、通常と異なるゆっくりすべりが発生したと評価した場合\n○「調査終了」　（巨大地震警戒）、（巨大地震注意）のいずれにも当てはまらない現象と評価した場合\n※１　南海トラフの想定震源域及び想定震源域の海溝軸外側５０ｋｍ程度までの範囲\n※２　太平洋プレートの沈み込みに伴う震源が深い地震は除く\n\n【南海トラフ地震関連解説情報】\n情報発表条件：\n○観測された異常な現象の調査結果を発表した後の状況の推移等を発表する場合\n○「南海トラフ沿いの地震に関する評価検討会」の定例会合における調査結果を発表する場合（ただし南海トラフ地震臨時情報を発表する場合を除く）\n※すでに必要な防災対応がとられている際は、調査を開始した旨や調査結果を南海トラフ地震関連解説情報で発表する場合があります。"],
-  "md5": "a61d13383d70499b764813701ae79211"
-}
-```
+| `type` | (WebSocket only) jma_special_eq (String) |
+| `reports` | Latest report per product, up to four in total; not a complete archive, and a retained report does not mean an alert is still in effect (Object array) |
+| `reports[].id` | Report telegram ID (String) |
+| `reports[].product` | `VYSE50`: Nankai Trough Earthquake Extra Information; `VYSE51`: commentary on that extra information; `VYSE52`: Nankai Trough Earthquake-Related Commentary; `VYSE60`: Off the Coast of Hokkaido and Sanriku Subsequent Earthquake Advisory. Regular commentary does not indicate a temporary alert (String) |
+| `reports[].time` | Official publication time (UTC RFC 3339) (String / null) |
+| `reports[].status` | `issued`, `corrected`, or `cancelled`, preserving the latest report's corresponding state (String) |
+| `reports[].eventIds` | Official associated event IDs (String array) |
+| `reports[].kind`, `reports[].code`, `reports[].label`, `reports[].title` | Official information kind, serial code/name, and report title (String; optional) |
+| `reports[].text`, `reports[].notice`, `reports[].next` | Official body text, supplementary text such as cancellation explanations, and next-publication information (String; optional) |
+| `reports[].appendix` | Integer index into root `appendices`; `0` is valid (Integer; optional) |
+| `appendices` | Deduplicated official appendices (String array) |
+| `md5` | Hash identifying content changes (String) |
 
 ## China Earthquake Networks Center - Earthquake Information JSON API
 

@@ -1,4 +1,3 @@
-import { createHash } from 'node:crypto'
 import { expect, test } from '@playwright/test'
 import { jmaSections } from '../../scripts/check-jma-docs.mjs'
 
@@ -42,22 +41,27 @@ for (const locale of ['ja', 'zh', 'en']) {
         await expect.poll(() => page.evaluate(() => decodeURIComponent(location.hash))).toBe(decodeURIComponent(href))
         expect(await heading.evaluate(element => element.getBoundingClientRect().top
           >= document.querySelector('.site-header').getBoundingClientRect().bottom - 1)).toBeTruthy()
-      }
 
-      // Assert the rendered code blocks are parseable JSON, with matching hashes
-      // and intact zero-based references, rather than just searching HTML strings.
-      const jsonBlocks = page.locator('.code-block').filter({ has: page.locator('.code-block__header', { hasText: /^json$/ }) }).locator('pre')
-      await expect(jsonBlocks).toHaveCount(3)
-      for (let i = 0; i < 3; i++) {
-        const { md5, ...body } = JSON.parse(await jsonBlocks.nth(i).innerText())
-        expect(md5).toBe(createHash('md5').update(JSON.stringify(body)).digest('hex'))
-        expect(body).not.toHaveProperty('type')
-        if (i === 0)
-          expect(body.events[0].reports[0].hypocenter).toBe(0)
-        else if (i === 1)
-          expect([body.status, body.trusted, body.validUntil]).toEqual(['unknown', false, null])
-        else
-          expect(body.reports[0].appendix).toBe(0)
+        const section = await heading.evaluate((element) => {
+          const nodes = []
+          for (let node = element.nextElementSibling; node && node.tagName !== 'H2'; node = node.nextElementSibling)
+            nodes.push(node)
+          const tables = nodes.flatMap(node => [...node.querySelectorAll('table')])
+          return {
+            headings: nodes.filter(node => /^H[3-6]$/.test(node.tagName)).length,
+            tables: tables.map(table => ({
+              headers: [...table.querySelectorAll('th')].map(cell => cell.textContent.trim()),
+              fields: [...table.querySelectorAll('tbody tr')].map(row => row.cells[0].textContent),
+            })),
+            languages: nodes.flatMap(node => [...node.querySelectorAll('.code-block__header')].map(header => header.textContent.trim())),
+          }
+        })
+        expect(section.headings).toBe(0)
+        expect(section.tables).toHaveLength(1)
+        expect(section.tables[0].headers).toEqual(['Field', 'Description'])
+        expect(section.tables[0].fields).toContain('md5')
+        expect(section.tables[0].fields.length).toBeGreaterThan(5)
+        expect(section.languages.every(language => language === 'text')).toBeTruthy()
       }
 
       const layout = await page.evaluate(() => ({
@@ -70,7 +74,7 @@ for (const locale of ['ja', 'zh', 'en']) {
         code: [...document.querySelectorAll('.code-block pre')].map(element => getComputedStyle(element).overflowX),
       }))
       expect(layout.overflow).toBeLessThanOrEqual(1)
-      expect(layout.tables.filter(table => table.columns === 3).length).toBeGreaterThanOrEqual(8)
+      expect(layout.tables.every(table => table.columns === 2)).toBeTruthy()
       expect(layout.tables.every(table => table.overflow === 'auto' && table.rows > 0)).toBeTruthy()
       expect(layout.code.every(overflow => overflow === 'auto')).toBeTruthy()
       if (width === 390) {

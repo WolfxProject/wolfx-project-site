@@ -82,7 +82,7 @@ wss://ws-api.wolfx.jp/jma_special_eq
 
 ## WebSocket 手動クエリコマンド
 
-手動クエリは接続先のデータ源、または `all_eew` から対応するデータ源のキャッシュ済み JSON を取得します。新しい公式報告の発表を要求する操作ではありません。自動配信は対応する業務 JSON の更新時に行われます。
+手動クエリは、対応するデータ源または `all_eew` の接続で、そのデータ源のキャッシュ済み JSON を取得します。
 
 - Ping:
 
@@ -145,8 +145,6 @@ query_jmaspecialeq
 ```
 
 ## WebSocket JSON データ仕様
-
-業務メッセージの `type` は WebSocket が付与するデータ源識別子です。HTTP JSON に必ず存在するフィールドではありません。
 
 - 共通のJSONフィールドの説明:
 

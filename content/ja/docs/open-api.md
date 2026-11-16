@@ -107,141 +107,47 @@ wss://ws-api.wolfx.jp/jma_eqlist
 
 ## JMA 地震詳細 JSON API
 
-- 説明: 地震イベントごとに、震源・震度・長周期地震動の観測、公式説明、訂正・取消および履歴補完の状態を取得します。情報源は、気象庁発表 / DMDATA.JP配信 / Wolfx Project加工・提供です。以下の津波・特別地震情報 API も同じ情報源です。
+- 説明: 地震イベントごとの震源、震度・長周期地震動観測、公式説明と報告状態を取得
 - HTTP GET APIアドレス:
 
 ```text
 https://api.wolfx.jp/jma_earthquake_detail.json
 ```
 
-この API は HTTP のみで、独立した WebSocket 接続先や手動クエリはありません。`all_eew` にも含まれません。
+- JSONフィールドの説明（データ型）:
 
-### 新しい3 APIの共通形式
-
-以下の地震詳細・津波情報・特別地震情報に適用します。従来の `jma_eqlist.json` の文字列型や JST の時刻形式とは異なります。
-
-- 時刻は UTC RFC 3339（例: `2026-11-15T00:00:00.000Z`）。緯度・経度は十進度、深さは km（下向きを正）、津波の高さは m、長周期地震動の `sva` は cm/s です。
-- コード・イベントID・情報番号は文字列で、先頭のゼロを保持します。震度は `5-`、`5+` などの公式文字列です。長周期地震動階級も文字列で、不明値をゼロに変換しません。
-- `null` は不明または信頼できる数値・時刻に変換できない値です。省略された項目は、その報告が提供していない項目、または同じ製品の別の有効な報告が提供する項目です。省略をゼロや取消と解釈しないでください。
-- 配列の参照は0始まりの整数です。`0` は有効な索引で、永続的な識別子ではありません。空配列は公開対象がないことを示すだけで、安全を保証しません。
-
-各 API の報告オブジェクトには次の共通メタデータがあります。「任意」の項目は省略されます。
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `id` | string | DMDATA の電文ID。下記の公式サンプル由来の例ではオフライン識別子 |
-| `product` | string | `VXSE53` などの公式製品コード |
-| `time` | string / null | 公式発表時刻（Head/ReportDateTime）。発震時刻とは別 |
-| `status` | string | `issued`（発表）、`corrected`（訂正）、`cancelled`（取消） |
-| `issuedAt` | string / null、任意 | Control/DateTime。`time` と異なる場合に提供し、報告の並び順と訂正処理の基準に使用 |
-| `targetTime` | string / null、任意 | Head/TargetDateTime。`time` と異なる場合に提供。発震時刻の代わりにはしない |
-| `title` | string、任意 | 公式表題。従来の表記互換のため「震源・震度に関する情報」は「震源・震度情報」と表示 |
-| `serial` | string、任意 | 公式の情報番号 |
-| `validUntil` | string / null、任意 | 公式の Head/ValidDateTime。津波 API の根の同名フィールドとは別の期限 |
-
-`comments` は任意の公式説明オブジェクトです。`forecast`、`warning`、`note`、`text` は文字列、`urls` は文字列配列です。同種の複数段落は原順で空行を挟んで連結します。
-
-### 内容の更新とMD5
-
-3 API の根の `md5`（string）は内容の変更を識別する32桁の小文字16進数です。根の `md5` を除くオブジェクトを、サービスが出力するキー順のままコンパクトな UTF-8 JSON に直列化したバイト列から計算します。言語間でキーを並べ替える規範化 JSON ハッシュではなく、電子署名や認証にも使えません。
-
-地震詳細・特別地震情報は業務内容に変化がなければ、通常は内容と MD5 が安定します。津波情報では、公式警報の新規発表がなくても、必要な `validUntil` の更新で MD5 が変わります。MD5 の変化だけで新しい地震や津波の発表と判定しないでください。従来の地震リストの MD5 は前節の既存仕様に従います。ファイル間で同一時点のスナップショットを保証するものではありません。
-
-### イベント・震源・報告
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `events` | object[] | 最近の最大100イベント。取消済み・長周期地震動のみのイベントも含み、従来の50件リストより広い集合。既知の発震時刻、イベントIDの降順 |
-| `events[].eventId` | string | 気象庁のイベントID |
-| `events[].status` | string | `preliminary`: GD の暫定概要のみ。`reported`: 有効な製品報告あり。`cancelled`: 保持する製品報告がすべて取消済み |
-| `events[].completeness` | string | `pending`: 履歴補完中。`complete`: 取得可能な履歴の補完済み。`partial`: 復元可能な範囲外の履歴があり、完全には再現できない |
-| `events[].hypocenters` | object[] | 重複を除いた公式震源。報告ごとの修正を参照で表現 |
-| `events[].reports` | object[] | 製品ごとの最新状態と、現在も有効な項目の提供元の報告。公式伝送時刻の昇順。完全な履歴ではない |
-| `events[].summary` | object、任意 | 原電文がまだない GD（地震イベント一覧・詳細）の暫定概要。`originTime`、`hypocenter`、`magnitude`、`maxIntensity` と任意の `magnitudeText` |
-| `md5` | string | 前述の内容識別子 |
-
-`complete` は履歴の補完状態であり、すべての公式項目に値があることを保証しません。
-
-`events[].hypocenters[]` の項目:
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `name`, `code` | string / null | 震央地名・公式コード |
-| `latitude`, `longitude`, `depth` | number / null | 十進度の緯度・経度、km の深さ。欠測深度を0にしない |
-| `detail`, `detailCode`, `location` | string、任意 | 詳細な震央地名・コード、参照地点からの位置 |
-| `source` | string、任意 | PTWC など公式の震源決定機関 |
-| `description` | string、任意 | 「ごく浅い」「700km以上」や不明など、数値だけでは表せない公式記述 |
-
-`events[].reports[]` は共通メタデータに加え、次の項目を必要に応じて提供します。
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `originTime` | string / null、任意 | 公式の発震時刻 |
-| `arrivalTime` | string / null、任意 | 公式の検知時刻。VXSE51 の対象時刻はここに入り、発震時刻と混同しない |
-| `hypocenter` | integer、任意 | 同じイベントの `hypocenters` の索引。`0` も有効 |
-| `magnitude` | number / null、任意 | 公式震級。不明・定性的な巨大地震表現を0にしない |
-| `magnitudeType` | string、任意 | `Mj` などの震級種別 |
-| `magnitudeText`, `magnitudeCondition` | string、任意 | 震級の定性的な説明・状態 |
-| `observation` | object、任意 | その報告に属する震度・長周期地震動観測 |
-| `comments`, `text` | object / string、任意 | 公式説明、本文または取消説明 |
-
-対象製品は VXSE51（震度速報）、VXSE52（震源に関する情報）、VXSE53（震源・震度情報、遠地地震に関する情報）、VXSE61（顕著な地震の震源要素更新のお知らせ）、VXSE62（長周期地震動に関する観測情報）です。同じ製品の訂正は直前の版を置き換え、取消はその製品の有効な系列を取り消します。他製品の報告は引き続き有効な場合があります。以前の報告が公式説明などを提供し続ける場合、その報告自身のID・時刻を保持します。
-
-### 震度・長周期地震動の観測
-
-`events[].reports[].observation` は報告ごとに保持します。異なる製品・発表時刻の観測を同時刻の観測として合成しないでください。
-
-- `maxIntensity`、`maxLongPeriod`、`longPeriodCategory`（任意の string）: 最大震度、最大長周期地震動階級、公式の長周期区分。
-- `prefs[]`: 都道府県。`code`、`name`（string）、任意の `int`（震度）、`lg`（長周期地震動階級）、`condition`（観測状態）、`revise`（修正表示）は string。
-- `areas[]`: 地震情報の細分区域。同種の項目と `pref`（同じ観測内の `prefs` の整数索引）。長周期観測点はこの区域の `stations[]` に属します。
-- `cities[]`: 市町村。同種の項目と `area`（同じ観測内の `areas` の整数索引）。震度観測点はこの市町村の `stations[]` に属します。
-- `stations[]`: `code`、`name` と、任意の `int`、`lg`、`condition`、`revise`。長周期観測では `sva`（number / null、cm/s）と `periods[]` も提供されます。
-- `periods[]`: `period`（number、1〜7の秒台の周期帯）、任意の `class`（string、階級）・`sva`（number / null、cm/s）。空の観測配列は省略されます。
-
-### 地震詳細のJSON例
-
-公開レスポンスを縮小した構造例です。イベント・観測配列と任意の項目を省略し、親への索引を保持しています。MD5 はこの例の内容で再計算しています。リアルタイムの地震情報ではありません。
-
-```json
-{
-  "events": [
-    {
-      "eventId": "20261116132447",
-      "status": "reported",
-      "completeness": "complete",
-      "hypocenters": [{"name":"石川県能登地方","code":"390","latitude":37.3,"longitude":137,"depth":280}],
-      "reports": [
-        {
-          "id": "2184996cd2b67304661c5461e1e2f41a8f53ce84f8f663a87f53ba253e83b08a00da334789d890022c9018fbdebed11a",
-          "product": "VXSE53",
-          "time": "2026-11-16T04:29:00.000Z",
-          "status": "issued",
-          "issuedAt": "2026-11-16T04:29:02.000Z",
-          "title": "震源・震度情報",
-          "serial": "1",
-          "originTime": "2026-11-16T04:24:00.000Z",
-          "arrivalTime": "2026-11-16T04:24:00.000Z",
-          "hypocenter": 0,
-          "magnitude": 5.1,
-          "magnitudeType": "Mj",
-          "observation": {
-            "maxIntensity": "1",
-            "prefs": [{"code":"02","name":"青森県","int":"1"}],
-            "areas": [{"code":"202","name":"青森県三八上北","int":"1","pref":0}],
-            "cities": [{"code":"0220300","name":"八戸市","int":"1","area":0,"stations":[{"code":"0220302","name":"八戸市湊町","int":"1"}]}]
-          },
-          "comments": {"note":"＊印は気象庁以外の震度観測点についての情報です。","forecast":"この地震による津波の心配はありません。"}
-        }
-      ]
-    }
-  ],
-  "md5": "b5ccb8340333f0b3d1682416a8ca9074"
-}
-```
+| Field | Description |
+| --- | --- |
+| `events` | 最近の最大100イベント。取消済み・長周期観測のみのイベントを含む。HTTP のみで WebSocket 配信なし（オブジェクト配列） |
+| `events[].eventId` | 公式イベントID（文字列型） |
+| `events[].status` | `preliminary`: 暫定概要のみ、`reported`: 有効な報告あり、`cancelled`: 保持する製品報告がすべて取消済み（文字列型） |
+| `events[].completeness` | `pending`: 履歴補完中、`complete`: 取得可能な履歴の補完済み、`partial`: 一部履歴を復元できない。`complete` でも欠測値はあり得る（文字列型） |
+| `events[].hypocenters` | 重複を除いた震源。`name`・`code` は文字列または null、任意の `description` は「ごく浅い」などの公式記述（オブジェクト配列） |
+| `events[].hypocenters[].latitude`, `events[].hypocenters[].longitude` | 十進度の緯度・経度。不明は null（数値型 / null） |
+| `events[].hypocenters[].depth` | 深さ（km、下向きを正）。不明は null（数値型 / null） |
+| `events[].reports` | 各製品の最新状態と、有効な項目を提供する報告。完全な履歴ではない（オブジェクト配列） |
+| `events[].reports[].id` | 報告の電文ID（文字列型） |
+| `events[].reports[].product` | 製品コード: `VXSE51`、`VXSE52`、`VXSE53`、`VXSE61`、`VXSE62`（文字列型） |
+| `events[].reports[].time`, `events[].reports[].issuedAt`, `events[].reports[].targetTime` | 発表時刻、任意の発信・対象時刻。UTC RFC 3339、不明は null（文字列型 / null） |
+| `events[].reports[].status` | `issued`: 発表、`corrected`: 訂正、`cancelled`: 取消。取消は該当製品に適用（文字列型） |
+| `events[].reports[].originTime`, `events[].reports[].arrivalTime` | 発震時刻・検知時刻。UTC RFC 3339、両者を混同しない（文字列型 / null、任意） |
+| `events[].reports[].hypocenter` | 同じイベントの `hypocenters` の索引。`0` は有効（整数型、任意） |
+| `events[].reports[].magnitude` | 震級。不明・数値化できない定性的表現は null（数値型 / null、任意） |
+| `events[].reports[].magnitudeType`, `events[].reports[].magnitudeText`, `events[].reports[].magnitudeCondition` | 震級種別（`Mj` など）、定性的説明・状態（文字列型、任意） |
+| `events[].reports[].observation` | その報告の観測。異なる製品・時刻の観測を同時刻の値として合成しない（オブジェクト型、任意） |
+| `events[].reports[].observation.maxIntensity`, `events[].reports[].observation.maxLongPeriod` | 最大震度・最大長周期地震動階級。震度は `5-`、`5+` などの公式文字列（文字列型、任意） |
+| `events[].reports[].observation.prefs` | 都道府県。`code`・`name` と任意の `int`（震度）・`lg`（長周期階級）など（オブジェクト配列、任意） |
+| `events[].reports[].observation.areas` | 細分区域。`pref` は同じ観測内の `prefs` の整数索引で、`0` も有効（オブジェクト配列、任意） |
+| `events[].reports[].observation.cities` | 市町村。`area` は同じ観測内の `areas` の整数索引で、`0` も有効（オブジェクト配列、任意） |
+| `events[].reports[].observation.areas[].stations`, `events[].reports[].observation.cities[].stations` | 区域・市町村の観測点。`code`・`name`、任意の `int`・`lg`。長周期では `sva`（数値/null、cm/s）、`periods`（周期帯ごとの `period`・`class`・`sva`）も提供（オブジェクト配列、任意） |
+| `events[].reports[].comments` | 公式説明。任意の `forecast`・`warning`・`note`・`text` は文字列、`urls` は文字列配列（オブジェクト型、任意） |
+| `events[].reports[].text` | 公式本文・取消説明（文字列型、任意） |
+| `events[].summary` | 原電文がない場合の暫定概要。`originTime`、`hypocenter` 索引、`magnitude`、`maxIntensity`、任意の `magnitudeText`（オブジェクト型、任意） |
+| `md5` | 内容の変更を識別するハッシュ値（文字列型） |
 
 ## JMA 津波情報 JSON API
 
-- 説明: 全国の公式警報・予報の状態と、独立した津波観測報告を取得します。気象庁発表 / DMDATA.JP配信 / Wolfx Project加工・提供。
+- 説明: 全国の津波警報・予報の状態と公式の津波観測報告を取得
 - HTTP GET APIアドレス:
 
 ```text
@@ -254,122 +160,31 @@ https://api.wolfx.jp/jma_tsunami.json
 wss://ws-api.wolfx.jp/jma_tsunami
 ```
 
-WebSocket の `type` は `jma_tsunami`、手動クエリは `query_jmatsunami` です。`all_eew` でも配信されます。HTTP JSON に `type` は付与されません。
+- JSONフィールドの説明（データ型）:
 
-### 津波情報の根フィールド
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `status`, `reason` | string | 状態とその理由。下記の区別が必要 |
-| `trusted` | boolean | 上流の公式状態との照合による信頼条件を満たしているか |
-| `validUntil` | string / null | 根の信頼期限。クライアント側でも必ず失効を判定 |
-| `report` | object / null | 最新 VTSE41（全国の警報・予報スナップショット）の共通メタデータと `eventIds`（string[]） |
-| `areas` | object[] | 信頼できる警報・予報・解除・津波なしの区域。信頼できないまたは公式期限切れでは空配列 |
-| `observations` | object[] | 関連する VTSE51・VTSE52 の最新報告。各製品につき最大1件 |
-| `comments`, `text` | object / string、任意 | 現在の公式説明・本文 |
-| `lastKnown` | object、任意 | 信頼できないときだけ保持する最後に分かった `areas`、`observations` と任意の `comments`、`text`。現在有効な警報ではない |
-| `md5` | string | 内容識別子。信頼期限の更新でも変化する |
-
-| status | 意味 |
+| Field | Description |
 | --- | --- |
-| `uninitialized` | 接続は正常だが、権威ある VTSE41 が未取得 |
-| `unknown` | 断線・照合失敗・解析不能・競合・取消・信頼期限切れなどにより現在の状態を証明できない。津波の危険がないという意味ではない |
-| `active` | 大津波警報・津波警報・津波注意報あり |
-| `forecast_only` | 津波予報のみ |
-| `cleared` | 公式に解除された状態 |
-| `expired` | 公式の ValidDateTime が経過した状態。公式解除ではない |
-| `none_reported` | 公式区域分類が明示的に「津波なし」。空配列からは推定しない |
-
-`reason` は `no_authoritative_snapshot`、`official_snapshot`、`report_cancelled`、`unsupported_or_conflicting_report`、`warning_requires_revalidation`、`clock_skew`、`source_unverified` です。理由だけで危険度を判定しないでください。
-
-### 信頼期限の確認
-
-公開の信頼期限は最大約90秒で、上流の権威ある状態との照合が成功した場合だけ更新されます。公式期限などにより短くなる場合もあります。`trusted=true` だけでは不十分です。有効な非空の期限と現在時刻を確認し、さらに `status` を解釈してください。
-
-```js
-const deadline = typeof data.validUntil === 'string' && data.validUntil.length > 0
-  ? Date.parse(data.validUntil)
-  : NaN
-const usable = data.trusted === true
-  && Number.isFinite(deadline)
-  && Date.now() < deadline
-```
-
-`usable` は情報の信頼期限内であることを示すだけで、安全を示しません。有効な警報でも、照合済みの `expired` でも `trusted=true` になり得ます。WebSocket 切断、新着メッセージの停止、HTTP キャッシュの停滞時も、クライアント自身が期限切れを処理する必要があります。`areas=[]` を安全と解釈しないでください。
-
-### 区域・波・観測
-
-`areas[]` は `code`、`name`、`level`、`kind`（すべて string）、任意の `previousKind`（直前の公式分類コード）、`firstWave`、`maxWave`、`stations[]` を持ちます。`kind` は公式コードをそのまま保持し、`level` は次の対応です。
-
-| level | kind | 意味 |
-| --- | --- | --- |
-| `major_warning` | `52`, `53` | 大津波警報 |
-| `warning` | `51` | 津波警報 |
-| `advisory` | `62` | 津波注意報 |
-| `forecast` | `71`, `72`, `73` | 津波予報 |
-| `cleared` | `50`, `60` | 公式解除 |
-| `none` | `00` | 津波なし |
-
-`firstWave`・`maxWave` は公式の予想・観測・推定の文脈に従う波情報です。常に実測値とは限りません。
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `time` | string / null、任意 | 公式の到達・観測時刻 |
-| `height` | number / null、任意 | m 単位の高さ。`text` と併せて解釈 |
-| `text`, `heightCondition` | string、任意 | 高さの公式記述・状態。「巨大」「高い」「10m超」「不明」など |
-| `condition` | string、任意 | 到達・観測状態。「観測中」「欠測」など |
-| `initial`, `revise` | string、任意 | 初動（押し・引き）と修正表示 |
-
-`height=10` と `text=１０ｍ超` は下限の表現で、正確な10 mではありません。「巨大」「高い」「不明」「観測中」「欠測」を通常の数値やゼロに置き換えないでください。
-
-`stations[]` は `code`、`name`（string）、任意の `sensor`（string）、`highTide`（string / null、満潮時刻）、`firstWave`、`maxWave` を持ちます。
-
-`observations[]` には共通報告メタデータと `eventIds`（string[]）、任意の `areas`（その報告の予想到達・満潮情報）、`observed`（実測）、`estimated`（沿岸推定）、`comments`、`text` があります。`observed[]`・`estimated[]` は `code`、`name` と任意の `stations`、`firstWave`、`maxWave` を持ち、海上観測の空の区域コードもそのまま保持します。
-
-これらは独立した VTSE51/52 の報告で、根の VTSE41 の全国スナップショットを上書きしません。警報と共通のイベントIDを持つ最新観測でも、発表時刻は異なり得ます。観測から解除済み警報を再び有効にしてはいけません。訂正は対応する版を更新し、観測取消は取消メタデータ・本文だけを残して測定値を除きます。VTSE41 自体の取消は `unknown` となり、以前の警報に戻りません。照合失敗や断線時の `lastKnown` は参考用であり、現在の警報には使えません。
-
-### 津波情報のJSON例
-
-気象庁の公式形式サンプル `32-39_11_02_250206_VTSE41.xml` に基づく縮小構造例です。照合されていない状態を示し、警報区域は `lastKnown` 内だけにあります。MD5 は本例用に再計算しています。現在の津波状況を示すものではありません。
-
-```json
-{
-  "status": "unknown",
-  "reason": "source_unverified",
-  "trusted": false,
-  "validUntil": null,
-  "report": {
-    "id": "71fc2503ab7b8688052c52722c93dfa5",
-    "product": "VTSE41",
-    "time": "2011-03-11T05:49:00.000Z",
-    "status": "issued",
-    "issuedAt": "2011-03-11T05:49:59.000Z",
-    "title": "大津波警報・津波警報・津波注意報・津波予報",
-    "eventIds": ["20110311144640"]
-  },
-  "areas": [],
-  "observations": [],
-  "lastKnown": {
-    "areas": [
-      {
-        "code": "210",
-        "name": "岩手県",
-        "level": "major_warning",
-        "kind": "53",
-        "previousKind": "00",
-        "firstWave": {"condition":"津波到達中と推測"},
-        "maxWave": {"height":null,"text":"巨大","heightCondition":"不明"}
-      }
-    ],
-    "observations": []
-  },
-  "md5": "08c2827ce954f62bbed80484e44c17fd"
-}
-```
+| `type` | （WebSocket専用）jma_tsunami（文字列型） |
+| `status` | `uninitialized`: 未取得、`unknown`: 状態不明で安全を意味しない、`active`: 警報・注意報あり、`forecast_only`: 予報のみ、`cleared`: 公式解除、`expired`: 公式期限切れで解除ではない、`none_reported`: 公式に「津波なし」と分類（文字列型） |
+| `reason` | 状態の理由。単独で危険度を判断しない（文字列型） |
+| `trusted` | 現在の公式状態との照合による信頼条件を満たすか。true は津波の危険がないという意味ではない（真偽型） |
+| `validUntil` | 信頼期限（UTC RFC 3339）。`trusted=true` かつ有効な非空の期限より現在時刻が前である場合のみ信頼期限内。切断・新着停止時もクライアント側で失効を判定（文字列型 / null） |
+| `report` | 最新の全国スナップショット `VTSE41`。`id`・`product`・`time`・`status` と `eventIds`（文字列配列）。時刻は UTC RFC 3339（オブジェクト型 / null） |
+| `areas` | 公式の警報・予報区域。`code`・`name`、分類、波情報、観測点を含む。空配列は安全を意味しない（オブジェクト配列） |
+| `areas[].level` | `major_warning`: 大津波警報、`warning`: 津波警報、`advisory`: 注意報、`forecast`: 予報、`cleared`: 解除、`none`: 津波なし（文字列型） |
+| `areas[].kind`, `areas[].previousKind` | 公式分類コード・直前の分類コード。`previousKind` は任意（文字列型） |
+| `areas[].firstWave`, `areas[].maxWave` | 第1波・最大波。任意の `time`（UTC RFC 3339）、`height`（数値/null、m）、`text`・状態を含む。「巨大」「高い」「10m超」「以上」は定性・下限表現で、精密な実測値ではない（オブジェクト型、任意） |
+| `areas[].stations` | 区域の観測点。`code`・`name`、任意の満潮時刻 `highTide`、`firstWave`・`maxWave` など（オブジェクト配列、任意） |
+| `observations` | 関連する `VTSE51`・`VTSE52` の最新観測報告。固有のID・時刻・取消状態を持ち、`VTSE41` の警報区域を上書きしない（オブジェクト配列） |
+| `observations[].observed`, `observations[].estimated` | 実測・沿岸推定の区域と観測点、波情報。報告ごとに時刻が異なり得る（オブジェクト配列、任意） |
+| `lastKnown` | 信頼できない場合の最後に分かった区域・観測・説明。参考用で、現在有効な警報ではない（オブジェクト型、任意） |
+| `comments` | 公式説明。任意の `forecast`・`warning`・`note`・`text` は文字列、`urls` は文字列配列（オブジェクト型、任意） |
+| `text` | 公式本文（文字列型、任意） |
+| `md5` | 内容変更の識別子。信頼期限の更新でも変化し、新しい公式警報の発表とは限らない（文字列型） |
 
 ## JMA 特別地震情報 JSON API
 
-- 説明: 各製品の最新の公式報告を取得します。現在有効な警戒状態の判定 API や完全な履歴ではありません。気象庁発表 / DMDATA.JP配信 / Wolfx Project加工・提供。
+- 説明: 南海トラフおよび北海道・三陸沖に関する各製品の最新の公式報告を取得
 - HTTP GET APIアドレス:
 
 ```text
@@ -382,62 +197,22 @@ https://api.wolfx.jp/jma_special_eq.json
 wss://ws-api.wolfx.jp/jma_special_eq
 ```
 
-WebSocket の `type` は `jma_special_eq`、手動クエリは `query_jmaspecialeq` です。`all_eew` でも配信されます。
+- JSONフィールドの説明（データ型）:
 
-| product | 公式製品 |
+| Field | Description |
 | --- | --- |
-| `VYSE50` | 南海トラフ地震臨時情報 |
-| `VYSE51` | 南海トラフ地震臨時情報に関する解説情報 |
-| `VYSE52` | 南海トラフ地震関連解説情報（定例解説を含む） |
-| `VYSE60` | 北海道・三陸沖後発地震注意情報 |
-
-### 特別地震情報のフィールド
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `reports` | object[] | 製品ごとに最新1件、合計最大4件の公式報告 |
-| `appendices` | string[] | 重複を除いた公式参考解説 |
-| `md5` | string | 内容識別子 |
-
-`reports[]` には共通の `id`、`product`、`time`、`status` と、必要に応じた `issuedAt`、`targetTime`、`title`、`serial`、`validUntil` があり、以下を追加します。
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `eventIds` | string[] | 公式の関連イベントID |
-| `kind` | string、任意 | 本文の公式情報種別（EarthquakeInfo/InfoKind） |
-| `code`, `label` | string、任意 | 公式の情報番号コードと名称（InfoSerial） |
-| `text` | string、任意 | 公式本文 |
-| `notice` | string、任意 | 本文と異なる Body/Text。取消説明など |
-| `next` | string、任意 | 次回発表に関する公式説明 |
-| `appendix` | integer、任意 | 根の `appendices` の索引。`0` は有効 |
-
-訂正・取消は対応する最新報告の状態と公式本文を保持し、以前の警戒報告へ戻しません。VYSE52 の定例解説は、現在の臨時の地震警戒を意味しません。古い報告が残っていることから現在の危険度を推定しないでください。公式の発表時刻・状態・本文を確認してください。
-
-### 特別地震情報のJSON例
-
-公式形式サンプル `75_01_04_200512_VYSE52.xml` に基づく構造例です。任意の `text` などを省略し、参考解説と索引 `0` を保持しています。MD5 は本例用に再計算しています。過去の日付の形式例であり、現在の警戒を示しません。
-
-```json
-{
-  "reports": [
-    {
-      "id": "2182f774aed16953ae288f821cb0aaf0",
-      "product": "VYSE52",
-      "time": "2020-05-12T07:44:00.000Z",
-      "status": "issued",
-      "issuedAt": "2020-05-12T07:44:52.000Z",
-      "title": "南海トラフ地震関連解説情報",
-      "eventIds": ["20200512164400"],
-      "kind": "南海トラフ地震関連解説情報",
-      "code": "200",
-      "label": "定例解説",
-      "appendix": 0
-    }
-  ],
-  "appendices": ["＊＊　（参考）　南海トラフ地震に関連する情報の種類　＊＊\n【南海トラフ地震臨時情報】\n情報発表条件：\n○南海トラフ沿いで異常な現象が観測され、その現象が南海トラフ沿いの大規模な地震と関連するかどうか調査を開始した場合、または調査を継続している場合\n○観測された異常な現象の調査結果を発表する場合\n\n情報名に付記するキーワード：\n○「調査中」　下記のいずれかにより臨時に「南海トラフ沿いの地震に関する評価検討会」を開催する場合\n・監視領域内※１でマグニチュード６．８以上の地震※２が発生\n・１カ所以上のひずみ計での有意な変化と共に、他の複数の観測点でもそれに関係すると思われる変化が観測され、想定震源域内のプレート境界で通常と異なるゆっくりすべりが発生している可能性がある場合など、ひずみ計で南海トラフ地震との関連性の検討が必要と認められる変化を観測\n・その他、想定震源域内のプレート境界の固着状態の変化を示す可能性のある現象が観測される等、南海トラフ地震との関連性の検討が必要と認められる現象を観測\n○「巨大地震警戒」　想定震源域内のプレート境界において、モーメントマグニチュード８．０以上の地震が発生したと評価した場合\n○「巨大地震注意」\n・監視領域内※１において、モーメントマグニチュード７．０以上の地震※２が発生したと評価した場合（巨大地震警戒に該当する場合は除く）\n・想定震源域内のプレート境界において、通常と異なるゆっくりすべりが発生したと評価した場合\n○「調査終了」　（巨大地震警戒）、（巨大地震注意）のいずれにも当てはまらない現象と評価した場合\n※１　南海トラフの想定震源域及び想定震源域の海溝軸外側５０ｋｍ程度までの範囲\n※２　太平洋プレートの沈み込みに伴う震源が深い地震は除く\n\n【南海トラフ地震関連解説情報】\n情報発表条件：\n○観測された異常な現象の調査結果を発表した後の状況の推移等を発表する場合\n○「南海トラフ沿いの地震に関する評価検討会」の定例会合における調査結果を発表する場合（ただし南海トラフ地震臨時情報を発表する場合を除く）\n※すでに必要な防災対応がとられている際は、調査を開始した旨や調査結果を南海トラフ地震関連解説情報で発表する場合があります。"],
-  "md5": "a61d13383d70499b764813701ae79211"
-}
-```
+| `type` | （WebSocket専用）jma_special_eq（文字列型） |
+| `reports` | 製品ごとに最新1件、合計最大4件。完全な履歴ではなく、報告の存在は現在の警戒を意味しない（オブジェクト配列） |
+| `reports[].id` | 報告の電文ID（文字列型） |
+| `reports[].product` | `VYSE50`: 南海トラフ地震臨時情報、`VYSE51`: 南海トラフ地震臨時情報に関する解説情報、`VYSE52`: 南海トラフ地震関連解説情報、`VYSE60`: 北海道・三陸沖後発地震注意情報。定例解説は臨時の警戒を意味しない（文字列型） |
+| `reports[].time` | 公式発表時刻（UTC RFC 3339）（文字列型 / null） |
+| `reports[].status` | `issued`: 発表、`corrected`: 訂正、`cancelled`: 取消。対応する最新報告の状態を保持（文字列型） |
+| `reports[].eventIds` | 公式の関連イベントID（文字列配列） |
+| `reports[].kind`, `reports[].code`, `reports[].label`, `reports[].title` | 公式情報種別、情報番号コード・名称、報告表題（文字列型、任意） |
+| `reports[].text`, `reports[].notice`, `reports[].next` | 公式本文、取消説明などの補足、次回発表に関する説明（文字列型、任意） |
+| `reports[].appendix` | 根の `appendices` の整数索引。`0` は有効（整数型、任意） |
+| `appendices` | 重複を除いた公式参考解説（文字列配列） |
+| `md5` | 内容の変更を識別するハッシュ値（文字列型） |
 
 ## 中国地震台網 地震情報 JSON API
 

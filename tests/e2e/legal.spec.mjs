@@ -14,8 +14,10 @@ const dataUseRules = {
     scope: /対象はこの API のデータに限り/,
     permission: /第三者が[^。]*独立して利用できるデータ源[\s\S]*事前の明示的な許諾が必要/,
     endUsers: /表示・通知[\s\S]*バックエンド[\s\S]*個別の許諾を要しません/,
-    pricing: /料金設定は自由/,
-    attribution: /出典表示を本規約で義務付けることはありません/,
+    commercial: /商用・非商用を問わず利用/,
+    unofficial: /独立した非公式プロジェクト/,
+    safety: [/公式の警報や避難情報に代わるものではありません/, /公的機関の最新情報/, /唯一の情報源/],
+    protection: [/レート制限[^\n]*回避/, /アクセス[^。\n]*制限・停止/],
     rights: /必要な第三者の許諾に代わったりするものではありません/,
     existing: /既存の有効な個別許諾[\s\S]*撤回又は拡張されることはありません/,
     obsolete: /通常の情報利用と独立したデータ再提供|第六条|支払状況にかかわらず/,
@@ -24,8 +26,10 @@ const dataUseRules = {
     scope: /此项限制仅针对该 API 的数据/,
     permission: /第三方[\s\S]*独立使用的数据源[\s\S]*事先取得运营者的明确授权/,
     endUsers: /向最终用户展示、通知[\s\S]*后台处理[\s\S]*无须取得个别授权/,
-    pricing: /自行决定其服务或功能的收费方式/,
-    attribution: /不强制标注“Wolfx Project”为来源/,
+    commercial: /商业及非商业用途/,
+    unofficial: /独立的非官方项目/,
+    safety: [/不能替代官方警报或避难信息/, /官方机构的最新信息/, /唯一信息来源/],
+    protection: [/绕过速率限制/, /限制或暂停/],
     rights: /不能替代必要的第三方许可/,
     existing: /已有的有效个别授权[\s\S]*不会仅因本次修订而被撤销或扩大/,
     obsolete: /正常信息利用与独立数据再提供|第六条|必须向所有用户完整、及时、免费开放/,
@@ -34,8 +38,10 @@ const dataUseRules = {
     scope: /restriction applies only to this API's data/,
     permission: /third parties can use independently[\s\S]*prior express permission/,
     endUsers: /end users[\s\S]*backend processing[\s\S]*require no individual permission/,
-    pricing: /You decide how to price your services and features/,
-    attribution: /do not require free access or attribution/,
+    commercial: /commercial or noncommercial purposes/,
+    unofficial: /independent, unofficial project/,
+    safety: [/do not replace official warnings or evacuation information/, /latest information from official authorities/, /sole source for decisions involving life or safety/],
+    protection: [/Bypassing rate limits/, /restrict or suspend access/],
     rights: /do not change those rights or terms, or replace necessary third-party permission/,
     existing: /Existing valid individual permissions[\s\S]*neither revokes nor expands/,
     obsolete: /Ordinary Information Use and Independent Data Provision|Section 6|fully and promptly available to all users free of charge/,
@@ -93,7 +99,8 @@ for (const { locale, prefix, tocLabel } of locales) {
       expect(clause, `${locale}: JMA-only permission boundary`).toMatch(pattern)
     for (const term of ['Wolfx Project', 'jma_eew', 'HTTP', 'WebSocket', 'all_eew'])
       expect(clause).toContain(term)
-    for (const pattern of [rules.pricing, rules.attribution, rules.rights])
+    expect(clause).not.toMatch(/jma_tsunami|jma_special_eq|jma_earthquake_detail/)
+    for (const pattern of [rules.commercial, rules.unofficial, rules.rights, ...rules.safety, ...rules.protection])
       expect(body).toMatch(pattern)
     expect(body).not.toMatch(rules.obsolete)
     await expect(page.locator(`.legal-document a[href="${prefix}/legal/privacy"]`)).toHaveCount(1)
@@ -103,15 +110,14 @@ for (const { locale, prefix, tocLabel } of locales) {
     await page.route('https://api.wolfx.jp/**', route => route.fulfill({ status: 204 }))
     for (const document of ['websocket', 'open-api']) {
       await page.goto(`${prefix}/docs/${document}`, { waitUntil: 'networkidle' })
-      const notice = page.locator('.markdown-content li').filter({ has: page.locator(`a[href="${prefix}/legal/terms"]`) })
-      await expect(notice).toHaveCount(1)
-      await expect(notice).toContainText('JMA')
-      if (document === 'websocket') {
-        await expect(notice).toContainText('jma_eew')
-        await expect(notice).toContainText('all_eew')
-      }
+      // The current documents link legal pages through the shared footer.
+      // They need not duplicate the JMA redistribution clause in their body.
+      const footer = page.locator('.site-footer')
+      const terms = footer.locator(`a[href="${prefix}/legal/terms"]`)
+      await expect(terms).toHaveCount(1)
+      await expect(footer.locator(`a[href="${prefix}/legal/privacy"]`)).toHaveCount(1)
       expect(await page.locator('main').innerText()).not.toMatch(rules.obsolete)
-      await notice.locator('a').click()
+      await terms.click()
       await expect.poll(() => new URL(page.url()).pathname.replace(/\/$/, '')).toBe(`${prefix}/legal/terms`)
       await expect(page.getByRole('heading', { level: 2, name: /JMA/ })).toBeVisible()
     }
