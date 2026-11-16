@@ -3,7 +3,7 @@
   "version": "3.0.0",
   "private": true,
   "type": "module",
-  "packageManager": "pnpm@12.3.4",
+  "packageManager": "pnpm@12.21.0",
   "engines": {
     "node": ">=20.19.0"
   },
@@ -31,7 +31,7 @@
     "cf:deploy": "pnpm typecheck && pnpm lint && pnpm content:audit && pnpm generate && pnpm check && wrangler deploy"
   },
   "dependencies": {
-    "@iconify-json/lucide": "^1.2.154",
+    "@iconify-json/lucide": "^1.2.155",
     "@nuxt/content": "^3.16.2",
     "@nuxt/ui": "^4.12.0",
     "@nuxtjs/i18n": "^10.6.0",

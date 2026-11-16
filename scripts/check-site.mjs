@@ -2,6 +2,7 @@ import fs from 'node:fs/promises'
 import { createRequire } from 'node:module'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { checkJmaDocs } from './check-jma-docs.mjs'
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const require = createRequire(import.meta.url)
@@ -75,6 +76,12 @@ const apiStatusPages = {
   en: { heading: '## API Status', invocation: '::api-status-panel{locale="en"}' },
 }
 const failures = []
+try {
+  await checkJmaDocs(root)
+}
+catch (error) {
+  failures.push(`JMA documentation: ${error instanceof Error ? error.message : String(error)}`)
+}
 const donationValues = {
   bitcoinSegwit: 'bc1qqrlqfhf3enhjexf5hl068el0rctv07zupcld23',
   bitcoinTaproot: 'bc1pf47954hraeuyg6k088rt9wy9u49jjvpz70luw4ythamtd5l7dhxqzf70z5',

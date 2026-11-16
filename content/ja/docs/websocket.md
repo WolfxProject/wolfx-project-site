@@ -3,12 +3,12 @@ title: "Wolfx WebSocket API 利用説明"
 description: "Wolfx WebSocket API の接続先、手動クエリ、JSON データ仕様。"
 locale: ja
 layout: docs
-updated: 2026-11-14
+updated: 2026-11-16
 source: wsapi.html
 ---
 ## WebSocket の概要
 
-- WebSocket API は、サーバーが EEW を受信すると、すべてのクライアントに自動的に関連情報をプッシュ配信します。
+- WebSocket API は、対応する業務 JSON が更新されると、購読先のクライアントへ関連情報を自動配信します。
 - ハートビートメカニズム：サーバーは毎分、または接続確立後にハートビートパケットを送信して接続を維持します。クライアントは任意で ping パケットを返信することができます（推奨）。
 
 ## 接続および利用上の注意
@@ -18,7 +18,7 @@ source: wsapi.html
 
 ## WebSocket 呼び出し URL
 
-- すべての JSON API プッシュを受信:
+- 現在設定され、配信に対応している複数のデータ源の更新を受信:
 
 ```text
 wss://ws-api.wolfx.jp/all_eew
@@ -66,9 +66,23 @@ wss://ws-api.wolfx.jp/cenc_eqlist
 wss://ws-api.wolfx.jp/jma_eqlist
 ```
 
+- JMA 津波情報 JSON API:
+
+```text
+wss://ws-api.wolfx.jp/jma_tsunami
+```
+
+- JMA 特別地震情報 JSON API:
+
+```text
+wss://ws-api.wolfx.jp/jma_special_eq
+```
+
 - JSON フィールドの解析詳細は：[https://api.wolfx.jp](https://api.wolfx.jp) を参照ください。
 
 ## WebSocket 手動クエリコマンド
+
+手動クエリは接続先のデータ源、または `all_eew` から対応するデータ源のキャッシュ済み JSON を取得します。新しい公式報告の発表を要求する操作ではありません。自動配信は対応する業務 JSON の更新時に行われます。
 
 - Ping:
 
@@ -118,7 +132,21 @@ query_cenceqlist
 query_jmaeqlist
 ```
 
+- JMA 津波情報 JSON API:
+
+```text
+query_jmatsunami
+```
+
+- JMA 特別地震情報 JSON API:
+
+```text
+query_jmaspecialeq
+```
+
 ## WebSocket JSON データ仕様
+
+業務メッセージの `type` は WebSocket が付与するデータ源識別子です。HTTP JSON に必ず存在するフィールドではありません。
 
 - 共通のJSONフィールドの説明:
 

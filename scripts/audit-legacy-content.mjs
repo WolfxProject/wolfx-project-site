@@ -136,7 +136,15 @@ for (const [legacyFile, markdownFile] of migrations) {
     documentMetadata,
     dynamicStatus,
   }
-  const ok = source.tables === target.tables && Object.values(missing).every(values => values.length === 0)
+  // Only the three JMA sections added on 2026-11-16 are outside the migration
+  // baseline. Keep exact table counts for every legacy section, as well as all
+  // field, endpoint, code and link checks above. check-jma-docs.mjs covers the
+  // new sections independently in pnpm check.
+  const newJmaSection = markdownFile.endsWith('/docs/open-api.md')
+    ? markdown.match(/^## JMA (?:地震詳細|地震详情|Earthquake Detail) JSON API\n[\s\S]*?(?=^## (?:中国地震台網|中国地震台网|China Earthquake Networks Center))/m)?.[0] ?? ''
+    : ''
+  const legacyTables = metricsFromMarkdown(markdown.replace(newJmaSection, '')).tables
+  const ok = source.tables === legacyTables && Object.values(missing).every(values => values.length === 0)
   failed ||= !ok
   summaries.push({ legacyFile, markdownFile, language: source.language, sourceTitle: source.title, headings: source.headings.length, tables: source.tables, fields: source.fields.length, endpoints: source.endpoints.length, ok, missing })
   console.log(`${ok ? 'PASS' : 'FAIL'} ${legacyFile} [${source.language}] -> content/${markdownFile} | headings ${source.headings.length}, tables ${source.tables}, fields ${source.fields.length}, endpoints ${source.endpoints.length}`)

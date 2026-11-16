@@ -3,12 +3,12 @@ title: "Wolfx WebSocket API Call Instructions"
 description: "Wolfx WebSocket endpoints, manual query commands, and JSON data specification."
 locale: en
 layout: docs
-updated: 2026-11-14
+updated: 2026-11-16
 source: wsapi_en.html
 ---
 ## Introduction to WebSocket
 
-- The WebSocket API automatically pushes relevant information to all clients when the server receives an EEW
+- The WebSocket API automatically pushes updates to subscribers when the corresponding business JSON changes.
 - Heartbeat mechanism: The server sends a heartbeat packet every minute or after the connection is established to maintain the connection. The client can optionally reply with a ping packet (recommended).
 
 ## Connection and Usage Guidelines
@@ -18,7 +18,7 @@ source: wsapi_en.html
 
 ## WebSocket Call URLs
 
-- Receive all JSON API pushes:
+- Receive updates from multiple currently configured sources that support broadcasting:
 
 ```text
 wss://ws-api.wolfx.jp/all_eew
@@ -66,9 +66,23 @@ wss://ws-api.wolfx.jp/cenc_eqlist
 wss://ws-api.wolfx.jp/jma_eqlist
 ```
 
+- JMA Tsunami Information JSON API:
+
+```text
+wss://ws-api.wolfx.jp/jma_tsunami
+```
+
+- JMA Special Earthquake Information JSON API:
+
+```text
+wss://ws-api.wolfx.jp/jma_special_eq
+```
+
 - For detailed JSON field parsing, refer to: [https://api.wolfx.jp](https://api.wolfx.jp)
 
 ## WebSocket Manual Query Commands
+
+Manual queries return the source’s cached JSON on that source’s connection or on `all_eew`; they do not request a new official report. Automatic broadcasts are sent when the corresponding business JSON changes.
 
 - Ping:
 
@@ -118,7 +132,21 @@ query_cenceqlist
 query_jmaeqlist
 ```
 
+- JMA Tsunami Information JSON API:
+
+```text
+query_jmatsunami
+```
+
+- JMA Special Earthquake Information JSON API:
+
+```text
+query_jmaspecialeq
+```
+
 ## WebSocket JSON Data Specification
+
+The business-message `type` is a source identifier added by WebSocket delivery, not a field guaranteed to exist in HTTP JSON.
 
 - Common JSON Field Description:
 

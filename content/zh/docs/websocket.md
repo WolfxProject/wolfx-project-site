@@ -3,12 +3,12 @@ title: "Wolfx WebSocket API 调用说明"
 description: "Wolfx WebSocket API 连接地址、手动查询指令与 JSON 数据说明。"
 locale: zh
 layout: docs
-updated: 2026-11-14
+updated: 2026-11-16
 source: wsapi_zh.html
 ---
 ## WebSocket 简介
 
-- WebSocket API 将在服务端收到EEW后自动向所有客户端推送相关信息
+- WebSocket API 在对应业务 JSON 更新时，向订阅该数据源的客户端自动推送相关信息。
 - 心跳包机制：服务端将在每分钟和建立连接后发送一个heartbeat心跳包以保持连接，客户端可选回复ping包（推荐）
 
 ## 连接及使用规范
@@ -18,7 +18,7 @@ source: wsapi_zh.html
 
 ## WebSocket 调用地址
 
-- 接收所有 JSON API 推送:
+- 接收当前已配置并支持广播的多个数据源更新:
 
 ```text
 wss://ws-api.wolfx.jp/all_eew
@@ -66,9 +66,23 @@ wss://ws-api.wolfx.jp/cenc_eqlist
 wss://ws-api.wolfx.jp/jma_eqlist
 ```
 
+- JMA 海啸情报 JSON API:
+
+```text
+wss://ws-api.wolfx.jp/jma_tsunami
+```
+
+- JMA 特别地震情报 JSON API:
+
+```text
+wss://ws-api.wolfx.jp/jma_special_eq
+```
+
 - JSON字段解析详见：[https://api.wolfx.jp](https://api.wolfx.jp)
 
 ## WebSocket 手动查询指令
+
+手动查询可在对应数据源连接或 `all_eew` 中获取该源缓存的 JSON，不是要求官方发布新报告。自动广播则随对应业务 JSON 的更新发送。
 
 - Ping:
 
@@ -118,7 +132,21 @@ query_cenceqlist
 query_jmaeqlist
 ```
 
+- JMA 海啸情报 JSON API:
+
+```text
+query_jmatsunami
+```
+
+- JMA 特别地震情报 JSON API:
+
+```text
+query_jmaspecialeq
+```
+
 ## WebSocket JSON 资料说明
+
+业务消息的 `type` 是 WebSocket 添加的数据源标识，不表示 HTTP JSON 必然有此字段。
 
 - 共有JSON字段解析:
 
