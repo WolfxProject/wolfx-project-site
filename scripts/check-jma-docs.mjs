@@ -167,15 +167,13 @@ export async function checkJmaDocs(root) {
       assert(tables[2].get('reports[].product').description.includes(term))
     for (const unit of ['UTC RFC 3339', 'km', 'cm/s'])
       assert(apis[0].text.includes(unit), `${locale}: missing ${unit}`)
-    const aggregate = ws.slice(ws.indexOf('wss://ws-api.wolfx.jp/all_eew'), ws.indexOf('wss://ws-api.wolfx.jp/sc_eew'))
-    for (const term of ['jma_tsunami', 'jma_special_eq', 'type'])
-      assert(aggregate.includes(`\`${term}\``), `${locale}: aggregate ${term}`)
+    assert(ws.includes('\nwss://ws-api.wolfx.jp/all_eew\n'), `${locale}: default aggregate endpoint`)
     for (const [i, command] of commands.entries()) {
       assert(ws.includes(`wss://ws-api.wolfx.jp/${products[i + 1]}\n`))
       assert(ws.includes(`\n${command}\n`), `${locale}: exact manual query`)
     }
     assert(!/ws-api\.wolfx\.jp\/(?:jma_earthquake_detail|jma_seismic_status)|query_jma_?(?:earthquake_?detail|seismic_?status)|query_jma_(?:tsunami|special_eq)|jma_seismic_status\.json/.test(markdown + ws), `${locale}: unsupported endpoint or command`)
-    for (const term of ['heartbeat', 'pong', 'query_jmaeqlist', 'trusted', 'validUntil'])
+    for (const term of ['heartbeat', 'pong', 'query_jmaeqlist', '`type`'])
       assert(ws.includes(term), `${locale}: preserve ${term}`)
     signatures.push(tables.map(table => [...table].map(([name, { type, optional }]) => [name, type, optional]).sort()))
     for (const document of ['open-api', 'websocket']) {

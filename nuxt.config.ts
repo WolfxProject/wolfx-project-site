@@ -48,10 +48,13 @@ export default defineNuxtConfig({
     './modules/static-sitemap-alias',
     '@nuxt/eslint',
   ],
+  $development: {
+    devtools: { enabled: true },
+  },
   components: [
     { path: '~/components', pathPrefix: false },
   ],
-  devtools: { enabled: true },
+  devtools: { enabled: false },
   app: {
     head: {
       htmlAttrs: { lang: 'ja' },

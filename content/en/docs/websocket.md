@@ -1,9 +1,9 @@
 ---
 title: "Wolfx WebSocket API Call Instructions"
-description: "Wolfx WebSocket endpoints, manual query commands, and JSON data specification."
+description: "Wolfx WebSocket endpoints, all_eew source exclusions, manual query commands, and JSON data specification."
 locale: en
 layout: docs
-updated: 2026-11-16
+updated: 2026-11-19
 source: wsapi_en.html
 ---
 ## Introduction to WebSocket
@@ -18,11 +18,22 @@ source: wsapi_en.html
 
 ## WebSocket Call URLs
 
-- Receive updates from multiple currently configured sources that support broadcasting:
+- Subscribe to `all_eew` to receive updates from multiple data sources.
 
 ```text
 wss://ws-api.wolfx.jp/all_eew
 ```
+
+To receive fewer updates, use the optional `exclude` URL query parameter to list the sources you want to skip. Use the same source names as in the individual subscription URL paths. Separate multiple names with commas.
+
+```text
+wss://ws-api.wolfx.jp/all_eew?exclude=cenc_eew
+wss://ws-api.wolfx.jp/all_eew?exclude=sc_eew,fj_eew,cq_eew
+```
+
+Set `exclude` when connecting. It applies only to automatic updates on that `all_eew` connection. Reconnect to change the list. If a source name is unknown, the server returns `HTTP 400` during the WebSocket handshake.
+
+You can still use the existing manual query commands on the same connection to fetch cached JSON for excluded public sources.
 
 - Sichuan Earthquake Early Warning JSON API:
 

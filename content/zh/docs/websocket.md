@@ -1,9 +1,9 @@
 ---
 title: "Wolfx WebSocket API 调用说明"
-description: "Wolfx WebSocket API 连接地址、手动查询指令与 JSON 数据说明。"
+description: "Wolfx WebSocket API 连接地址、all_eew 数据源排除设置、手动查询指令与 JSON 数据说明。"
 locale: zh
 layout: docs
-updated: 2026-11-16
+updated: 2026-11-19
 source: wsapi_zh.html
 ---
 ## WebSocket 简介
@@ -18,11 +18,22 @@ source: wsapi_zh.html
 
 ## WebSocket 调用地址
 
-- 接收当前已配置并支持广播的多个数据源更新:
+- `all_eew` 聚合订阅可接收多个数据源的更新。
 
 ```text
 wss://ws-api.wolfx.jp/all_eew
 ```
+
+如需减少不必要的推送，可通过可选 URL 查询参数 `exclude` 指定要排除的数据源。使用各独立订阅入口 URL 路径中的数据源名称，多个名称用英文逗号（`,`）分隔。
+
+```text
+wss://ws-api.wolfx.jp/all_eew?exclude=cenc_eew
+wss://ws-api.wolfx.jp/all_eew?exclude=sc_eew,fj_eew,cq_eew
+```
+
+`exclude` 在建立连接时指定，仅对该 `all_eew` 连接的自动推送生效。更改排除项需要重新建立连接。指定不存在的数据源名称时，服务端会在 WebSocket 握手阶段返回 `HTTP 400`。
+
+在同一连接中，仍可使用原有手动查询指令获取被排除的公开数据源的缓存 JSON。
 
 - 四川省地震局 地震预警 JSON API:
 

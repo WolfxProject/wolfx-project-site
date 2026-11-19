@@ -31,6 +31,7 @@ for (const locale of ['ja', 'zh', 'en']) {
       })
       const response = await page.goto(`${prefix}/docs/open-api/`, { waitUntil: 'networkidle' })
       expect(response?.ok()).toBeTruthy()
+      await expect(page.locator('main')).toContainText('validUntil')
       for (const title of jmaSections[locale]) {
         const heading = page.locator('h2').filter({ hasText: title })
         await expect(heading).toHaveCount(1)
@@ -91,13 +92,18 @@ for (const locale of ['ja', 'zh', 'en']) {
         await input.fill(query)
         await expect(page.locator(`#search-results a[href="${prefix}/docs/open-api"]`)).toBeVisible()
       }
+      await input.fill('all_eew exclude')
+      await expect(page.locator(`#search-results a[href="${prefix}/docs/websocket"]`)).toBeVisible()
       await page.locator('.search-dialog header button').click()
 
       const wsResponse = await page.goto(`${prefix}/docs/websocket/`, { waitUntil: 'networkidle' })
       expect(wsResponse?.ok()).toBeTruthy()
       for (const token of ['wss://ws-api.wolfx.jp/jma_tsunami', 'wss://ws-api.wolfx.jp/jma_special_eq', 'query_jmatsunami', 'query_jmaspecialeq'])
         await expect(page.locator('.code-block pre').filter({ hasText: token })).toHaveCount(1)
-      await expect(page.locator('main')).toContainText('validUntil')
+      const exclusions = page.locator('.code-block pre').filter({ hasText: 'all_eew?exclude=' })
+      await expect(exclusions).toContainText('wss://ws-api.wolfx.jp/all_eew?exclude=cenc_eew')
+      await expect(exclusions).toContainText('wss://ws-api.wolfx.jp/all_eew?exclude=sc_eew,fj_eew,cq_eew')
+      await expect(page.locator('main')).toContainText('HTTP 400')
       await expect(page.locator('main')).not.toContainText('wss://ws-api.wolfx.jp/jma_earthquake_detail')
       expect(problems).toEqual([])
     })
