@@ -271,7 +271,10 @@ for (const file of markdownFiles) {
     const unprefixed = href.replace(/^\/(zh|en)(?=\/|$)/, '').replace(/^\//, '') || 'index'
     const targetLocale = href.startsWith('/zh') ? 'zh' : href.startsWith('/en') ? 'en' : 'ja'
     const target = path.join(root, 'content', targetLocale, `${unprefixed}.md`.replace('/index.md', '.md'))
-    if (!await exists(target))
+    if (await exists(target))
+      continue
+    const publicFile = path.join(root, 'public', path.posix.normalize(href))
+    if (!(await fs.stat(publicFile).catch(() => null))?.isFile())
       fail(`${path.relative(root, file)}: unresolved internal link ${href}`)
   }
 }

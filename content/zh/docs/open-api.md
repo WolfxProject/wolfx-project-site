@@ -182,6 +182,19 @@ wss://ws-api.wolfx.jp/jma_tsunami
 | `text` | 官方正文（字符串型，可选） |
 | `md5` | 内容变化标识，也可能因可信期限续期而变化，不代表 JMA 发布了新警报（字符串型） |
 
+**JSON 响应示例**
+
+以下示例由历史日本气象厅官方 XML 电文生成，仅供开发者参考和测试，不代表当前实际海啸警报状态。
+
+- [海啸预报](/examples/jma_tsunami/forecast_only.json){external}
+- [海啸注意报](/examples/jma_tsunami/advisory.json){external}
+- [海啸警报](/examples/jma_tsunami/warning.json){external}
+- [大海啸警报](/examples/jma_tsunami/major_warning.json){external}
+- [取消](/examples/jma_tsunami/cancelled.json){external}
+- [官方解除](/examples/jma_tsunami/cleared.json){external}
+- [有效期已过](/examples/jma_tsunami/expired.json){external}
+- [包含海啸观测数据](/examples/jma_tsunami/with_observations.json){external}
+
 ## JMA 特别地震情报 JSON API
 
 - 描述: 获取南海海槽及北海道、三陆近海相关产品的最新官方报告

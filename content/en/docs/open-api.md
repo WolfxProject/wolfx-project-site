@@ -182,6 +182,19 @@ wss://ws-api.wolfx.jp/jma_tsunami
 | `text` | Official body text (String; optional) |
 | `md5` | Content-change identifier; trust-deadline renewal can also change it without a new JMA warning (String) |
 
+**JSON Response Examples**
+
+These examples were generated from historical JMA XML bulletins for development and testing purposes. They do not represent current tsunami warning conditions.
+
+- [Tsunami Forecast](/examples/jma_tsunami/forecast_only.json){external}
+- [Tsunami Advisory](/examples/jma_tsunami/advisory.json){external}
+- [Tsunami Warning](/examples/jma_tsunami/warning.json){external}
+- [Major Tsunami Warning](/examples/jma_tsunami/major_warning.json){external}
+- [Cancellation](/examples/jma_tsunami/cancelled.json){external}
+- [Official Clearance](/examples/jma_tsunami/cleared.json){external}
+- [Expired](/examples/jma_tsunami/expired.json){external}
+- [With Tsunami Observations](/examples/jma_tsunami/with_observations.json){external}
+
 ## JMA Special Earthquake Information JSON API
 
 - Description: Retrieves the latest official reports concerning the Nankai Trough and the areas off Hokkaido and Sanriku

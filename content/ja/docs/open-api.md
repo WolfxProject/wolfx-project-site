@@ -182,6 +182,19 @@ wss://ws-api.wolfx.jp/jma_tsunami
 | `text` | 公式本文（文字列型、任意） |
 | `md5` | 内容変更の識別子。信頼期限の更新でも変化し、新しい公式警報の発表とは限らない（文字列型） |
 
+**JSON 応答例**
+
+過去の気象庁公式XML電文から生成したJSON応答例です。開発・テスト用の参考資料であり、現在の津波警報状況を示すものではありません。
+
+- [津波予報](/examples/jma_tsunami/forecast_only.json){external}
+- [津波注意報](/examples/jma_tsunami/advisory.json){external}
+- [津波警報](/examples/jma_tsunami/warning.json){external}
+- [大津波警報](/examples/jma_tsunami/major_warning.json){external}
+- [取消](/examples/jma_tsunami/cancelled.json){external}
+- [解除](/examples/jma_tsunami/cleared.json){external}
+- [有効期限切れ](/examples/jma_tsunami/expired.json){external}
+- [津波観測情報を含む例](/examples/jma_tsunami/with_observations.json){external}
+
 ## JMA 特別地震情報 JSON API
 
 - 説明: 南海トラフおよび北海道・三陸沖に関する各製品の最新の公式報告を取得
