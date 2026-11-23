@@ -1,0 +1,1099 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <title>STUN 泄露检测</title>
+
+    <style>
+      :root {
+        --bg: #0f172a;
+        --card: #111827;
+        --card-2: #020617;
+        --border: #374151;
+        --border-soft: #273244;
+        --text: #e5e7eb;
+        --muted: #9ca3af;
+        --blue: #2563eb;
+        --blue-hover: #1d4ed8;
+        --ok-bg: rgba(22, 163, 74, 0.18);
+        --ok-border: rgba(34, 197, 94, 0.5);
+        --ok-text: #86efac;
+        --warn-bg: rgba(234, 179, 8, 0.16);
+        --warn-border: rgba(234, 179, 8, 0.5);
+        --warn-text: #fde68a;
+        --bad-bg: rgba(220, 38, 38, 0.18);
+        --bad-border: rgba(248, 113, 113, 0.55);
+        --bad-text: #fecaca;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        color-scheme: dark;
+      }
+
+      body {
+        font-family:
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          sans-serif;
+        background:
+          radial-gradient(
+            circle at top left,
+            rgba(37, 99, 235, 0.12),
+            transparent 34%
+          ),
+          radial-gradient(
+            circle at top right,
+            rgba(220, 38, 38, 0.1),
+            transparent 30%
+          ),
+          var(--bg);
+        color: var(--text);
+        margin: 0;
+        padding: 32px;
+        min-height: 100vh;
+      }
+
+      .container {
+        max-width: 1120px;
+        margin: 0 auto;
+      }
+
+      h1 {
+        margin: 0 0 10px;
+        font-size: 30px;
+        letter-spacing: 0.02em;
+      }
+
+      h2 {
+        margin: 0 0 14px;
+        font-size: 20px;
+      }
+
+      .subtitle {
+        color: var(--muted);
+        margin-bottom: 18px;
+        line-height: 1.7;
+      }
+
+      .card {
+        background: rgba(17, 24, 39, 0.92);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 20px;
+        margin: 16px 0;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+        backdrop-filter: blur(10px);
+      }
+
+      .action-card {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 16px;
+        align-items: center;
+      }
+
+      button {
+        background: var(--blue);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 13px 20px;
+        font-size: 16px;
+        cursor: pointer;
+        white-space: nowrap;
+        min-height: 48px;
+        touch-action: manipulation;
+      }
+
+      button:hover {
+        background: var(--blue-hover);
+      }
+
+      button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+
+      .status {
+        font-size: 18px;
+        font-weight: 700;
+        padding: 14px 16px;
+        border-radius: 12px;
+        line-height: 1.5;
+      }
+
+      .ok {
+        background: var(--ok-bg);
+        border: 1px solid var(--ok-border);
+        color: var(--ok-text);
+      }
+
+      .warn {
+        background: var(--warn-bg);
+        border: 1px solid var(--warn-border);
+        color: var(--warn-text);
+      }
+
+      .bad {
+        background: var(--bad-bg);
+        border: 1px solid var(--bad-border);
+        color: var(--bad-text);
+      }
+
+      .info-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+
+      .row {
+        display: grid;
+        grid-template-columns: minmax(150px, 220px) minmax(0, 1fr);
+        gap: 16px;
+        padding: 10px 0;
+        border-bottom: 1px solid var(--border-soft);
+      }
+
+      .row:last-child {
+        border-bottom: none;
+      }
+
+      .label {
+        color: var(--muted);
+      }
+
+      .value {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        word-break: break-word;
+        overflow-wrap: anywhere;
+        text-align: right;
+        min-width: 0;
+      }
+
+      .table-wrap {
+        width: 100%;
+        overflow-x: auto;
+        border-radius: 12px;
+        border: 1px solid var(--border-soft);
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 900px;
+      }
+
+      th,
+      td {
+        border-bottom: 1px solid var(--border-soft);
+        padding: 11px;
+        text-align: left;
+        vertical-align: top;
+        line-height: 1.55;
+        overflow-wrap: anywhere;
+        word-break: break-word;
+      }
+
+      th {
+        color: #cbd5e1;
+        background: var(--card-2);
+        white-space: nowrap;
+      }
+
+      td {
+        color: var(--text);
+      }
+
+      tr:last-child td {
+        border-bottom: none;
+      }
+
+      .tag {
+        display: inline-block;
+        padding: 3px 9px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 700;
+        white-space: nowrap;
+      }
+
+      .tag-ok {
+        background: var(--ok-bg);
+        color: var(--ok-text);
+        border: 1px solid var(--ok-border);
+      }
+
+      .tag-warn {
+        background: var(--warn-bg);
+        color: var(--warn-text);
+        border: 1px solid var(--warn-border);
+      }
+
+      .tag-bad {
+        background: var(--bad-bg);
+        color: var(--bad-text);
+        border: 1px solid var(--bad-border);
+      }
+
+      .small {
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.75;
+      }
+
+      code {
+        background: var(--card-2);
+        padding: 2px 5px;
+        border-radius: 5px;
+        word-break: break-word;
+        overflow-wrap: anywhere;
+        white-space: normal;
+      }
+
+      pre {
+        white-space: pre-wrap;
+        word-break: break-word;
+        overflow-wrap: anywhere;
+        background: var(--card-2);
+        border: 1px solid var(--border-soft);
+        padding: 12px;
+        border-radius: 10px;
+        max-height: 260px;
+        overflow: auto;
+        color: #cbd5e1;
+        font-size: 13px;
+      }
+
+      .mobile-cards {
+        display: none;
+      }
+
+      .stun-card {
+        border: 1px solid var(--border-soft);
+        background: rgba(2, 6, 23, 0.45);
+        border-radius: 14px;
+        padding: 14px;
+        margin-top: 12px;
+      }
+
+      .stun-card-title {
+        font-weight: 800;
+        margin-bottom: 10px;
+        overflow-wrap: anywhere;
+      }
+
+      .stun-card-row {
+        display: grid;
+        grid-template-columns: 84px minmax(0, 1fr);
+        gap: 10px;
+        padding: 8px 0;
+        border-bottom: 1px solid rgba(39, 50, 68, 0.7);
+      }
+
+      .stun-card-row:last-child {
+        border-bottom: none;
+      }
+
+      .stun-card-row .k {
+        color: var(--muted);
+      }
+
+      .stun-card-row .v {
+        min-width: 0;
+        word-break: break-word;
+        overflow-wrap: anywhere;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      }
+
+      @media (max-width: 900px) {
+        body {
+          padding: 22px;
+        }
+
+        h1 {
+          font-size: 26px;
+        }
+
+        .card {
+          padding: 18px;
+          border-radius: 15px;
+        }
+
+        .action-card {
+          grid-template-columns: 1fr;
+        }
+
+        button {
+          width: 100%;
+        }
+
+        .status {
+          font-size: 16px;
+        }
+
+        .row {
+          grid-template-columns: 1fr;
+          gap: 6px;
+        }
+
+        .value {
+          text-align: left;
+        }
+      }
+
+      @media (max-width: 640px) {
+        body {
+          padding: max(14px, env(safe-area-inset-top))
+            max(14px, env(safe-area-inset-right))
+            max(14px, env(safe-area-inset-bottom))
+            max(14px, env(safe-area-inset-left));
+        }
+
+        h1 {
+          font-size: 24px;
+        }
+
+        h2 {
+          font-size: 18px;
+        }
+
+        .subtitle {
+          font-size: 14px;
+        }
+
+        .card {
+          padding: 15px;
+          margin: 12px 0;
+          border-radius: 14px;
+        }
+
+        .table-wrap {
+          display: none;
+        }
+
+        .mobile-cards {
+          display: block;
+        }
+
+        .stun-card-row {
+          grid-template-columns: 1fr;
+          gap: 4px;
+        }
+
+        .stun-card-row .k {
+          font-size: 14px;
+        }
+
+        .stun-card-row .v {
+          font-size: 14px;
+        }
+
+        pre {
+          font-size: 12px;
+          max-height: 220px;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <h1>STUN 泄露检测</h1>
+      <div class="subtitle">
+        对比正常 TCP/HTTPS 出口 GeoIP 与 WebRTC STUN 暴露 IP，检测是否存在国内
+        STUN 分流泄露。
+      </div>
+
+      <div class="card action-card">
+        <button id="startBtn">开始检测</button>
+        <div id="statusBox" class="status warn">尚未检测</div>
+      </div>
+
+      <div class="card">
+        <h2>TCP / HTTPS 正常出口</h2>
+
+        <div class="info-grid">
+          <div class="row">
+            <div class="label">GeoIP API</div>
+            <div class="value">https://api.wolfx.jp/geoip.php</div>
+          </div>
+
+          <div class="row">
+            <div class="label">TCP 出口 IP</div>
+            <div class="value" id="tcpIp">-</div>
+          </div>
+
+          <div class="row">
+            <div class="label">TCP 出口位置</div>
+            <div class="value" id="tcpLocation">-</div>
+          </div>
+
+          <div class="row">
+            <div class="label">TCP IP 类型</div>
+            <div class="value" id="tcpIpType">-</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>STUN 分流检测结果</h2>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>类型</th>
+                <th>STUN 服务器</th>
+                <th>暴露 IP</th>
+                <th>GeoIP</th>
+                <th>与 TCP 是否一致</th>
+                <th>判断</th>
+              </tr>
+            </thead>
+            <tbody id="stunTableBody">
+              <tr>
+                <td colspan="6">尚未检测</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div id="mobileCards" class="mobile-cards">
+          <div class="small">尚未检测</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>原始 ICE Candidate</h2>
+        <pre id="rawCandidates">-</pre>
+      </div>
+
+      <div class="card">
+        <h2>说明</h2>
+        <div class="small">
+          <p>
+            本页面通过 <code>https://api.wolfx.jp/geoip.php</code> 获取正常
+            TCP/HTTPS 出口。 然后分别使用国外 STUN 与国内 STUN 获取 WebRTC 暴露
+            IP。
+          </p>
+          <p>
+            本版使用“同协议族比较”：TCP 如果只拿到 IPv4，STUN 额外出现 IPv6
+            时，不会直接误判为泄露； 会显示为“IPv4 一致，另有 IPv6”或“额外
+            IPv6，需 IPv6 TCP 基准”。
+          </p>
+          <p>
+            若正常 TCP 出口不是中国大陆，并且国内 STUN 暴露出了同协议族、不同于
+            TCP 出口的 <code>CN</code> IP， 则判断为明显国内 STUN 泄露。
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const GEOIP_API = "https://api.wolfx.jp/geoip.php";
+
+      const STUN_TESTS = [
+        {
+          type: "国外 STUN",
+          name: "Cloudflare",
+          url: "stun:stun.cloudflare.com:3478",
+        },
+        {
+          type: "国外 STUN",
+          name: "Google",
+          url: "stun:stun.l.google.com:19302",
+        },
+        {
+          type: "国内 STUN",
+          name: "MiWiFi",
+          url: "stun:stun.miwifi.com:3478",
+        },
+        {
+          type: "国内 STUN",
+          name: "Bilibili Chat",
+          url: "stun:stun.chat.bilibili.com:3478",
+        },
+      ];
+
+      const $ = (id) => document.getElementById(id);
+
+      function setStatus(text, type) {
+        const box = $("statusBox");
+        box.textContent = text;
+        box.className = "status " + type;
+      }
+
+      function escapeHtml(str) {
+        return String(str)
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#039;");
+      }
+
+      function normalizeIp(ip) {
+        return String(ip || "")
+          .trim()
+          .toLowerCase();
+      }
+
+      function isIPv4(ip) {
+        ip = normalizeIp(ip);
+        if (!/^\d+\.\d+\.\d+\.\d+$/.test(ip)) return false;
+        const parts = ip.split(".").map(Number);
+        return parts.length === 4 && parts.every((n) => n >= 0 && n <= 255);
+      }
+
+      function isIPv6(ip) {
+        ip = normalizeIp(ip);
+        return ip.includes(":") && /^[0-9a-f:.]+$/.test(ip);
+      }
+
+      function getIpFamily(ip) {
+        if (isIPv4(ip)) return "ipv4";
+        if (isIPv6(ip)) return "ipv6";
+        return "unknown";
+      }
+
+      function sameIp(a, b) {
+        return normalizeIp(a) === normalizeIp(b);
+      }
+
+      function formatIpFamily(ip) {
+        const family = getIpFamily(ip);
+        if (family === "ipv4") return "IPv4";
+        if (family === "ipv6") return "IPv6";
+        return "未知";
+      }
+
+      /**
+       * 同协议族比较：
+       * TCP 只有 IPv4 时，STUN 额外 IPv6 不直接判泄露；
+       * TCP 只有 IPv6 时，STUN 额外 IPv4 也不直接判泄露。
+       */
+      function compareStunWithTcp(stunIps, tcpIps) {
+        const tcpList = Array.isArray(tcpIps) ? tcpIps : [tcpIps];
+
+        const tcpByFamily = {
+          ipv4: tcpList
+            .filter((ip) => getIpFamily(ip) === "ipv4")
+            .map(normalizeIp),
+          ipv6: tcpList
+            .filter((ip) => getIpFamily(ip) === "ipv6")
+            .map(normalizeIp),
+        };
+
+        const result = {
+          hasAnyStunIp: stunIps.length > 0,
+          matched: [],
+          mismatched: [],
+          extraWithoutTcpBaseline: [],
+        };
+
+        for (const ip of stunIps) {
+          const family = getIpFamily(ip);
+          const normalized = normalizeIp(ip);
+
+          if (family !== "ipv4" && family !== "ipv6") {
+            continue;
+          }
+
+          const tcpSameFamily = tcpByFamily[family] || [];
+
+          if (tcpSameFamily.length === 0) {
+            result.extraWithoutTcpBaseline.push(ip);
+          } else if (tcpSameFamily.includes(normalized)) {
+            result.matched.push(ip);
+          } else {
+            result.mismatched.push(ip);
+          }
+        }
+
+        result.allComparableSame =
+          result.hasAnyStunIp &&
+          result.mismatched.length === 0 &&
+          result.matched.length > 0;
+
+        result.hasComparableMismatch = result.mismatched.length > 0;
+
+        return result;
+      }
+
+      function isPrivateOrReservedIp(ip) {
+        if (isIPv4(ip)) {
+          const parts = ip.split(".").map(Number);
+          const [a, b] = parts;
+
+          if (a === 10) return true;
+          if (a === 127) return true;
+          if (a === 169 && b === 254) return true;
+          if (a === 172 && b >= 16 && b <= 31) return true;
+          if (a === 192 && b === 168) return true;
+          if (a === 0) return true;
+          if (a >= 224) return true;
+
+          return false;
+        }
+
+        const lower = normalizeIp(ip);
+
+        if (lower === "::1") return true;
+        if (lower.startsWith("fe80:")) return true;
+        if (lower.startsWith("fc") || lower.startsWith("fd")) return true;
+        if (lower.endsWith(".local")) return true;
+
+        return false;
+      }
+
+      function extractIpsFromCandidate(candidate) {
+        const ips = new Set();
+
+        const ipv4Regex =
+          /\b(?:(?:25[0-5]|2[0-4]\d|1?\d?\d)\.){3}(?:25[0-5]|2[0-4]\d|1?\d?\d)\b/g;
+        const ipv4Matches = candidate.match(ipv4Regex) || [];
+
+        for (const ip of ipv4Matches) {
+          ips.add(ip);
+        }
+
+        const parts = candidate.split(/\s+/);
+        for (const part of parts) {
+          if (
+            part.includes(":") &&
+            /^[0-9a-fA-F:.]+$/.test(part) &&
+            part.length >= 3
+          ) {
+            ips.add(part);
+          }
+        }
+
+        return [...ips];
+      }
+
+      async function getGeoip(ip = "") {
+        const url = new URL(GEOIP_API);
+
+        if (ip) {
+          url.searchParams.set("ip", ip);
+        }
+
+        const res = await fetch(url.toString(), {
+          cache: "no-store",
+          mode: "cors",
+        });
+
+        const data = await res.json().catch(() => null);
+
+        if (!res.ok) {
+          const msg =
+            data?.message || data?.error || `GeoIP API 请求失败：${res.status}`;
+          throw new Error(msg);
+        }
+
+        return data;
+      }
+
+      function formatGeoip(geo) {
+        if (!geo) return "-";
+
+        const parts = [];
+
+        if (geo.country_name_zh || geo.country_name) {
+          parts.push(geo.country_name_zh || geo.country_name);
+        }
+
+        if (geo.province_name_zh || geo.province_name) {
+          parts.push(geo.province_name_zh || geo.province_name);
+        }
+
+        if (geo.city_zh || geo.city) {
+          parts.push(geo.city_zh || geo.city);
+        }
+
+        const location = parts.length ? parts.join(" / ") : "-";
+        const code = geo.country_code ? ` ${geo.country_code}` : "";
+
+        return `${location}${code}`;
+      }
+
+      async function getStunIpsByServer(stunUrl) {
+        return new Promise(async (resolve) => {
+          const ips = new Set();
+          const rawCandidates = [];
+
+          const pc = new RTCPeerConnection({
+            iceServers: [
+              {
+                urls: stunUrl,
+              },
+            ],
+            iceCandidatePoolSize: 0,
+          });
+
+          pc.createDataChannel("stun-leak-test");
+
+          pc.onicecandidate = (event) => {
+            if (!event.candidate) return;
+
+            const candidate = event.candidate.candidate;
+            rawCandidates.push(candidate);
+
+            for (const ip of extractIpsFromCandidate(candidate)) {
+              if (!isPrivateOrReservedIp(ip)) {
+                ips.add(ip);
+              }
+            }
+          };
+
+          pc.onicegatheringstatechange = () => {
+            if (pc.iceGatheringState === "complete") {
+              pc.close();
+              resolve({
+                ips: [...ips],
+                rawCandidates,
+              });
+            }
+          };
+
+          try {
+            const offer = await pc.createOffer({
+              offerToReceiveAudio: false,
+              offerToReceiveVideo: false,
+            });
+
+            await pc.setLocalDescription(offer);
+          } catch (err) {
+            pc.close();
+            resolve({
+              ips: [],
+              rawCandidates,
+              error: err,
+            });
+            return;
+          }
+
+          setTimeout(() => {
+            pc.close();
+            resolve({
+              ips: [...ips],
+              rawCandidates,
+            });
+          }, 7000);
+        });
+      }
+
+      function tag(text, type) {
+        return `<span class="tag tag-${type}">${escapeHtml(text)}</span>`;
+      }
+
+      function analyzeOneResult(result, tcpIp, tcpCountry) {
+        const cmp = compareStunWithTcp(result.ips, [tcpIp]);
+
+        const allSame = cmp.allComparableSame;
+        const anyDifferent = cmp.hasComparableMismatch;
+        const hasOnlyExtraIp =
+          result.ips.length > 0 &&
+          cmp.mismatched.length === 0 &&
+          cmp.matched.length === 0 &&
+          cmp.extraWithoutTcpBaseline.length > 0;
+
+        const cnDifferentIps = result.ipGeoList.filter((item) => {
+          const code = item.geo?.country_code;
+          const family = getIpFamily(item.ip);
+          const hasTcpSameFamily = [tcpIp].some(
+            (tcp) => getIpFamily(tcp) === family,
+          );
+
+          return code === "CN" && hasTcpSameFamily && !sameIp(item.ip, tcpIp);
+        });
+
+        const isDomesticStun = result.type.includes("国内");
+
+        let matchText = "-";
+
+        if (result.ips.length === 0) {
+          matchText = tag("无 STUN 公网 IP", "warn");
+        } else if (allSame && cmp.extraWithoutTcpBaseline.length === 0) {
+          matchText = tag("一致", "ok");
+        } else if (allSame && cmp.extraWithoutTcpBaseline.length > 0) {
+          matchText = tag("同协议族一致，另有额外 IP", "warn");
+        } else if (hasOnlyExtraIp) {
+          matchText = tag("无同协议族基准", "warn");
+        } else {
+          matchText = tag("不一致", "bad");
+        }
+
+        let verdict = "-";
+
+        if (result.ips.length === 0) {
+          verdict = tag("未检测到", "warn");
+        } else if (
+          isDomesticStun &&
+          tcpCountry !== "CN" &&
+          cnDifferentIps.length > 0
+        ) {
+          verdict = tag("国内 STUN 泄露", "bad");
+        } else if (anyDifferent) {
+          verdict = tag("STUN 出口不一致", "bad");
+        } else if (cmp.extraWithoutTcpBaseline.length > 0) {
+          verdict = tag("额外 IP，需对应 TCP 基准", "warn");
+        } else {
+          verdict = tag("正常", "ok");
+        }
+
+        return {
+          cmp,
+          allSame,
+          anyDifferent,
+          hasOnlyExtraIp,
+          cnDifferentIps,
+          isDomesticStun,
+          matchText,
+          verdict,
+        };
+      }
+
+      function renderMobileCards(stunResults, tcpIp, tcpCountry) {
+        if (!stunResults.length) {
+          $("mobileCards").innerHTML = `<div class="small">尚未检测</div>`;
+          return;
+        }
+
+        const cards = stunResults.map((result) => {
+          const analysis = analyzeOneResult(result, tcpIp, tcpCountry);
+
+          const ipsText = result.ips.length
+            ? result.ips.map((ip) => `${ip} (${formatIpFamily(ip)})`).join(", ")
+            : "未获取到公网 STUN IP";
+
+          const geoText = result.ipGeoList.length
+            ? result.ipGeoList
+                .map((item) => {
+                  if (!item.geo) return `${item.ip}: GeoIP 失败`;
+                  return `${item.ip}: ${formatGeoip(item.geo)}`;
+                })
+                .join("<br>")
+            : "-";
+
+          return `
+          <div class="stun-card">
+            <div class="stun-card-title">${escapeHtml(result.type)} / ${escapeHtml(result.name)}</div>
+
+            <div class="stun-card-row">
+              <div class="k">服务器</div>
+              <div class="v"><code>${escapeHtml(result.url)}</code></div>
+            </div>
+
+            <div class="stun-card-row">
+              <div class="k">暴露 IP</div>
+              <div class="v">${escapeHtml(ipsText)}</div>
+            </div>
+
+            <div class="stun-card-row">
+              <div class="k">GeoIP</div>
+              <div class="v">${geoText}</div>
+            </div>
+
+            <div class="stun-card-row">
+              <div class="k">一致性</div>
+              <div class="v">${analysis.matchText}</div>
+            </div>
+
+            <div class="stun-card-row">
+              <div class="k">判断</div>
+              <div class="v">${analysis.verdict}</div>
+            </div>
+          </div>
+        `;
+        });
+
+        $("mobileCards").innerHTML = cards.join("");
+      }
+
+      async function runTest() {
+        $("startBtn").disabled = true;
+        $("tcpIp").textContent = "检测中...";
+        $("tcpLocation").textContent = "检测中...";
+        $("tcpIpType").textContent = "检测中...";
+        $("rawCandidates").textContent = "-";
+        $("stunTableBody").innerHTML =
+          `<tr><td colspan="6">检测中...</td></tr>`;
+        $("mobileCards").innerHTML = `<div class="small">检测中...</div>`;
+        setStatus("正在检测 TCP 出口与各 STUN 分流出口...", "warn");
+
+        const allRawCandidates = [];
+        const stunResults = [];
+
+        try {
+          const tcpGeo = await getGeoip();
+          const tcpIp = tcpGeo.ip;
+          const tcpCountry = tcpGeo.country_code || "";
+
+          $("tcpIp").textContent = tcpIp || "-";
+          $("tcpLocation").textContent = formatGeoip(tcpGeo);
+          $("tcpIpType").textContent = tcpIp ? formatIpFamily(tcpIp) : "-";
+
+          for (const test of STUN_TESTS) {
+            const stun = await getStunIpsByServer(test.url);
+
+            allRawCandidates.push(
+              `===== ${test.type} / ${test.name} / ${test.url} =====`,
+              ...stun.rawCandidates,
+              "",
+            );
+
+            const ipGeoList = [];
+
+            for (const ip of stun.ips) {
+              try {
+                const geo = await getGeoip(ip);
+                ipGeoList.push({
+                  ip,
+                  geo,
+                });
+              } catch (err) {
+                ipGeoList.push({
+                  ip,
+                  geo: null,
+                  error: err,
+                });
+              }
+            }
+
+            stunResults.push({
+              ...test,
+              ips: stun.ips,
+              ipGeoList,
+              error: stun.error,
+            });
+          }
+
+          $("rawCandidates").textContent = allRawCandidates.join("\n") || "-";
+
+          const rows = [];
+          let hasCnLeak = false;
+          let hasMismatch = false;
+          let hasAnyStunIp = false;
+          let hasOnlyExtra = false;
+
+          for (const result of stunResults) {
+            const analysis = analyzeOneResult(result, tcpIp, tcpCountry);
+
+            const ipsText = result.ips.length
+              ? result.ips
+                  .map((ip) => `${ip} (${formatIpFamily(ip)})`)
+                  .join(", ")
+              : "未获取到公网 STUN IP";
+
+            const geoText = result.ipGeoList.length
+              ? result.ipGeoList
+                  .map((item) => {
+                    if (!item.geo) return `${item.ip}: GeoIP 失败`;
+                    return `${item.ip}: ${formatGeoip(item.geo)}`;
+                  })
+                  .join("<br>")
+              : "-";
+
+            if (result.ips.length > 0) {
+              hasAnyStunIp = true;
+            }
+
+            if (analysis.anyDifferent) {
+              hasMismatch = true;
+            }
+
+            if (analysis.cmp.extraWithoutTcpBaseline.length > 0) {
+              hasOnlyExtra = true;
+            }
+
+            if (
+              analysis.isDomesticStun &&
+              tcpCountry !== "CN" &&
+              analysis.cnDifferentIps.length > 0
+            ) {
+              hasCnLeak = true;
+            }
+
+            rows.push(`
+            <tr>
+              <td>${escapeHtml(result.type)}</td>
+              <td>
+                ${escapeHtml(result.name)}<br>
+                <code>${escapeHtml(result.url)}</code>
+              </td>
+              <td>${escapeHtml(ipsText)}</td>
+              <td>${geoText}</td>
+              <td>${analysis.matchText}</td>
+              <td>${analysis.verdict}</td>
+            </tr>
+          `);
+          }
+
+          $("stunTableBody").innerHTML = rows.join("");
+          renderMobileCards(stunResults, tcpIp, tcpCountry);
+
+          if (hasCnLeak) {
+            setStatus(
+              "检测到国内 STUN 泄露：国内 STUN 暴露了不同于 TCP 出口的 CN IP",
+              "bad",
+            );
+          } else if (hasMismatch) {
+            setStatus(
+              "检测到 STUN 出口与 TCP 出口不一致，存在 WebRTC/STUN 泄露风险",
+              "bad",
+            );
+          } else if (!hasAnyStunIp) {
+            setStatus(
+              "未检测到公网 STUN IP，可能浏览器已隐藏本机地址或 STUN 被阻断",
+              "ok",
+            );
+          } else if (hasOnlyExtra) {
+            setStatus(
+              "同协议族未发现泄露，但 STUN 返回了额外 IP；如需严格判断，需要额外 TCP IPv4/IPv6 基准",
+              "warn",
+            );
+          } else {
+            setStatus("未发现 STUN 泄露，STUN 出口与 TCP 出口一致", "ok");
+          }
+
+          console.log("TCP GeoIP:", tcpGeo);
+          console.log("STUN results:", stunResults);
+        } catch (err) {
+          console.error(err);
+          setStatus("检测失败：" + err.message, "bad");
+
+          $("stunTableBody").innerHTML = `
+          <tr>
+            <td colspan="6">检测失败：${escapeHtml(err.message)}</td>
+          </tr>
+        `;
+
+          $("mobileCards").innerHTML = `
+          <div class="stun-card">
+            <div class="stun-card-title">检测失败</div>
+            <div class="stun-card-row">
+              <div class="k">错误</div>
+              <div class="v">${escapeHtml(err.message)}</div>
+            </div>
+          </div>
+        `;
+        } finally {
+          $("startBtn").disabled = false;
+        }
+      }
+
+      $("startBtn").addEventListener("click", runTest);
+    </script>
+  </body>
+</html>
