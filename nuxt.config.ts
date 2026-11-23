@@ -166,5 +166,6 @@ export default defineNuxtConfig({
     urls: [...localizedRoutes, ...wolfxMcSitemapUrls],
     excludeAppSources: true,
     autoLastmod: true,
+    zeroRuntime: true,
   },
 })
