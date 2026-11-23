@@ -3,7 +3,7 @@ title: "Wolfx Open API Usage"
 description: "Wolfx Open API documentation for earthquake, EEW, and utility APIs over JSON, GET, and WebSocket."
 locale: en
 layout: docs
-updated: 2026-11-16
+updated: 2026-11-23
 source: apidoc_en.html
 ---
 ## Wolfx Open API Usage Guidelines

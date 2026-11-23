@@ -3,7 +3,7 @@ title: "Wolfx Open API 利用説明"
 description: "Wolfx Open API（地震・緊急地震速報 EEW）の利用説明。JSON、GET、WebSocket に対応。"
 locale: ja
 layout: docs
-updated: 2026-11-16
+updated: 2026-11-23
 source: apidoc.html
 ---
 ## Wolfx Open API ご利用にあたっての注意事項

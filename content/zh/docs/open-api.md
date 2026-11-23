@@ -3,7 +3,7 @@ title: "Wolfx 防灾（防災）实用类免费 API 接口"
 description: "Wolfx Open API 地震、防灾与实用类接口文档，支持 JSON、GET 与 WebSocket。"
 locale: zh
 layout: docs
-updated: 2026-11-16
+updated: 2026-11-23
 source: apidoc_zh.html
 ---
 ## Wolfx Open API 使用须知
