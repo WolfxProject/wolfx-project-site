@@ -69,6 +69,21 @@ wss://ws-api.wolfx.jp/jma_eew
 | `isCancel` | 是否为取消报（布尔类型） |
 | `OriginalText` | 紧急地震速报电文文本。无法提供时为空字符串（字符串类型） |
 
+**JSON 响应示例**
+
+以下为历史紧急地震速报的 JSON 响应示例，仅供开发者参考和测试，不代表当前实际地震预警状态。
+
+- [第一报（预报）](/examples/jma_eew/forecast_first.json){external}
+- [续报（预报）](/examples/jma_eew/forecast_update.json){external}
+- [最终报](/examples/jma_eew/forecast_final.json){external}
+- [紧急地震速报（警报）](/examples/jma_eew/warning.json){external}
+- [レベル法（最大预测震度单独发布）](/examples/jma_eew/level_method.json){external}
+- [包含 PLUM 法的预报](/examples/jma_eew/plum_forecast.json){external}
+- [包含 PLUM 法的警报](/examples/jma_eew/plum_warning.json){external}
+- [取消报](/examples/jma_eew/cancelled.json){external}
+- [假定震源要素](/examples/jma_eew/assumed_hypocenter.json){external}
+- [海域地震](/examples/jma_eew/sea_earthquake.json){external}
+
 ## JMA 地震情報 JSON API
 
 - 描述: 获取日本気象庁发布的最新地震情報, 共50条
@@ -184,7 +199,7 @@ wss://ws-api.wolfx.jp/jma_tsunami
 
 **JSON 响应示例**
 
-以下示例由历史日本气象厅官方 XML 电文生成，仅供开发者参考和测试，不代表当前实际海啸警报状态。
+以下为海啸情报的 JSON 响应示例，仅供开发者参考和测试，不代表当前实际海啸警报状态。
 
 - [海啸预报](/examples/jma_tsunami/forecast_only.json){external}
 - [海啸注意报](/examples/jma_tsunami/advisory.json){external}

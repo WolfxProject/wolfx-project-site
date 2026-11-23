@@ -69,6 +69,21 @@ wss://ws-api.wolfx.jp/jma_eew
 | `isCancel` | 取消報かどうか（真偽型） |
 | `OriginalText` | 緊急地震速報の電文テキスト。提供できない場合は空文字列となります（文字列型） |
 
+**JSON 応答例**
+
+過去の緊急地震速報のJSON応答例です。開発・テスト用の参考資料であり、現在の緊急地震速報を示すものではありません。
+
+- [第1報（予報）](/examples/jma_eew/forecast_first.json){external}
+- [続報（予報）](/examples/jma_eew/forecast_update.json){external}
+- [最終報](/examples/jma_eew/forecast_final.json){external}
+- [緊急地震速報（警報）](/examples/jma_eew/warning.json){external}
+- [レベル法](/examples/jma_eew/level_method.json){external}
+- [PLUM法を含む予報](/examples/jma_eew/plum_forecast.json){external}
+- [PLUM法を含む警報](/examples/jma_eew/plum_warning.json){external}
+- [取消報](/examples/jma_eew/cancelled.json){external}
+- [仮定震源要素](/examples/jma_eew/assumed_hypocenter.json){external}
+- [海域の地震](/examples/jma_eew/sea_earthquake.json){external}
+
 ## 気象庁 地震情報 JSON API
 
 - 説明: 日本気象庁が発表した最新の地震情報（最大50件）を取得
@@ -184,7 +199,7 @@ wss://ws-api.wolfx.jp/jma_tsunami
 
 **JSON 応答例**
 
-過去の気象庁公式XML電文から生成したJSON応答例です。開発・テスト用の参考資料であり、現在の津波警報状況を示すものではありません。
+津波情報のJSON応答例です。開発・テスト用の参考資料であり、現在の津波警報状況を示すものではありません。
 
 - [津波予報](/examples/jma_tsunami/forecast_only.json){external}
 - [津波注意報](/examples/jma_tsunami/advisory.json){external}

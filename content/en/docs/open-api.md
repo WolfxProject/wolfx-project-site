@@ -69,6 +69,21 @@ wss://ws-api.wolfx.jp/jma_eew
 | `isCancel` | Whether this is a cancellation report (boolean) |
 | `OriginalText` | Emergency Earthquake Warning (EEW) telegram text. An empty string is returned when unavailable (string) |
 
+**JSON Response Examples**
+
+Historical Earthquake Early Warning JSON response examples for development and testing. These examples do not represent current earthquake warnings.
+
+- [First Forecast](/examples/jma_eew/forecast_first.json){external}
+- [Forecast Update](/examples/jma_eew/forecast_update.json){external}
+- [Final Report](/examples/jma_eew/forecast_final.json){external}
+- [Earthquake Early Warning](/examples/jma_eew/warning.json){external}
+- [Level Method](/examples/jma_eew/level_method.json){external}
+- [Forecast with PLUM](/examples/jma_eew/plum_forecast.json){external}
+- [Warning with PLUM](/examples/jma_eew/plum_warning.json){external}
+- [Cancellation](/examples/jma_eew/cancelled.json){external}
+- [Assumed Hypocenter Parameters](/examples/jma_eew/assumed_hypocenter.json){external}
+- [Offshore Earthquake](/examples/jma_eew/sea_earthquake.json){external}
+
 ## JMA Earthquake Information JSON API
 
 - Description: Retrieves the latest 50 earthquake reports issued by the Japan Meteorological Agency (JMA)
@@ -184,7 +199,7 @@ wss://ws-api.wolfx.jp/jma_tsunami
 
 **JSON Response Examples**
 
-These examples were generated from historical JMA XML bulletins for development and testing purposes. They do not represent current tsunami warning conditions.
+Tsunami information JSON response examples for development and testing. These examples do not represent current tsunami warning conditions.
 
 - [Tsunami Forecast](/examples/jma_tsunami/forecast_only.json){external}
 - [Tsunami Advisory](/examples/jma_tsunami/advisory.json){external}
