@@ -1,12 +1,7 @@
-@font-face {
-  font-family: OPPOSans-R;
-  src: url("https://wolfx.jp/fonts/OPPOSans3.0cn-Medium.woff2") format("woff2");
-}
-
 body {
   margin: 0;
   padding: 0;
-  font-family: "OPPOSans-R";
+  font-family: system-ui, sans-serif;
 }
 
 #main {
@@ -131,7 +126,7 @@ img {
 #hddcolor {
   width: 3px;
   height: 23px;
-  background-color: #00fff5;
+  background-color: #808080;
   border-radius: 3px;
   overflow: hidden;
 }

@@ -14,7 +14,11 @@ const tocLinks = computed(() => (props.page.body.toc?.links ?? [])
   <div class="site-shell legal-layout">
     <SiteHeader />
     <div class="legal-grid">
-      <main class="legal-main">
+      <main
+        id="main-content"
+        class="legal-main"
+        tabindex="-1"
+      >
         <div
           v-if="isFallback"
           class="fallback-banner"
@@ -23,9 +27,6 @@ const tocLinks = computed(() => (props.page.body.toc?.links ?? [])
           {{ $t('docs.fallback') }}
         </div>
         <header class="document-header legal-header">
-          <p class="eyebrow">
-            WOLFX LEGAL
-          </p>
           <h1>{{ page.title }}</h1>
           <p>{{ page.description }}</p>
           <p
@@ -35,6 +36,10 @@ const tocLinks = computed(() => (props.page.body.toc?.links ?? [])
             {{ $t('docs.updated') }}: <time :datetime="page.updated">{{ page.updated }}</time>
           </p>
         </header>
+        <DocsToc
+          compact
+          :links="tocLinks"
+        />
         <article class="prose-document legal-document">
           <slot />
         </article>

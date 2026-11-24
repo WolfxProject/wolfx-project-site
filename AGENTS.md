@@ -1,13 +1,13 @@
 # Repository rules
 
-- This repository is the Nuxt 4 website for Wolfx Project. Japanese (`ja`) is the default locale and has no URL prefix.
+- This repository is the Nuxt 4 website for Wolfx Project. Japanese (`ja`) is the default locale on the main site and has no URL prefix. WolfxMC uses unprefixed `/mc` for Simplified Chinese, with explicit Chinese, Japanese and English routes.
 - Keep visitor-facing body copy, API field descriptions, disclaimers, and legal text in `content/**/*.md`. Vue components are for layout, interaction, and reusable presentation only.
 - Do not summarize, machine-normalize, or casually rewrite legal text. Preserve each language's existing meaning and differences.
 - Never guess or rename API fields, endpoints, service behavior, versions, credits, or partner links. Suspicious legacy spellings are part of the public contract until evidence says otherwise.
 - When changing one language, inspect the corresponding Japanese, Simplified Chinese, and English pages.
 - Do not maintain legacy URL aliases or compatibility redirects unless explicitly requested in a future task.
 - `wolfx.jp` is the sole Minecraft connection address and the only supported website hostname; do not invent alternate Minecraft hostnames or use them for website routing, canonicals, or redirects.
-- `../wolfx-project` is a read-only public migration source. Never modify, format, delete, or commit files there.
+- Keep the documented public protocol and `scripts/api-contract.mjs` in sync with verified service changes. `pnpm content:audit` checks the current repository offline. `pnpm content:audit:legacy` is an optional historical comparison against a read-only archive at `../wolfx-project` or `WOLFX_LEGACY_ROOT`. Never modify, format, delete, or commit files there.
 - Do not add tracking, ads, third-party font CDNs, automatic external iframes, or forced browser-language redirects.
 - Keep SSR and prerendering safe. Browser-only APIs belong in client lifecycle hooks or `.client` files.
 - The default deployment mode is static generation. Cloudflare Worker code is limited to Workers Assets delivery; do not move ordinary pages to dynamic SSR without an explicit requirement.

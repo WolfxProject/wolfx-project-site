@@ -10,7 +10,10 @@ defineProps<{
 <template>
   <div class="site-shell landing-layout">
     <SiteHeader />
-    <main>
+    <main
+      id="main-content"
+      tabindex="-1"
+    >
       <div
         v-if="isFallback"
         class="fallback-banner"

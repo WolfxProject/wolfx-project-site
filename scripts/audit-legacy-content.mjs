@@ -1,16 +1,9 @@
-import { execFile } from 'node:child_process'
 import fs from 'node:fs/promises'
 import path from 'node:path'
-import { promisify } from 'node:util'
 import { fileURLToPath } from 'node:url'
+import { readLegacyFile } from './legacy-source.mjs'
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
-const legacyRoot = path.resolve(root, '../wolfx-project')
-const execFileAsync = promisify(execFile)
-// The public migration source now contains generated redirect stubs at HEAD.
-// Pin the last full-content revision so the audit continues comparing against
-// the immutable documents that were actually migrated into this repository.
-const legacyRevision = '8cd8387d334d8301d4f6c9ed7eeb5cc522fd8b42'
 const migrations = [
   ['apidoc.html', 'ja/docs/open-api.md'], ['apidoc_zh.html', 'zh/docs/open-api.md'], ['apidoc_en.html', 'en/docs/open-api.md'],
   ['wsapi.html', 'ja/docs/websocket.md'], ['wsapi_zh.html', 'zh/docs/websocket.md'], ['wsapi_en.html', 'en/docs/websocket.md'],
@@ -23,6 +16,72 @@ const apiStatusMigrations = {
   'apidoc_zh.html': { locale: 'zh', heading: 'API 状态' },
   'apidoc_en.html': { locale: 'en', heading: 'API Status' },
 }
+// Reviewed copy edits. Each original heading still resolves to a specific current section.
+const headingRenames = {
+  'apidoc.html': {
+    'Wolfx Open API 利用説明': 'Wolfx Open API 利用ガイド',
+    'WebSocket API 利用説明': 'WebSocket の購読方法',
+    'JMA 緊急地震速報 JSON API': '気象庁 緊急地震速報 JSON API',
+    '四川省地震局 地震速報 JSON API': '四川省地震局 地震早期警報 JSON API',
+    '中国地震台網 地震速報 JSON API': '中国地震台網 地震早期警報 JSON API',
+    '福建省地震局 地震速報 JSON API': '福建省地震局 地震早期警報 JSON API',
+    '重庆市地震局 地震速報 JSON API': '重慶市地震局 地震早期警報 JSON API',
+  },
+  'apidoc_zh.html': {
+    'Wolfx 防灾（防災）实用类免费 API 接口': 'Wolfx Open API 使用指南',
+    'WebSocket API 使用须知': 'WebSocket 订阅指南',
+    'JMA 緊急地震速報 JSON API': 'JMA 紧急地震速报 JSON API',
+    'JMA 地震情報 JSON API': 'JMA 地震信息 JSON API',
+    'CWA 地震预警 JSON API (仅服务大陆地区)': 'CWA 地震预警 JSON API（仅限中国大陆地区）',
+    'IP位址资讯查询 JSON API': 'IP 地址信息查询 JSON API',
+    '最新服务器时间获取 JSON API': '服务器时间 JSON API',
+    '公网IP位址获取 PLAIN API': '公网 IP 地址查询（纯文本）',
+    '随机动漫图片获取 JPEG API': '随机动漫图片 API',
+  },
+  'apidoc_en.html': {
+    'Wolfx Open API Usage': 'Wolfx Open API reference',
+    'WebSocket API Usage Instructions': 'WebSocket subscriptions',
+  },
+  'wsapi.html': {
+    'Wolfx WebSocket API 利用説明': 'Wolfx WebSocket API 利用ガイド',
+    'WebSocket 呼び出し URL': '集約チャンネルと除外設定',
+    'WebSocket 手動クエリコマンド': '個別の接続先と手動クエリ',
+    'WebSocket JSON データ仕様': 'WebSocket メッセージの形式',
+  },
+  'wsapi_zh.html': {
+    'Wolfx WebSocket API 调用说明': 'Wolfx WebSocket API 使用指南',
+    'WebSocket 调用地址': '聚合订阅与过滤',
+    'WebSocket 手动查询指令': '单独订阅与手动查询',
+    'WebSocket JSON 资料说明': 'WebSocket 消息格式',
+  },
+  'wsapi_en.html': {
+    'Wolfx WebSocket API Call Instructions': 'Wolfx WebSocket API',
+    'Introduction to WebSocket': 'How updates work',
+    'WebSocket Call URLs': 'Aggregate subscriptions and filters',
+    'WebSocket Manual Query Commands': 'Individual subscriptions and query commands',
+    'WebSocket JSON Data Specification': 'WebSocket message format',
+  },
+  'seisapi.html': {
+    '提供観測点一覧': '観測点一覧',
+    'JSONフィールドの説明（データ型）': '観測データのフィールド',
+  },
+  'seisapi_zh.html': {
+    'Wolfx SeisJS API 调用说明': 'Wolfx SeisJS API 使用指南',
+    '提供测站列表': '测站列表',
+    'WebSocket 调用地址': 'WebSocket 连接地址',
+    'JSON 字段解析(数据类型)': '观测数据字段',
+    'WebSocket 手动查询指令': 'WebSocket 手动查询命令',
+    'WebSocket JSON 资料说明': 'WebSocket 消息格式',
+  },
+  'seisapi_en.html': {
+    'Wolfx SeisJS API Documentation': 'Wolfx SeisJS API reference',
+    'Available Station List': 'Station list',
+    'JSON Field Description (Data Types)': 'Observation fields',
+    'WebSocket Manual Commands': 'Connection check',
+    'WebSocket JSON Field Specification': 'WebSocket message format',
+  },
+}
+
 const apiStatusResources = [
   'https://api.wolfx.jp/ws_clients.json',
   'https://api.wolfx.jp/status/nginx_request-day.png',
@@ -31,11 +90,6 @@ const apiStatusResources = [
   'https://api.wolfx.jp/status/if_eth0-week.png',
 ]
 const apiStatusComponent = await fs.readFile(path.join(root, 'app/components/content/ApiStatusPanel.vue'), 'utf8')
-
-async function readLegacyFile(filename) {
-  const { stdout } = await execFileAsync('git', ['show', `${legacyRevision}:${filename}`], { cwd: legacyRoot, encoding: 'utf8' })
-  return stdout
-}
 
 function isApiStatusEndpoint(value) {
   return apiStatusResources.some(resource => value.startsWith(resource))
@@ -86,7 +140,7 @@ function metricsFromMarkdown(markdown) {
     links: unique(extract(/\[[^\]]*\]\(([^)]+)\)/g, markdown)),
     endpoints: unique(extract(/(?:https?|wss):\/\/[^\s<`"')\]]+/g, markdown, value => value.replace(/[),.;]+$/, ''))),
     code: extract(/```[^\n]*\n([\s\S]*?)\n```/g, markdown, value => value.trim()),
-    tables: (markdown.match(/^\|\s*Field\s*\|/gm) ?? []).length,
+    tables: (markdown.match(/^\|(?:\s*:?-{3,}:?\s*\|)+\s*$/gm) ?? []).length,
     fields: extract(/^\|\s*`([^`]+)`\s*\|/gm, markdown),
   }
 }
@@ -104,7 +158,14 @@ for (const [legacyFile, markdownFile] of migrations) {
   // Its current headings/navigation are checked against Markdown in legal.spec.mjs.
   // Retain all other migration checks, including Privacy and API contracts.
   const isRewrittenTerms = markdownFile.endsWith('/legal/terms.md')
-  const expectedHeadings = isRewrittenTerms ? [] : source.headings.filter((heading, index) => !(index === 0 && heading === target.title) && !(apiStatusMigration && heading === 'API Status') && !(isApiDocument && isDocumentVersionHeading(heading)))
+  const renames = headingRenames[legacyFile] ?? {}
+  const expectedHeadings = isRewrittenTerms
+    ? []
+    : source.headings
+        .map(heading => renames[heading] ?? heading)
+        .filter((heading, index) => !(index === 0 && heading === target.title)
+          && !(apiStatusMigration && heading === 'API Status')
+          && !(isApiDocument && isDocumentVersionHeading(heading)))
   const dynamicStatus = []
   const documentMetadata = []
   if (isApiDocument) {
@@ -136,15 +197,18 @@ for (const [legacyFile, markdownFile] of migrations) {
     documentMetadata,
     dynamicStatus,
   }
-  // Only the three JMA sections added on 2026-11-16 are outside the migration
-  // baseline. Keep exact table counts for every legacy section, as well as all
-  // field, endpoint, code and link checks above. check-jma-docs.mjs covers the
-  // new sections independently in pnpm check.
-  const newJmaSection = markdownFile.endsWith('/docs/open-api.md')
-    ? markdown.match(/^## JMA (?:地震詳細|地震详情|Earthquake Detail) JSON API\n[\s\S]*?(?=^## (?:中国地震台網|中国地震台网|China Earthquake Networks Center))/m)?.[0] ?? ''
-    : ''
-  const legacyTables = metricsFromMarkdown(markdown.replace(newJmaSection, '')).tables
-  const ok = source.tables === legacyTables && Object.values(missing).every(values => values.length === 0)
+  // Compare every historical table. Three subsequently published JMA products
+  // have their own field contract in check-jma-docs.mjs. A single subscription
+  // directory in the WebSocket guide pairs the original endpoints and commands.
+  const newProducts = ['jma_earthquake_detail', 'jma_tsunami', 'jma_special_eq']
+  const newJmaTables = markdownFile.endsWith('/docs/open-api.md')
+    ? [...markdown.matchAll(/^## .+\n[\s\S]*?(?=^## |$(?![\s\S]))/gm)]
+        .filter(([section]) => newProducts.some(name => section.includes(`\nhttps://api.wolfx.jp/${name}.json\n`)))
+        .reduce((sum, [section]) => sum + metricsFromMarkdown(section).tables, 0)
+    : 0
+  const addedDirectory = markdownFile.endsWith('/docs/websocket.md') ? 1 : 0
+  const ok = target.tables === source.tables + newJmaTables + addedDirectory
+    && Object.values(missing).every(values => values.length === 0)
   failed ||= !ok
   summaries.push({ legacyFile, markdownFile, language: source.language, sourceTitle: source.title, headings: source.headings.length, tables: source.tables, fields: source.fields.length, endpoints: source.endpoints.length, ok, missing })
   console.log(`${ok ? 'PASS' : 'FAIL'} ${legacyFile} [${source.language}] -> content/${markdownFile} | headings ${source.headings.length}, tables ${source.tables}, fields ${source.fields.length}, endpoints ${source.endpoints.length}`)

@@ -1,29 +1,5 @@
-export type WolfxLocale = 'ja' | 'zh' | 'en'
-export type WolfxLayout = 'landing' | 'docs' | 'legal' | 'mc'
+import type { Collections } from '@nuxt/content'
 
-export interface TocLink {
-  id: string
-  text: string
-  depth: number
-  children?: TocLink[]
-}
-
-export interface WolfxContentPage {
-  id: string
-  path: string
-  title: string
-  description: string
-  locale: WolfxLocale
-  sourceLocale?: WolfxLocale
-  availableLocales?: WolfxLocale[]
-  layout: WolfxLayout
-  updated?: string
-  source?: string
-  body: {
-    toc?: {
-      links?: TocLink[]
-    }
-    [key: string]: unknown
-  }
-  [key: string]: unknown
-}
+export type WolfxContentPage = Collections['pages']
+export type WolfxLocale = WolfxContentPage['locale']
+export type TocLink = NonNullable<WolfxContentPage['body']['toc']>['links'][number]

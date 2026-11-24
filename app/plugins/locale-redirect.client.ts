@@ -1,11 +1,16 @@
-export default defineNuxtPlugin(() => {
-  const { localeRedirectTarget } = useLocaleRedirect()
-  const path = window.location.pathname
-  const target = localeRedirectTarget({
-    path,
-    fullPath: `${path}${window.location.search}${window.location.hash}`,
-  })
+export default defineNuxtPlugin((nuxtApp) => {
+  const locale = readLocalePreference()
+  if (!locale || nuxtApp.payload.error)
+    return
 
-  if (target)
-    window.location.replace(target)
+  const { pathname, search, hash } = window.location
+  const { localize, localizeWolfxMc, unlocalize } = usePublicPath()
+  if (unlocalize(pathname) !== pathname)
+    return
+
+  const target = pathname === '/mc' || pathname.startsWith('/mc/')
+    ? localizeWolfxMc(pathname, locale)
+    : localize(pathname, locale)
+  if (target !== pathname)
+    window.location.replace(`${target}${search}${hash}`)
 })

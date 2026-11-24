@@ -222,6 +222,9 @@ onBeforeUnmount(() => {
     data-api-status-panel
     :aria-label="t('apiStatus.title')"
   >
+    <p class="static-status">
+      {{ t('apiStatus.requiresScript') }}
+    </p>
     <div class="api-status-panel__summary">
       <div class="api-status-panel__metric">
         <span
@@ -518,5 +521,9 @@ onBeforeUnmount(() => {
   .api-status-panel *::after {
     transition: none !important;
   }
+}
+@media (scripting: none) {
+  .api-status-panel__summary,
+  .api-status-panel__groups { display: none; }
 }
 </style>

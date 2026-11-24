@@ -1,111 +1,112 @@
 ---
-title: "Wolfx SeisJS API Documentation"
-description: "SeisJS station, WebSocket connection, and observation data field documentation."
+title: "Wolfx SeisJS API reference"
+description: "Look up SeisJS stations and receive ground motion observations over WebSocket. Includes intensity scales, units, and message fields."
 locale: en
 layout: docs
-updated: 2025-07-04
+updated: 2026-11-24
 source: seisapi_en.html
 ---
+
 ## Overview
 
-- Data push interval per station: 1 second
-- Seismic intensity standard: Japan Meteorological Agency (JMA)
-- Ground motion intensity standard: Chinese national intensity standard (based on GB/T 17742-2020)
-- This API provides real-time data from SeisJS stations via WebSocket
-- Heartbeat mechanism: the server sends a \`heartbeat\` packet upon connection and every minute; the client may optionally respond with \`ping\` (recommended)
-- Disclaimer: This API only provides station data from SeisJS for legal research and development use. Any other usage is prohibited.
+SeisJS streams observations over WebSocket. Each station sends data at one-second intervals.
 
-## Available Station List
+Station data reports intensity on two scales: the Japan Meteorological Agency (JMA) seismic intensity scale and the Chinese seismic intensity scale (CSIS, GB/T 17742-2020).
 
-- Station List JSON URL: [https://api.wolfx.jp/seis\_list.json](https://api.wolfx.jp/seis_list.json)
-- Note: For application development, it is recommended to use this station list API to retrieve real-time station status for cloud-based control. The list updates every 10 minutes.
+The server sends a `heartbeat` message when the connection opens and once per minute after that. Clients are encouraged to reply with `ping`, but a reply is optional.
+
+**Usage restriction.** This API provides only SeisJS station data. Use is limited to lawful research and development. All other uses are prohibited.
+
+## Station list
+
+[Station list (JSON)](https://api.wolfx.jp/seis_list.json)
+
+The list is updated every 10 minutes. Applications can use it to check station status for remote station management.
 
 ## WebSocket Endpoint
 
-- Receive JSON data from all SeisJS stations:
+Use a single connection to receive JSON data from all stations.
 
 ```text
 wss://seisjs.wolfx.jp/all_seis
 ```
 
-## JSON Field Description (Data Types)
+## Observation fields
 
 | Field | Description |
 | --- | --- |
-| `type` | Station UUID (String) |
-| `region` | Station location (String) |
-| `latitude` | Station latitude (Number) |
-| `longitude` | Station longitude (Number) |
-| `version` | SeisJS version running on the station (Number) |
-| `PGA` | Composite Peak Ground Acceleration (cm/s²) (Number) |
-| `PGV` | Composite Peak Ground Velocity (cm/s) (Number) |
-| `PGD` | Composite Peak Ground Displacement (cm) (Number) |
-| `PGA_EW` | East-West Peak Ground Acceleration (cm/s²) (Number) |
-| `PGV_EW` | East-West Peak Ground Velocity (cm/s) (Number) |
-| `PGD_EW` | East-West Peak Ground Displacement (cm) (Number) |
-| `PGA_NS` | North-South Peak Ground Acceleration (cm/s²) (Number) |
-| `PGV_NS` | North-South Peak Ground Velocity (cm/s) (Number) |
-| `PGD_NS` | North-South Peak Ground Displacement (cm) (Number) |
-| `PGA_UD` | Vertical Peak Ground Acceleration (cm/s²) (Number) |
-| `PGV_UD` | Vertical Peak Ground Velocity (cm/s) (Number) |
-| `PGD_UD` | Vertical Peak Ground Displacement (cm) (Number) |
-| `Max_PGA` | Max composite PGA within 2 minutes (cm/s²) (Number) |
-| `Max_PGV` | Max composite PGV within 2 minutes (cm/s) (Number) |
-| `Max_PGD` | Max composite PGD within 2 minutes (cm) (Number) |
-| `Max_PGA_EW` | Max East-West PGA within 2 minutes (cm/s²) (Number) |
-| `Max_PGV_EW` | Max East-West PGV within 2 minutes (cm/s) (Number) |
-| `Max_PGD_EW` | Max East-West PGD within 2 minutes (cm) (Number) |
-| `Max_PGA_NS` | Max North-South PGA within 2 minutes (cm/s²) (Number) |
-| `Max_PGV_NS` | Max North-South PGV within 2 minutes (cm/s) (Number) |
-| `Max_PGD_NS` | Max North-South PGD within 2 minutes (cm) (Number) |
-| `Max_PGA_UD` | Max Vertical PGA within 2 minutes (cm/s²) (Number) |
-| `Max_PGV_UD` | Max Vertical PGV within 2 minutes (cm/s) (Number) |
-| `Max_PGD_UD` | Max Vertical PGD within 2 minutes (cm) (Number) |
-| `Shindo` | Composite JMA Seismic Intensity (String) |
-| `Max_Shindo` | Max JMA Seismic Intensity within 2 minutes (String) |
-| `CalcShindo` | Composite Calculated JMA Seismic Intensity (Number) |
-| `Max_CalcShindo` | Max Calculated JMA Seismic Intensity within 2 minutes (Number) |
-| `Intensity` | Composite CSIS Intensity (Number) |
-| `Max_Intensity` | Max CSIS Intensity within 2 minutes (Number) |
-| `LPGM` | Long-Period Ground Motion Level (Number) |
-| `Max_LPGM` | Max Long-Period Ground Motion Level within 2 minutes (Number) |
-| `Sva30` | Spectral Acceleration Value (Number) |
-| `Max_Sva30` | Max Spectral Acceleration Value within 2 minutes (Number) |
-| `error_code` | Error codes reported by station (Array of Numbers) |
-| `reverse` | Reserved field for server-side validation (String) |
-| `is_desktop` | Indicates if the client is a desktop (Boolean) |
-| `High_Precision` | Indicates if the station is high-precision (Boolean) |
-| `update_at` | Data update timestamp (String) |
-| `create_at` | JSON generation timestamp (String) |
+| `type` | Station UUID (string) |
+| `region` | Station location (string) |
+| `latitude` | Station latitude (number) |
+| `longitude` | Station longitude (number) |
+| `version` | SeisJS version running on the station (number) |
+| `PGA` | Composite Peak Ground Acceleration (cm/s²) (number) |
+| `PGV` | Composite Peak Ground Velocity (cm/s) (number) |
+| `PGD` | Composite Peak Ground Displacement (cm) (number) |
+| `PGA_EW` | East-West Peak Ground Acceleration (cm/s²) (number) |
+| `PGV_EW` | East-West Peak Ground Velocity (cm/s) (number) |
+| `PGD_EW` | East-West Peak Ground Displacement (cm) (number) |
+| `PGA_NS` | North-South Peak Ground Acceleration (cm/s²) (number) |
+| `PGV_NS` | North-South Peak Ground Velocity (cm/s) (number) |
+| `PGD_NS` | North-South Peak Ground Displacement (cm) (number) |
+| `PGA_UD` | Vertical Peak Ground Acceleration (cm/s²) (number) |
+| `PGV_UD` | Vertical Peak Ground Velocity (cm/s) (number) |
+| `PGD_UD` | Vertical Peak Ground Displacement (cm) (number) |
+| `Max_PGA` | Max composite PGA over the preceding 2 minutes (cm/s²) (number) |
+| `Max_PGV` | Max composite PGV over the preceding 2 minutes (cm/s) (number) |
+| `Max_PGD` | Max composite PGD over the preceding 2 minutes (cm) (number) |
+| `Max_PGA_EW` | Max East-West PGA over the preceding 2 minutes (cm/s²) (number) |
+| `Max_PGV_EW` | Max East-West PGV over the preceding 2 minutes (cm/s) (number) |
+| `Max_PGD_EW` | Max East-West PGD over the preceding 2 minutes (cm) (number) |
+| `Max_PGA_NS` | Max North-South PGA over the preceding 2 minutes (cm/s²) (number) |
+| `Max_PGV_NS` | Max North-South PGV over the preceding 2 minutes (cm/s) (number) |
+| `Max_PGD_NS` | Max North-South PGD over the preceding 2 minutes (cm) (number) |
+| `Max_PGA_UD` | Max Vertical PGA over the preceding 2 minutes (cm/s²) (number) |
+| `Max_PGV_UD` | Max Vertical PGV over the preceding 2 minutes (cm/s) (number) |
+| `Max_PGD_UD` | Max Vertical PGD over the preceding 2 minutes (cm) (number) |
+| `Shindo` | Composite intensity on the JMA scale (string) |
+| `Max_Shindo` | Maximum intensity on the JMA scale over the preceding 2 minutes (string) |
+| `CalcShindo` | Composite instrumental seismic intensity (JMA) (number) |
+| `Max_CalcShindo` | Maximum instrumental seismic intensity (JMA) over the preceding 2 minutes (number) |
+| `Intensity` | Composite intensity on the CSIS scale (number) |
+| `Max_Intensity` | Maximum intensity on the CSIS scale over the preceding 2 minutes (number) |
+| `LPGM` | Long-period ground motion class (number) |
+| `Max_LPGM` | Maximum long-period ground motion class over the preceding 2 minutes (number) |
+| `Sva30` | Maximum horizontal absolute velocity response over the preceding 30 seconds, across oscillator periods of 1.6 to 7.8 seconds at 5% damping (cm/s, number) |
+| `Max_Sva30` | Highest `Sva30` recorded over the preceding 2 minutes (cm/s, number) |
+| `error_code` | Error codes reported by station (array of numbers) |
+| `reverse` | Reserved field for server-side validation (string) |
+| `is_desktop` | Indicates if the client is a desktop (boolean) |
+| `High_Precision` | Indicates if the station is high-precision (boolean) |
+| `update_at` | Data update timestamp (string) |
+| `create_at` | JSON generation timestamp (string) |
 
-## WebSocket Manual Commands
-
-- Ping:
+## Connection check
 
 ```text
 ping
 ```
 
-## WebSocket JSON Field Specification
+## WebSocket message format
 
-- Common JSON Field:
-
-| Field | Description |
-| --- | --- |
-| `type` | Data type / Station UUID (String) |
-
-- WebSocket Heartbeat Packet Fields:
+### Common field
 
 | Field | Description |
 | --- | --- |
-| `type` | heartbeat (String) |
-| `ver` | Server version (Number) |
-| `id` | Client connection UUID (String) |
-| `timestamp` | Timestamp in milliseconds (String) |
+| `type` | Message type or station UUID (string) |
 
-- WebSocket Pong Packet Fields:
+### Heartbeat (`heartbeat`)
 
 | Field | Description |
 | --- | --- |
-| `type` | pong (String) |
-| `timestamp` | Timestamp in milliseconds (String) |
+| `type` | `heartbeat` (string) |
+| `ver` | Server version (number) |
+| `id` | Client connection UUID (string) |
+| `timestamp` | Time the message was sent, in milliseconds (string) |
+
+### Reply to ping (`pong`)
+
+| Field | Description |
+| --- | --- |
+| `type` | `pong` (string) |
+| `timestamp` | Time the message was sent, in milliseconds (string) |

@@ -11,36 +11,39 @@ interface SearchEntry {
   text: string
 }
 
-const { locale, t } = useI18n()
-const { displayLocale, isWolfxMc } = useSiteContext()
+const { displayLocale, tr } = useSiteContext()
 const dialog = useTemplateRef<HTMLDialogElement>('dialog')
 const input = useTemplateRef<HTMLInputElement>('input')
 const trigger = useTemplateRef<HTMLButtonElement>('trigger')
 const query = ref('')
-const entries = ref<SearchEntry[]>([])
-const loaded = ref(false)
+const entries = useState<SearchEntry[] | null>('search-index', () => null)
 const loading = ref(false)
 const failed = ref(false)
 const activeIndex = ref(-1)
+let returnFocus: HTMLElement | null = null
 
-function tr(key: string) {
-  return t(key, {}, { locale: displayLocale.value })
+function normalize(value: string) {
+  return value.normalize('NFKC').toLowerCase()
 }
 
+const searchableEntries = computed(() => (entries.value ?? [])
+  .filter(entry => entry.locale === displayLocale.value)
+  .map(entry => ({
+    entry,
+    title: normalize(entry.title),
+    headings: normalize((entry.headings ?? []).join(' ')),
+    description: normalize(entry.description ?? ''),
+    text: normalize(entry.text),
+  })))
+
 const results = computed(() => {
-  const term = query.value.trim().toLocaleLowerCase()
+  const term = normalize(query.value).trim()
   if (!term)
     return []
   const terms = term.split(/\s+/).filter(Boolean)
-  return entries.value
-    .filter(entry => entry.locale === (isWolfxMc.value ? displayLocale.value : locale.value))
-    .map((entry) => {
-      const title = entry.title.toLocaleLowerCase()
-      const headings = (entry.headings ?? []).join(' ').toLocaleLowerCase()
-      const description = (entry.description ?? '').toLocaleLowerCase()
-      const text = entry.text.toLocaleLowerCase()
-      const searchable = `${title} ${headings} ${description} ${text}`
-      if (!terms.every(part => searchable.includes(part)))
+  return searchableEntries.value
+    .map(({ entry, title, headings, description, text }) => {
+      if (!terms.every(part => title.includes(part) || headings.includes(part) || description.includes(part) || text.includes(part)))
         return undefined
       let score = 0
       if (title === term)
@@ -58,7 +61,7 @@ const results = computed(() => {
       return { entry, score }
     })
     .filter((result): result is { entry: SearchEntry, score: number } => Boolean(result))
-    .sort((a, b) => b.score - a.score || a.entry.title.localeCompare(b.entry.title))
+    .sort((a, b) => b.score - a.score || a.entry.title.localeCompare(b.entry.title, displayLocale.value))
     .slice(0, 12)
     .map(result => result.entry)
 })
@@ -74,43 +77,56 @@ function excerpt(entry: SearchEntry) {
   return source.length > 180 ? `${source.slice(0, 177)}…` : source
 }
 
-async function openSearch() {
-  document.documentElement.classList.add('has-modal-open')
-  document.body.classList.add('has-modal-open')
-  dialog.value?.showModal()
-  await nextTick()
-  input.value?.focus()
-  if (!loaded.value && !loading.value) {
-    loading.value = true
-    failed.value = false
-    try {
-      entries.value = await $fetch<SearchEntry[]>('/search-index.json', { cache: 'no-cache' })
-      loaded.value = true
-    }
-    catch {
-      failed.value = true
-    }
-    finally {
-      loading.value = false
-    }
+async function loadIndex() {
+  if (entries.value || loading.value)
+    return
+  loading.value = true
+  failed.value = false
+  try {
+    const index = await $fetch<SearchEntry[]>('/search-index.json', { cache: 'no-cache', timeout: 10_000, retry: 0 })
+    if (!Array.isArray(index))
+      throw new Error('Invalid search index')
+    entries.value = markRaw(index)
   }
+  catch {
+    failed.value = true
+  }
+  finally {
+    loading.value = false
+  }
+}
+
+function openSearch() {
+  if (!dialog.value || document.querySelector('dialog[open]'))
+    return false
+  const focused = document.activeElement
+  returnFocus = focused instanceof HTMLElement && focused !== document.body ? focused : trigger.value
+  dialog.value.showModal()
+  input.value?.focus()
+  void loadIndex()
+  return true
+}
+
+function retrySearch() {
+  input.value?.focus()
+  void loadIndex()
 }
 
 function resetSearch() {
-  document.documentElement.classList.remove('has-modal-open')
-  document.body.classList.remove('has-modal-open')
   query.value = ''
   activeIndex.value = -1
-  void nextTick(() => trigger.value?.focus())
+  returnFocus?.focus({ preventScroll: true })
+  returnFocus = null
 }
 
 function handleGlobalShortcut(event: KeyboardEvent) {
+  if (event.key !== '/' || event.defaultPrevented || event.isComposing || event.metaKey || event.ctrlKey || event.altKey)
+    return
+
   const target = event.target as HTMLElement | null
-  const isEditable = target?.matches('input, textarea, select, [contenteditable="true"]')
-  if (event.key === '/' && !event.metaKey && !event.ctrlKey && !event.altKey && !isEditable) {
+  const isEditable = target?.isContentEditable || target?.matches('input, textarea, select')
+  if (!isEditable && openSearch())
     event.preventDefault()
-    void openSearch()
-  }
 }
 
 function closeSearch() {
@@ -131,7 +147,8 @@ async function selectResult(index: number) {
 }
 
 async function handleInputKeydown(event: KeyboardEvent) {
-  if (!results.value.length)
+  // Enter and arrow keys also operate the candidate list of a CJK input method.
+  if (event.isComposing || event.keyCode === 229 || !results.value.length)
     return
   if (event.key === 'ArrowDown') {
     event.preventDefault()
@@ -154,11 +171,7 @@ async function handleInputKeydown(event: KeyboardEvent) {
 }
 
 onMounted(() => document.addEventListener('keydown', handleGlobalShortcut))
-onBeforeUnmount(() => {
-  document.removeEventListener('keydown', handleGlobalShortcut)
-  document.documentElement.classList.remove('has-modal-open')
-  document.body.classList.remove('has-modal-open')
-})
+onBeforeUnmount(() => document.removeEventListener('keydown', handleGlobalShortcut))
 </script>
 
 <template>
@@ -192,7 +205,7 @@ onBeforeUnmount(() => {
           autocomplete="off"
           role="combobox"
           aria-autocomplete="list"
-          aria-controls="search-results"
+          :aria-controls="results.length ? 'search-results' : undefined"
           :aria-expanded="Boolean(results.length)"
           :aria-activedescendant="activeResultId"
           :aria-label="tr('search.label')"
@@ -219,9 +232,15 @@ onBeforeUnmount(() => {
         role="alert"
       >
         {{ tr('search.failed') }}
+        <button
+          type="button"
+          @click="retrySearch"
+        >
+          {{ tr('search.retry') }}
+        </button>
       </p>
       <p
-        v-else-if="!query"
+        v-else-if="!query.trim()"
         class="search-hint"
       >
         {{ tr('search.hint') }}
@@ -229,6 +248,7 @@ onBeforeUnmount(() => {
       <p
         v-else-if="!results.length"
         class="search-hint"
+        role="status"
       >
         {{ tr('search.empty') }}
       </p>
@@ -237,16 +257,20 @@ onBeforeUnmount(() => {
         id="search-results"
         class="search-results"
         role="listbox"
+        :aria-label="tr('search.label')"
       >
         <li
           v-for="(result, index) in results"
           :key="result.path"
-          role="option"
-          :aria-selected="activeIndex === index"
+          role="presentation"
         >
           <NuxtLink
             :id="`search-result-${index}`"
             :to="result.path"
+            no-prefetch
+            role="option"
+            tabindex="-1"
+            :aria-selected="activeIndex === index"
             @mouseenter="activeIndex = index"
             @focus="activeIndex = index"
             @click="closeSearch"

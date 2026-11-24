@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import type { WolfxLocale } from '~/types/site'
 
-const { locales, t } = useI18n()
+const { locales } = useI18n()
 const route = useRoute()
+const error = useError()
 const { localize, localizeWolfxMc, unlocalize } = usePublicPath()
-const { displayLocale, isWolfxMc } = useSiteContext()
+const { displayLocale, isWolfxMc, tr } = useSiteContext()
 const mounted = ref(false)
 
 onMounted(() => {
@@ -17,32 +18,22 @@ const localeCode: Record<WolfxLocale, string> = {
   en: 'EN',
 }
 
-const visibleLocales = computed(() => {
-  if (!isWolfxMc.value)
-    return locales.value
-  return locales.value
-})
-const activeLocale = computed(() => visibleLocales.value.find(item => item.code === displayLocale.value))
+const activeLocale = computed(() => locales.value.find(item => item.code === displayLocale.value))
 const activeLocaleCode = computed(() => localeCode[displayLocale.value])
 
-function tr(key: string) {
-  return t(key, {}, { locale: displayLocale.value })
+function translatedPath(target: WolfxLocale) {
+  if (error.value)
+    return localize('/', target)
+  const path = unlocalize(route.path)
+  return isWolfxMc.value
+    ? localizeWolfxMc(path, target)
+    : localize(path, target)
 }
 
 async function changeLanguage(event: Event) {
   const target = (event.target as HTMLSelectElement).value as WolfxLocale
   writeLocalePreference(target)
-  const path = unlocalize(route.path)
-  const targetPath = isWolfxMc.value
-    ? localizeWolfxMc(path, target)
-    : localize(path, target)
-  const targetFullPath = `${targetPath}${route.fullPath.slice(route.path.length)}`
-  if (isWolfxMc.value) {
-    if (import.meta.client)
-      window.location.assign(targetFullPath)
-    return
-  }
-  await navigateTo(targetFullPath)
+  await navigateTo(`${translatedPath(target)}${route.fullPath.slice(route.path.length)}`)
 }
 </script>
 
@@ -68,12 +59,26 @@ async function changeLanguage(event: Event) {
       @change="changeLanguage"
     >
       <option
-        v-for="item in visibleLocales"
+        v-for="item in locales"
         :key="item.code"
         :value="item.code"
+        :lang="item.language"
       >
         {{ item.name }}
       </option>
     </select>
   </label>
+  <nav
+    class="language-links"
+    :aria-label="tr('language.label')"
+  >
+    <a
+      v-for="item in locales"
+      :key="item.code"
+      :href="translatedPath(item.code)"
+      :lang="item.language"
+      :hreflang="item.language"
+      :aria-current="item.code === displayLocale ? 'page' : undefined"
+    >{{ item.name }}</a>
+  </nav>
 </template>

@@ -1,111 +1,112 @@
 ---
-title: "Wolfx SeisJS API 调用说明"
-description: "SeisJS 测站、WebSocket 连接与观测数据字段说明。"
+title: "Wolfx SeisJS API 使用指南"
+description: "查询 SeisJS 测站列表，通过 WebSocket 接收测站观测数据，并查看震度、烈度和地面运动各字段的单位。"
 locale: zh
 layout: docs
-updated: 2025-07-04
+updated: 2026-11-24
 source: seisapi_zh.html
 ---
+
 ## 简介
 
-- 单个测站数据推送间隔: 1秒
-- 震度计算标准: 日本气象厅震度标准
-- 烈度计算标准: 中国地震烈度标准(参考GB/T 17742-2020)
-- 说明：本API以WebSocket的形式提供来自SeisJS测站的实时资料
-- 心跳包机制：服务端将在每分钟和建立连接后发送一个heartbeat心跳包以保持连接，客户端可选回复ping包（推荐）
-- 免责声明：本API仅提供来自SeisJS的测站资料，仅供合法研究和开发使用，不可用于其他用途
+SeisJS 通过 WebSocket 提供实时测站数据，每个测站的推送间隔为 1 秒。
 
-## 提供测站列表
+震度采用日本气象厅震度分级，烈度参考《中国地震烈度表》（GB/T 17742-2020）计算。
 
-- 测站列表JSON地址: [https://api.wolfx.jp/seis\_list.json](https://api.wolfx.jp/seis_list.json)
-- 注意: 若要进行程序开发，建议使用该测站列表API来获取测站状态信息，以实现测站云控功能，列表每10分钟更新一次
+服务器在连接建立后以及此后每分钟发送一次 `heartbeat` 心跳消息。建议客户端回复 `ping`，此操作可选。
 
-## WebSocket 调用地址
+**使用限制**　本 API 仅提供 SeisJS 测站数据，限用于合法研究和开发，禁止用于其他目的。
 
-- 接收来自所有测站的 JSON API 推送:
+## 测站列表
+
+[测站列表（JSON）](https://api.wolfx.jp/seis_list.json)
+
+测站列表每 10 分钟更新一次。开发者可以从中读取测站状态，用于远程管理测站。
+
+## WebSocket 连接地址
+
+通过一个连接即可接收所有测站的 JSON 数据。
 
 ```text
 wss://seisjs.wolfx.jp/all_seis
 ```
 
-## JSON 字段解析(数据类型)
+## 观测数据字段
 
-| Field | Description |
+| 字段 | 说明 |
 | --- | --- |
-| `type` | 测站UUID(字符串型) |
-| `region` | 测站所在位置(字符串型) |
-| `latitude` | 测站所在纬度(数值型) |
-| `longitude` | 测站所在经度(数值型) |
-| `version` | 测站运行SeisJS版本(数值型) |
-| `PGA` | 合成峰值地面加速度(cm/s²)(数值型) |
-| `PGV` | 合成峰值地面速度(cm/s)(数值型) |
-| `PGD` | 合成峰值地面位移(cm)(数值型) |
-| `PGA_EW` | 东西向峰值地面加速度(cm/s²)(数值型) |
-| `PGV_EW` | 东西向峰值地面速度(cm/s)(数值型) |
-| `PGD_EW` | 东西向峰值地面位移(cm)(数值型) |
-| `PGA_NS` | 南北向峰值地面加速度(cm/s²)(数值型) |
-| `PGV_NS` | 南北向峰值地面速度(cm/s)(数值型) |
-| `PGD_NS` | 南北向峰值地面位移(cm)(数值型) |
-| `PGA_UD` | 垂直向峰值地面加速度(cm/s²)(数值型) |
-| `PGV_UD` | 垂直向峰值地面速度(cm/s)(数值型) |
-| `PGD_UD` | 垂直向峰值地面位移(cm)(数值型) |
-| `Max_PGA` | 2分内最大合成PGA(cm/s²)(数值型) |
-| `Max_PGV` | 2分内最大合成PGV(cm/s)(数值型) |
-| `Max_PGD` | 2分内最大合成PGD(cm)(数值型) |
-| `Max_PGA_EW` | 2分内最大东西向PGA(cm/s²)(数值型) |
-| `Max_PGV_EW` | 2分内最大东西向PGV(cm/s)(数值型) |
-| `Max_PGD_EW` | 2分内最大东西向PGD(cm)(数值型) |
-| `Max_PGA_NS` | 2分内最大南北向PGA(cm/s²)(数值型) |
-| `Max_PGV_NS` | 2分内最大南北向PGV(cm/s)(数值型) |
-| `Max_PGD_NS` | 2分内最大南北向PGD(cm)(数值型) |
-| `Max_PGA_UD` | 2分内最大垂直向PGA(cm/s²)(数值型) |
-| `Max_PGV_UD` | 2分内最大垂直向PGV(cm/s)(数值型) |
-| `Max_PGD_UD` | 2分内最大垂直向PGD(cm)(数值型) |
-| `Shindo` | 合成JMA震度(字符串型) |
-| `Max_Shindo` | 2分内最大合成JMA震度(字符串型) |
-| `CalcShindo` | 合成JMA计测震度(数值型) |
-| `Max_CalcShindo` | 2分内最大合成JMA计测震度(数值型) |
-| `Intensity` | 合成CSIS烈度(数值型) |
-| `Max_Intensity` | 2分内最大合成CSIS烈度(数值型) |
-| `LPGM` | 长周期地震动阶级(数值型) |
-| `Max_LPGM` | 2分内最大长周期地震动阶级(数值型) |
-| `Sva30` | 加速度反应谱值(数值型) |
-| `Max_Sva30` | 2分内最大加速度反应谱值(数值型) |
-| `error_code` | 测站端错误代码(数值型数组) |
-| `reverse` | 保留字段，供服务端校验使用(字符串型) |
-| `is_desktop` | 是否为桌面端(布尔型) |
-| `High_Precision` | 是否为高精度测站(布尔型) |
-| `update_at` | 数据更新时间(字符串型) |
-| `create_at` | JSON生成时间(字符串型) |
+| `type` | 测站 UUID（字符串型） |
+| `region` | 测站所在位置（字符串型） |
+| `latitude` | 测站纬度（数值型） |
+| `longitude` | 测站经度（数值型） |
+| `version` | 测站运行的 SeisJS 版本（数值型） |
+| `PGA` | 合成峰值地面加速度（cm/s²）（数值型） |
+| `PGV` | 合成峰值地面速度（cm/s）（数值型） |
+| `PGD` | 合成峰值地面位移（cm）（数值型） |
+| `PGA_EW` | 东西向峰值地面加速度（cm/s²）（数值型） |
+| `PGV_EW` | 东西向峰值地面速度（cm/s）（数值型） |
+| `PGD_EW` | 东西向峰值地面位移（cm）（数值型） |
+| `PGA_NS` | 南北向峰值地面加速度（cm/s²）（数值型） |
+| `PGV_NS` | 南北向峰值地面速度（cm/s）（数值型） |
+| `PGD_NS` | 南北向峰值地面位移（cm）（数值型） |
+| `PGA_UD` | 竖直向峰值地面加速度（cm/s²）（数值型） |
+| `PGV_UD` | 竖直向峰值地面速度（cm/s）（数值型） |
+| `PGD_UD` | 竖直向峰值地面位移（cm）（数值型） |
+| `Max_PGA` | 最近 2 分钟内的最大合成 PGA（cm/s²）（数值型） |
+| `Max_PGV` | 最近 2 分钟内的最大合成 PGV（cm/s）（数值型） |
+| `Max_PGD` | 最近 2 分钟内的最大合成 PGD（cm）（数值型） |
+| `Max_PGA_EW` | 最近 2 分钟内的最大东西向 PGA（cm/s²）（数值型） |
+| `Max_PGV_EW` | 最近 2 分钟内的最大东西向 PGV（cm/s）（数值型） |
+| `Max_PGD_EW` | 最近 2 分钟内的最大东西向 PGD（cm）（数值型） |
+| `Max_PGA_NS` | 最近 2 分钟内的最大南北向 PGA（cm/s²）（数值型） |
+| `Max_PGV_NS` | 最近 2 分钟内的最大南北向 PGV（cm/s）（数值型） |
+| `Max_PGD_NS` | 最近 2 分钟内的最大南北向 PGD（cm）（数值型） |
+| `Max_PGA_UD` | 最近 2 分钟内的最大竖直向 PGA（cm/s²）（数值型） |
+| `Max_PGV_UD` | 最近 2 分钟内的最大竖直向 PGV（cm/s）（数值型） |
+| `Max_PGD_UD` | 最近 2 分钟内的最大竖直向 PGD（cm）（数值型） |
+| `Shindo` | 合成分量计算的日本气象厅震度（字符串型） |
+| `Max_Shindo` | 最近 2 分钟内的最大日本气象厅震度（字符串型） |
+| `CalcShindo` | 合成分量计算的日本气象厅计测震度（数值型） |
+| `Max_CalcShindo` | 最近 2 分钟内的最大日本气象厅计测震度（数值型） |
+| `Intensity` | 合成分量计算的中国地震烈度（CSIS）（数值型） |
+| `Max_Intensity` | 最近 2 分钟内的最大烈度（CSIS）（数值型） |
+| `LPGM` | 长周期地震动等级（数值型） |
+| `Max_LPGM` | 最近 2 分钟内的最大长周期地震动等级（数值型） |
+| `Sva30` | 水平地震动的绝对速度反应谱最大值。在自振周期 1.6～7.8 秒、阻尼比 5% 的条件下，取最近 30 秒内的最大值（cm/s，数值型） |
+| `Max_Sva30` | 最近 2 分钟内记录的 `Sva30` 最大值（cm/s，数值型） |
+| `error_code` | 测站端错误代码（数值型数组） |
+| `reverse` | 保留字段，供服务端校验使用（字符串型） |
+| `is_desktop` | 是否为桌面端（布尔型） |
+| `High_Precision` | 是否为高精度测站（布尔型） |
+| `update_at` | 数据更新时间（字符串型） |
+| `create_at` | JSON 生成时间（字符串型） |
 
-## WebSocket 手动查询指令
-
-- Ping:
+## WebSocket 手动查询命令
 
 ```text
 ping
 ```
 
-## WebSocket JSON 资料说明
+## WebSocket 消息格式
 
-- 共有JSON字段解析:
+### 通用字段
 
-| Field | Description |
+| 字段 | 说明 |
 | --- | --- |
-| `type` | 资料类型/测站UUID(字符串型) |
+| `type` | 消息类型或测站 UUID（字符串型） |
 
-- WebSocket 心跳包JSON字段解析:
+### 心跳消息（`heartbeat`）
 
-| Field | Description |
+| 字段 | 说明 |
 | --- | --- |
-| `type` | heartbeat(字符串型) |
-| `ver` | 服务端版本号(数值型) |
-| `id` | 客户端连接唯一ID(字符串型) |
-| `timestamp` | 心跳包发送毫秒级时间戳(字符串型) |
+| `type` | `heartbeat`（字符串型） |
+| `ver` | 服务端版本号（数值型） |
+| `id` | 本次连接的唯一 ID（字符串型） |
+| `timestamp` | 发送时间戳（毫秒）（字符串型） |
 
-- WebSocket Pong包JSON字段解析:
+### ping 响应（`pong`）
 
-| Field | Description |
+| 字段 | 说明 |
 | --- | --- |
-| `type` | pong(字符串型) |
-| `timestamp` | Pong包发送毫秒级时间戳(字符串型) |
+| `type` | `pong`（字符串型） |
+| `timestamp` | 发送时间戳（毫秒）（字符串型） |

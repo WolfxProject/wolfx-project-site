@@ -40,7 +40,7 @@ export default defineConfig({
   webServer: externalBaseUrl
     ? undefined
     : {
-        command: 'python -m http.server 4381 -d .output/public',
+        command: 'node scripts/serve-test-site.mjs',
         url: 'http://127.0.0.1:4381/',
         reuseExistingServer: false,
         timeout: 30_000,

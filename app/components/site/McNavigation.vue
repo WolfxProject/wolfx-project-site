@@ -1,12 +1,7 @@
 <script setup lang="ts">
 const route = useRoute()
-const { t } = useI18n()
 const { localizeWolfxMc, unlocalize } = usePublicPath()
-const { displayLocale } = useSiteContext()
-
-function tr(key: string) {
-  return t(key, {}, { locale: displayLocale.value })
-}
+const { displayLocale, tr } = useSiteContext()
 
 function mcPath(path: string) {
   return localizeWolfxMc(path, displayLocale.value, /^\/zh(?:\/|$)/.test(route.path))

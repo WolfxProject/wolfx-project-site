@@ -5,20 +5,20 @@ interface CopyButtonProps {
 }
 
 const props = defineProps<CopyButtonProps>()
-const { t } = useI18n()
+const { tr } = useSiteContext()
 const state = ref<'idle' | 'copying' | 'copied' | 'failed'>('idle')
 let timer: ReturnType<typeof setTimeout> | undefined
 
 const feedback = computed(() => {
   if (state.value === 'copied')
-    return t('copy.copied')
+    return tr('copy.copied')
   if (state.value === 'failed')
-    return t('copy.failed')
+    return tr('copy.failed')
   return ''
 })
 
 const buttonLabel = computed(() => {
-  const action = feedback.value || t('copy.label')
+  const action = feedback.value || tr('copy.label')
   return props.ariaLabel ? `${action} — ${props.ariaLabel}` : action
 })
 
@@ -78,7 +78,7 @@ onBeforeUnmount(() => {
     @click="copy"
   >
     <UIcon :name="state === 'copied' ? 'i-lucide-check' : state === 'failed' ? 'i-lucide-circle-alert' : 'i-lucide-copy'" />
-    <span class="copy-button__label">{{ feedback || $t('copy.label') }}</span>
+    <span class="copy-button__label">{{ feedback || tr('copy.label') }}</span>
   </button>
   <span
     class="sr-only"

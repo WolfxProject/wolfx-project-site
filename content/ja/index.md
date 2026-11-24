@@ -3,32 +3,38 @@ title: "Wolfx Project"
 description: "地震・緊急地震速報（EEW）・防災に関する公開 API とオープンな技術サービスを提供する公益プロジェクト。"
 locale: ja
 layout: landing
-updated: 2026-08-04
+updated: 2026-11-24
 ---
 
-::hero-section{eyebrow="PUBLIC INTEREST · DISASTER READINESS" title="静かな技術で、確かな情報経路を。" primary-label="API ドキュメント" primary-href="/docs/open-api" secondary-label="プロジェクトを見る" secondary-href="/projects"}
+::hero-section{eyebrow="防災・観測" title="地震情報と観測データを、誰でも使える形で。" primary-label="API ドキュメント" primary-href="/docs/open-api" secondary-label="プロジェクトを見る" secondary-href="/projects"}
 Wolfx Project は、地震・緊急地震速報（EEW）・観測データを中心に、開発者と一般利用者へ実用的な公開サービスを無償で提供する独立プロジェクトです。
+
+#features
+
+- HTTP / WebSocket
+- ドキュメント公開
+- 行動追跡なし
 ::
 
 ## 公開サービス
 
 ::project-grid
-:::project-card{title="Wolfx Open API" eyebrow="DATA API" href="/docs/open-api" image="/images/API.png" action="仕様を見る"}
-地震・EEW と実用データを JSON で提供する公開 API。HTTP GET と WebSocket に対応します。
+:::project-card{title="Wolfx Open API" eyebrow="データ API" href="/docs/open-api" image="/images/cards/API.webp" action="仕様を見る"}
+地震情報や緊急地震速報などを HTTP GET で取得できます。対応するデータは WebSocket でも購読できます。
 :::
-:::project-card{title="Real-time Earthquake Monitoring" eyebrow="MONITORING" href="https://bs.wolfx.jp/about.html" image="/images/WREM.png" action="WREM を開く"}
-リアルタイムの地震観測情報を集約し、公開モジュールとともに提供する監視サービスです。
+:::project-card{title="Wolfx Real-time Earthquake Monitoring" eyebrow="地震観測" href="https://bs.wolfx.jp/about.html" image="/images/cards/WREM.webp" action="WREM を開く"}
+リアルタイムの地震観測情報を集約し、公開モジュールを提供します。
 :::
-:::project-card{title="Wolfx SeisJS" eyebrow="CITIZEN SENSING" href="https://wolfx.jp/seisjs" image="/images/seisJS.png" action="SeisJS に参加"}
-モバイル端末の加速度計を利用した地震観測プロジェクト。ネットワーク化した観測データを公開 API で提供します。
+:::project-card{title="Wolfx SeisJS" eyebrow="市民観測" href="https://seis.wolfx.jp/" image="/images/cards/seisJS.webp" action="SeisJS に参加"}
+モバイル端末の加速度計を利用した地震観測プロジェクト。各観測点のデータを API で公開しています。
 :::
-:::project-card{title="Seismic Stations Viewer" eyebrow="SEISMIC VIEWER" href="https://ssv.wolfx.jp" image="/images/SSV.png" action="SSV を使う"}
+:::project-card{title="Seismic Stations Viewer" eyebrow="可視化" href="https://ssv.wolfx.jp" image="/images/cards/SSV.webp" action="SSV を使う"}
 SeisJS の観測情報を確認するための公開ビューアーです。
 :::
-:::project-card{title="ACG.kr" eyebrow="UTILITY" href="https://acg.kr" image="/images/ACGKR.png" action="短縮 URL を作る"}
+:::project-card{title="ACG.kr" eyebrow="ネットワークツール" href="https://acg.kr" image="/images/cards/ACGKR.webp" action="短縮 URL を作る"}
 YOURLS を基盤にした公益 URL 短縮サービスです。
 :::
-:::project-card{title="Service Status" eyebrow="OPERATIONS" href="https://status.wolfx.jp" icon="i-lucide-circle-gauge" action="稼働状況を見る"}
+:::project-card{title="サービスの稼働状況" eyebrow="運用情報" href="https://status.wolfx.jp" icon="i-lucide-circle-gauge" action="稼働状況を見る"}
 Wolfx Project の公開サービスの稼働状況と障害情報を確認できます。
 :::
 ::

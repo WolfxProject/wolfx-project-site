@@ -6,7 +6,10 @@ Font_Red="\033[31m"
 Font_Green="\033[32m"
 Font_Suffix="\033[0m"
 
-CURL_DEFAULT_OPTS="-A 'Mozilla/5.0' --connect-timeout 5 --max-time 10"
+CURL_DEFAULT_OPTS=(-A 'Mozilla/5.0' --connect-timeout 5 --max-time 10)
+if [[ ${USE_IPV6:-} == 1 ]]; then
+    CURL_DEFAULT_OPTS+=(--ipv6)
+fi
 
 PROJECT_SEKAI_STATUS=0
 HOLOLIVE_STATUS=0
@@ -18,7 +21,7 @@ function GameTest_ProjectSekai() {
         return
     fi
 
-    local result=$(curl ${CURL_DEFAULT_OPTS} \
+    local result=$(curl "${CURL_DEFAULT_OPTS[@]}" \
         -fsL \
         'https://game-version.sekai.colorfulpalette.org/1.8.1/3ed70b6a-8352-4532-b819-108837926ff5' \
         -w "%{http_code}" \
@@ -46,7 +49,7 @@ function GameTest_ProjectSekai() {
 
 function GameTest_HololiveDreams() {
 
-    local result=$(curl ${CURL_DEFAULT_OPTS} \
+    local result=$(curl "${CURL_DEFAULT_OPTS[@]}" \
         -fsL \
         'https://jp.game-hololive-dreams.com' \
         -w "%{http_code}" \

@@ -3,11 +3,17 @@
   "name": "wolfx-project-site",
   "main": "worker/index.ts",
   "compatibility_date": "2026-08-04",
+  "workers_dev": false,
+  "preview_urls": false,
   "assets": {
     "directory": "./.output/public",
     "binding": "ASSETS",
-    "run_worker_first": ["/zh/", "/en/", "/*.html"],
+    "run_worker_first": [
+      "/zh/", "/en/", "/geiger/", "/*.html",
+      "/ipleak", "/ipleak/*", "/200", "/200/*", "/404", "/404/*",
+      "/index", "/index/", "/*/index", "/*/index/"
+    ],
     "html_handling": "drop-trailing-slash",
-    "not_found_handling": "404-page"
+    "not_found_handling": "none"
   }
 }

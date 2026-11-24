@@ -1,7 +1,12 @@
 <template>
   <div class="site-shell">
     <SiteHeader />
-    <main><slot /></main>
+    <main
+      id="main-content"
+      tabindex="-1"
+    >
+      <slot />
+    </main>
     <SiteFooter />
   </div>
 </template>

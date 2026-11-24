@@ -3,10 +3,10 @@ title: "支持 Wolfx Project"
 description: "支持 Wolfx Project 持续改进与运营的捐赠方式。"
 locale: zh
 layout: landing
-updated: 2026-08-04
+updated: 2026-11-24
 ---
 
-::page-intro{eyebrow="SUPPORT WOLFX PROJECT" title="支持 Wolfx Project"}
+::page-intro{eyebrow="项目捐赠" title="支持 Wolfx Project"}
 您的捐赠将用于支持 Wolfx Project 的持续改进与发展。
 ::
 
@@ -27,8 +27,8 @@ updated: 2026-08-04
 ## Afdian（爱发电）
 
 :::external-link{href="https://ifdian.net/a/wolfx" label="打开外部网站：Afdian"}
-在 Afdian 上支持 Wolfx Project
+在爱发电上支持 Wolfx Project
 :::
 
-感谢您的支持，让 Wolfx Project 变得更加精彩。
+感谢您支持 Wolfx Project。
 ::

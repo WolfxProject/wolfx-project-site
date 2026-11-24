@@ -1,22 +1,19 @@
 <script setup lang="ts">
 const { t } = useI18n()
-const { localize } = usePublicPath()
+const { sitePath } = useSiteContext()
+const pages = useDocsNavigation()
 const route = useRoute()
 
 const groups = computed(() => [
   {
     label: t('docs.navigation'),
-    items: [
-      { label: 'Wolfx Open API', to: localize('/docs/open-api'), icon: 'i-lucide-braces' },
-      { label: 'WebSocket API', to: localize('/docs/websocket'), icon: 'i-lucide-radio-tower' },
-      { label: 'SeisJS API', to: localize('/docs/seisjs-api'), icon: 'i-lucide-audio-waveform' },
-    ],
+    items: pages.value,
   },
   {
-    label: 'Legal',
+    label: t('footer.legal'),
     items: [
-      { label: t('footer.privacy'), to: localize('/legal/privacy'), icon: 'i-lucide-shield-check' },
-      { label: t('footer.terms'), to: localize('/legal/terms'), icon: 'i-lucide-scale' },
+      { label: t('footer.privacy'), to: sitePath('/legal/privacy'), icon: 'i-lucide-shield-check' },
+      { label: t('footer.terms'), to: sitePath('/legal/terms'), icon: 'i-lucide-scale' },
     ],
   },
 ])

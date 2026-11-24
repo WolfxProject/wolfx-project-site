@@ -6,6 +6,11 @@ allowBuilds:
   vue-demi: true
   workerd: true
 
+# readdir-glob 3 only uses Minimatch's public matching API. Remove when
+# archiver accepts readdir-glob 4 (GHSA-g3hv-75wg-m249).
+overrides:
+  'readdir-glob@3.0.0>minimatch': 11.0.9
+
 permissions:
   '@nuxtjs/sitemap':
     skills: true

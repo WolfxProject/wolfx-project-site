@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import { wolfxMc } from '~~/data/wolfxmc'
 
-const { t } = useI18n()
 const route = useRoute()
 const { localizeWolfxMc } = usePublicPath()
-const { displayLocale } = useSiteContext()
+const { displayLocale, tr } = useSiteContext()
 const { status } = useMinecraftStatus()
 
 const preservesExplicitChinese = computed(() => /^\/zh(?:\/|$)/.test(route.path))
@@ -23,10 +22,6 @@ const props = defineProps<{
   sinceLabel: string
 }>()
 
-function tr(key: string) {
-  return t(key, {}, { locale: displayLocale.value })
-}
-
 const statusLabel = computed(() => {
   if (status.value.state === 'online')
     return tr('mc.statusOnline')
@@ -40,7 +35,7 @@ const statusLabel = computed(() => {
 const playerLabel = computed(() => {
   if (status.value.state !== 'online')
     return ''
-  return t('mc.playersOnline', { count: status.value.players }, { locale: displayLocale.value })
+  return tr('mc.playersOnline', { count: status.value.players })
 })
 </script>
 
@@ -90,6 +85,9 @@ const playerLabel = computed(() => {
                 class="mc-server-status__players"
               >{{ playerLabel }}</span>
             </div>
+            <p class="static-status">
+              {{ tr('mc.statusRequiresScript') }}
+            </p>
           </div>
           <UButton
             :to="joinPath"

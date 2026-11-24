@@ -1,24 +1,23 @@
 ---
-title: "Wolfx WebSocket API 利用説明"
-description: "Wolfx WebSocket API の接続先、all_eew の除外指定、手動クエリ、JSON データ仕様。"
+title: "Wolfx WebSocket API 利用ガイド"
+description: "地震情報などを WebSocket で購読する方法。接続先、all_eew の除外設定、手動クエリ、受信メッセージの形式を説明します。"
 locale: ja
 layout: docs
-updated: 2026-11-19
+updated: 2026-11-24
 source: wsapi.html
 ---
+
 ## WebSocket の概要
 
-- WebSocket API は、対応する業務 JSON が更新されると、購読先のクライアントへ関連情報を自動配信します。
-- ハートビートメカニズム：サーバーは毎分、または接続確立後にハートビートパケットを送信して接続を維持します。クライアントは任意で ping パケットを返信することができます（推奨）。
+購読したデータ源の JSON が更新されると、新しいデータが配信されます。サーバーは接続直後とその後 1 分ごとに `heartbeat` を送ります。クライアントから `ping` を送ることもできます（任意、推奨）。
 
-## 接続および利用上の注意
+## 接続の再利用
 
-- 可能な限り接続を再利用し、不要な重複接続や短時間での再接続の繰り返しを避けてください。
-- 複数のデータ源を取得する場合は、下記の接続先の説明を確認し、`all_eew` 集約チャンネルの利用を検討してください。
+同じデータを受信する接続は再利用し、短時間に接続を繰り返さないでください。複数のデータ源を購読するには、集約チャンネル `all_eew` を利用できます。
 
-## WebSocket 呼び出し URL
+## 集約チャンネルと除外設定
 
-- `all_eew` では複数のデータ源の更新をまとめて受信できます。
+複数のデータ源をまとめて購読する接続先です。
 
 ```text
 wss://ws-api.wolfx.jp/all_eew
@@ -35,146 +34,50 @@ wss://ws-api.wolfx.jp/all_eew?exclude=sc_eew,fj_eew,cq_eew
 
 除外した公開データ源のキャッシュ済み JSON は、同じ接続で従来の手動クエリコマンドを使って取得できます。
 
-- 四川省地震局 地震速報 JSON API:
+## 個別の接続先と手動クエリ
 
-```text
-wss://ws-api.wolfx.jp/sc_eew
-```
+下表の接続先では、各データ源の更新を受け取れます。対応するコマンドをその接続先または `all_eew` に送ると、キャッシュ済みの JSON を取得できます。
 
-- JMA 緊急地震速報 JSON API:
+| データ源 | 個別の接続先 | クエリコマンド |
+| --- | --- | --- |
+| 四川省地震局の地震早期警報 | `wss://ws-api.wolfx.jp/sc_eew` | `query_sceew` |
+| 気象庁の緊急地震速報 | `wss://ws-api.wolfx.jp/jma_eew` | `query_jmaeew` |
+| 福建省地震局の地震早期警報 | `wss://ws-api.wolfx.jp/fj_eew` | `query_fjeew` |
+| 重慶市地震局の地震早期警報 | `wss://ws-api.wolfx.jp/cq_eew` | `query_cqeew` |
+| 中国地震台網の地震早期警報 | `wss://ws-api.wolfx.jp/cenc_eew` | `query_cenceew` |
+| 中国地震台網の地震情報 | `wss://ws-api.wolfx.jp/cenc_eqlist` | `query_cenceqlist` |
+| 気象庁の地震情報 | `wss://ws-api.wolfx.jp/jma_eqlist` | `query_jmaeqlist` |
+| 気象庁の津波情報 | `wss://ws-api.wolfx.jp/jma_tsunami` | `query_jmatsunami` |
+| 気象庁の南海トラフ・北海道・三陸沖関連情報 | `wss://ws-api.wolfx.jp/jma_special_eq` | `query_jmaspecialeq` |
 
-```text
-wss://ws-api.wolfx.jp/jma_eew
-```
+配信される JSON の各フィールドについては [Open API ドキュメント](/docs/open-api) または [API トップページ](https://api.wolfx.jp) をご覧ください。
 
-- 福建省地震局 地震速報 JSON API:
-
-```text
-wss://ws-api.wolfx.jp/fj_eew
-```
-
-- 重庆市地震局 地震速報 JSON API:
-
-```text
-wss://ws-api.wolfx.jp/cq_eew
-```
-
-- 中国地震台網 地震速報 JSON API:
-
-```text
-wss://ws-api.wolfx.jp/cenc_eew
-```
-
-- 中国地震台網 地震情報 JSON API:
-
-```text
-wss://ws-api.wolfx.jp/cenc_eqlist
-```
-
-- JMA 地震情報 JSON API:
-
-```text
-wss://ws-api.wolfx.jp/jma_eqlist
-```
-
-- JMA 津波情報 JSON API:
-
-```text
-wss://ws-api.wolfx.jp/jma_tsunami
-```
-
-- JMA 特別地震情報 JSON API:
-
-```text
-wss://ws-api.wolfx.jp/jma_special_eq
-```
-
-- JSON フィールドの解析詳細は：[https://api.wolfx.jp](https://api.wolfx.jp) を参照ください。
-
-## WebSocket 手動クエリコマンド
-
-手動クエリは、対応するデータ源または `all_eew` の接続で、そのデータ源のキャッシュ済み JSON を取得します。
-
-- Ping:
+接続確認用のコマンド
 
 ```text
 ping
 ```
 
-- 四川省地震局 地震速報 JSON:
+## WebSocket メッセージの形式
 
-```text
-query_sceew
-```
+### 共通フィールド
 
-- JMA 緊急地震速報 JSON:
-
-```text
-query_jmaeew
-```
-
-- 福建省地震局 地震速報 JSON:
-
-```text
-query_fjeew
-```
-
-- 重庆市地震局 地震速報 JSON:
-
-```text
-query_cqeew
-```
-
-- 中国地震台網 地震速報 JSON:
-
-```text
-query_cenceew
-```
-
-- 中国地震台網 地震情報 JSON:
-
-```text
-query_cenceqlist
-```
-
-- JMA 地震情報 JSON:
-
-```text
-query_jmaeqlist
-```
-
-- JMA 津波情報 JSON API:
-
-```text
-query_jmatsunami
-```
-
-- JMA 特別地震情報 JSON API:
-
-```text
-query_jmaspecialeq
-```
-
-## WebSocket JSON データ仕様
-
-- 共通のJSONフィールドの説明:
-
-| Field | Description |
+| フィールド | 説明 |
 | --- | --- |
-| `type` | データの種類／提供元（対応する値はAPIホームページを参照）（文字列型） |
+| `type` | データの種類または配信元（文字列型） |
 
-- WebSocket ハートビート（heartbeat）パケットのJSONフィールド説明:
+### ハートビート (`heartbeat`)
 
-| Field | Description |
+| フィールド | 説明 |
 | --- | --- |
-| `type` | heartbeat（文字列型） |
-| `ver` | サーバーバージョン（数値型） |
-| `id` | クライアント接続のUUID（文字列型） |
-| `timestamp` | ハートビート送信のミリ秒単位タイムスタンプ（文字列型） |
+| `type` | `heartbeat`（文字列型） |
+| `ver` | サーバーのバージョン（数値型） |
+| `id` | 接続ごとの UUID（文字列型） |
+| `timestamp` | 送信時刻のタイムスタンプ（ミリ秒、文字列型） |
 
-- WebSocket Pong パケットのJSONフィールド説明:
+### ping への応答 (`pong`)
 
-| Field | Description |
+| フィールド | 説明 |
 | --- | --- |
-| `type` | pong（文字列型） |
-| `timestamp` | Pongパケット送信のミリ秒単位タイムスタンプ（文字列型） |
+| `type` | `pong`（文字列型） |
+| `timestamp` | 送信時刻のタイムスタンプ（ミリ秒、文字列型） |

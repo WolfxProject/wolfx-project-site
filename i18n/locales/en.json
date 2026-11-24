@@ -6,16 +6,18 @@
     "donate": "Donate",
     "github": "GitHub",
     "menu": "Menu",
-    "closeMenu": "Close menu"
+    "closeMenu": "Close menu",
+    "skipToContent": "Skip to main content"
   },
   "search": {
     "label": "Search",
-    "placeholder": "Search documentation…",
+    "placeholder": "Search this site…",
     "close": "Close search",
     "empty": "No matching content",
-    "hint": "Search titles, sections, and body text locally",
+    "hint": "Search page titles, headings, and text.",
     "loading": "Loading search index…",
-    "failed": "The search index could not be loaded. Please try again."
+    "failed": "The search index could not be loaded.",
+    "retry": "Try again"
   },
   "theme": {
     "label": "Change theme",
@@ -36,7 +38,8 @@
     "statusOnline": "Online",
     "statusOffline": "Offline",
     "statusUnknown": "Status unavailable",
-    "playersOnline": "{count} player online | {count} players online"
+    "playersOnline": "{count} player online | {count} players online",
+    "statusRequiresScript": "Enable JavaScript to check the server status."
   },
   "docs": {
     "navigation": "Documentation",
@@ -46,7 +49,8 @@
     "next": "Next",
     "backToTop": "Back to top",
     "fallback": "This page is not translated yet, so the Japanese version is shown.",
-    "tableScroll": "Scroll horizontally to view the full table"
+    "tableScroll": "Scroll horizontally to view the full table",
+    "pagination": "Previous and next documents"
   },
   "copy": {
     "label": "Copy",
@@ -59,29 +63,33 @@
   },
   "apiStatus": {
     "title": "API Status",
-    "activeClients": "Active WebSocket clients",
-    "nginxRequests": "Nginx Requests",
+    "activeClients": "Connected WebSocket clients",
+    "nginxRequests": "Nginx requests",
     "daily": "Daily",
     "weekly": "Weekly",
-    "networkTraffic": "Network Traffic",
-    "updatedAt": "Count data updated at",
+    "networkTraffic": "Network traffic",
+    "updatedAt": "Client count updated",
     "loading": "Loading",
     "statusError": "Unable to load status",
     "chartError": "Unable to load chart",
     "refresh": "Refresh",
-    "refreshing": "Refreshing"
+    "refreshing": "Refreshing",
+    "requiresScript": "Enable JavaScript to view the API status and charts."
   },
   "footer": {
     "statement": "An independently operated, unofficial public-interest project.",
     "privacy": "Privacy policy",
     "terms": "Terms of service",
-    "donate": "Donate",
     "status": "Service status",
-    "links": "Links"
+    "links": "Related sites",
+    "project": "Project information",
+    "legal": "Terms and policies"
   },
   "error": {
     "title": "Page not found",
     "description": "Check the URL or find what you need from the home page.",
-    "home": "Back home"
+    "home": "Back home",
+    "unavailable": "Page unavailable",
+    "retry": "Please try again later."
   }
 }

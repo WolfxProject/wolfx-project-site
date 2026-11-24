@@ -1,12 +1,12 @@
 ---
-title: "Wolfx Donate"
+title: "Donate to Wolfx Project"
 description: "Support the continued improvement and operation of Wolfx Project."
 locale: en
 layout: landing
-updated: 2026-08-04
+updated: 2026-11-24
 ---
 
-::page-intro{eyebrow="SUPPORT WOLFX PROJECT" title="Wolfx Donate"}
+::page-intro{eyebrow="PROJECT SUPPORT" title="Donate to Wolfx Project"}
 Your donation helps support the continued improvement and operation of Wolfx Project.
 ::
 
@@ -30,5 +30,5 @@ Before sending funds, verify that both the network and wallet address are correc
 Support Wolfx Project on Afdian
 :::
 
-Thank you for your support, making Wolfx Project even more brilliant.
+Thank you for supporting Wolfx Project.
 ::

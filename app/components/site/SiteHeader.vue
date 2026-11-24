@@ -1,6 +1,5 @@
 <script setup lang="ts">
-const { t } = useI18n()
-const { displayLocale, sitePath } = useSiteContext()
+const { sitePath, tr } = useSiteContext()
 const route = useRoute()
 const mobileOpen = ref(false)
 const menuButton = useTemplateRef<HTMLButtonElement>('menuButton')
@@ -15,10 +14,6 @@ const navigation = computed(() => [
   { label: tr('nav.docs'), to: sitePath('/docs/open-api') },
   { label: tr('nav.donate'), to: sitePath('/donate') },
 ])
-
-function tr(key: string) {
-  return t(key, {}, { locale: displayLocale.value })
-}
 
 watch(() => route.path, () => {
   mobileNavigation.value?.close()
@@ -38,6 +33,11 @@ async function handleMobileNavigationClose() {
 
 <template>
   <header class="site-header">
+    <a
+      href="#main-content"
+      class="skip-link"
+      tabindex="0"
+    >{{ tr('nav.skipToContent') }}</a>
     <div class="site-header__inner site-container">
       <NuxtLink
         :to="sitePath('/')"
@@ -45,10 +45,10 @@ async function handleMobileNavigationClose() {
         aria-label="Wolfx Project"
       >
         <img
-          src="/images/logo.png"
+          src="/images/logo-96.webp"
           alt=""
-          width="38"
-          height="38"
+          width="32"
+          height="32"
         >
         <span>Wolfx Project</span>
       </NuxtLink>
@@ -97,7 +97,6 @@ async function handleMobileNavigationClose() {
       id="mobile-navigation"
       ref="mobileNavigation"
       :navigation="navigation"
-      :locale-override="displayLocale"
       @close="handleMobileNavigationClose"
     />
   </header>

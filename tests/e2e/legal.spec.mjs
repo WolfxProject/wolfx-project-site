@@ -1,5 +1,7 @@
 import { readFile } from 'node:fs/promises'
 import { expect, test } from '@playwright/test'
+import { visit } from 'unist-util-visit'
+import { parsePage } from '../../scripts/content-markdown.mjs'
 
 const locales = [
   { locale: 'ja', prefix: '', tocLabel: 'このページの目次' },
@@ -20,7 +22,7 @@ const dataUseRules = {
     protection: [/レート制限[^\n]*回避/, /アクセス[^。\n]*制限・停止/],
     rights: /必要な第三者の許諾に代わったりするものではありません/,
     existing: /既存の有効な個別許諾[\s\S]*撤回又は拡張されることはありません/,
-    obsolete: /通常の情報利用と独立したデータ再提供|第六条|支払状況にかかわらず/,
+    obsolete: /通常の情報利用と独立したデータ再提供|支払状況にかかわらず/,
   },
   zh: {
     scope: /此项限制仅针对该 API 的数据/,
@@ -32,7 +34,7 @@ const dataUseRules = {
     protection: [/绕过速率限制/, /限制或暂停/],
     rights: /不能替代必要的第三方许可/,
     existing: /已有的有效个别授权[\s\S]*不会仅因本次修订而被撤销或扩大/,
-    obsolete: /正常信息利用与独立数据再提供|第六条|必须向所有用户完整、及时、免费开放/,
+    obsolete: /正常信息利用与独立数据再提供|必须向所有用户完整、及时、免费开放/,
   },
   en: {
     scope: /restriction applies only to this API's data/,
@@ -44,16 +46,24 @@ const dataUseRules = {
     protection: [/Bypassing rate limits/, /restrict or suspend access/],
     rights: /do not change those rights or terms, or replace necessary third-party permission/,
     existing: /Existing valid individual permissions[\s\S]*neither revokes nor expands/,
-    obsolete: /Ordinary Information Use and Independent Data Provision|Section 6|fully and promptly available to all users free of charge/,
+    obsolete: /Ordinary Information Use and Independent Data Provision|fully and promptly available to all users free of charge/,
   },
 }
 
-async function readLegalMarkdown(locale, document) {
-  return readFile(new URL(`../../content/${locale}/legal/${document}.md`, import.meta.url), 'utf8')
+function plainText(node) {
+  if (node.type === 'break') return ' '
+  return node.value ?? (node.children ?? []).map(plainText).join('')
 }
 
-function sectionTitles(markdown) {
-  return [...markdown.matchAll(/^## (.+)$/gm)].map(match => match[1])
+async function readLegalPage(locale, document) {
+  const source = await readFile(new URL(`../../content/${locale}/legal/${document}.md`, import.meta.url), 'utf8')
+  const { data, tree } = parsePage(source)
+  const titles = tree.children.filter(node => node.type === 'heading' && node.depth === 2).map(plainText)
+  const paragraphs = []
+  visit(tree, 'paragraph', (node) => {
+    paragraphs.push(plainText(node).replace(/\s+/g, ' ').trim())
+  })
+  return { data, titles, paragraphs }
 }
 
 async function renderedHeadings(page) {
@@ -89,7 +99,13 @@ for (const { locale, prefix, tocLabel } of locales) {
     const rules = dataUseRules[locale]
     await page.goto(`${prefix}/legal/terms`, { waitUntil: 'networkidle' })
     const body = await page.locator('.legal-document .markdown-content').innerText()
-    const clause = await page.getByRole('heading', { level: 2, name: /JMA/ }).evaluate((heading) => {
+    const protocol = page.locator('.legal-document code').filter({ hasText: /^jma_eew$/ }).first()
+    const clause = await protocol.evaluate((marker) => {
+      const article = marker.closest('.markdown-content')
+      let heading = marker
+      while (heading.parentElement !== article) heading = heading.parentElement
+      while (heading && heading.tagName !== 'H2') heading = heading.previousElementSibling
+      if (!heading) throw new Error('Missing policy section for jma_eew')
       const paragraphs = []
       for (let node = heading.nextElementSibling; node && node.tagName !== 'H2'; node = node.nextElementSibling)
         paragraphs.push(node.textContent)
@@ -119,7 +135,7 @@ for (const { locale, prefix, tocLabel } of locales) {
       expect(await page.locator('main').innerText()).not.toMatch(rules.obsolete)
       await terms.click()
       await expect.poll(() => new URL(page.url()).pathname.replace(/\/$/, '')).toBe(`${prefix}/legal/terms`)
-      await expect(page.getByRole('heading', { level: 2, name: /JMA/ })).toBeVisible()
+      await expect(protocol).toBeVisible()
     }
   })
 
@@ -134,9 +150,12 @@ for (const { locale, prefix, tocLabel } of locales) {
 
       const toc = page.getByRole('navigation', { name: tocLabel, exact: true })
       await expect(toc).toBeVisible()
-      const markdown = await readLegalMarkdown(locale, document)
+      const source = await readLegalPage(locale, document)
       const headings = await renderedHeadings(page)
-      expect(headings.map(heading => heading.text)).toEqual(sectionTitles(markdown))
+      expect(headings.map(heading => heading.text)).toEqual(source.titles)
+      const published = (await page.locator('.legal-document .markdown-content').innerText()).replace(/\s+/g, ' ')
+      for (const paragraph of source.paragraphs)
+        expect(published, `${locale} ${document}: published policy paragraph`).toContain(paragraph)
       expect(headings.length).toBeGreaterThan(1)
       expect(new Set(headings.map(heading => heading.id)).size).toBe(headings.length)
       const firstTarget = Math.floor(headings.length / 3)
@@ -153,9 +172,7 @@ for (const { locale, prefix, tocLabel } of locales) {
       expect(geometry.width).toBe(900)
       expect(Math.abs(geometry.center - geometry.viewport / 2)).toBeLessThanOrEqual(1)
 
-      const title = markdown.match(/^title: "(.*)"$/m)[1]
-      const description = markdown.match(/^description: "(.*)"$/m)[1]
-      const updated = markdown.match(/^updated: (.*)$/m)[1]
+      const { title, description, updated } = source.data
       await expect(page.locator('h1')).toHaveText(title)
       await expect(page).toHaveTitle(title)
       await expect(page.locator('meta[name="description"]')).toHaveAttribute('content', description)
@@ -297,7 +314,7 @@ for (const document of ['terms', 'privacy']) {
       await expect.poll(() => new URL(page.url()).pathname.replace(/\/$/, '')).toBe(`${prefix}/legal/${document}`)
       expect(new URL(page.url()).search).toBe('?source=language-switch')
       const toc = page.getByRole('navigation', { name: tocLabel, exact: true })
-      const titles = sectionTitles(await readLegalMarkdown(locale, document))
+      const { titles } = await readLegalPage(locale, document)
       await expect(toc.locator('a')).toHaveText(titles)
       expect((await renderedHeadings(page)).map(heading => heading.text)).toEqual(titles)
       const section = page.locator('.legal-document .markdown-content > h2').first()

@@ -1,11 +1,13 @@
 # Cloudflare cache guidance
 
-The deployable site is generated into `.output/public` and served as one `wolfx.jp` website through Workers Assets. WolfxMC uses the ordinary `/mc` route tree. Configure Cloudflare Cache Rules so that:
+Workers Assets serves the contents of `.output/public` for `wolfx.jp`. The WolfxMC pages use the same host under `/mc`.
 
-- `/_nuxt/*` may use a one-year browser and edge TTL with `immutable`; Nuxt filenames are content-hashed.
-- HTML, `search-index.json`, sitemap XML, and `robots.txt` should revalidate and must not be marked `immutable`.
-- `404` responses should not receive a long edge TTL while a release is being validated.
+The generated top-level JavaScript and CSS bundles in `/_nuxt/` have content-hashed filenames. `public/_headers` gives those bundles a one-year browser lifetime with `immutable`. Keep the default revalidation policy for HTML, `_payload.json`, `/_nuxt/builds/latest.json`, API examples, legal pages, sitemaps and the search index. An updated release can change the content at any of those URLs.
 
-The Worker delegates current locale-root requests to the assets binding without rebuilding response bodies or replacing `Content-Type`, `ETag`, `Range`, or conditional-request headers. Review Cloudflare's active Cache Rules when publishing changes to legal pages, API documentation, or the search index; repository configuration cannot determine dashboard-level cache overrides.
+The Worker delegates the localized home pages and the standalone tools at `/ipleak.html` and `/geiger/` to the assets binding. It forwards the request method, query string and conditional headers so that GET, HEAD and ETag revalidation use the same asset. When publishing another standalone HTML file, update the public paths in `worker/index.ts`, `wrangler.jsonc` and `deploy/nginx-cache.conf`. Cover the published URL and any extensionless alias inferred by Workers Assets in the shared delivery check.
 
-Only `wolfx.jp` should be attached to this website deployment. Minecraft connections and the mcapi.us status lookup use the same `wolfx.jp` hostname. No separate Minecraft hostname, web origin, Pages project, runtime rendering service, or archive proxy is required.
+The same prerendered 404 document serves missing pages and bundles. It includes recovery links for each language and works with JavaScript disabled. Its headers allow revalidation even when the requested path looks like a fingerprinted bundle.
+
+Workers Assets applies `_headers` by path. A POST to an existing hashed bundle receives 405 with the bundle's cache header. The response has no `Content-Location`, which HTTP requires for a cached POST response to satisfy a later GET or HEAD. [RFC 9110, section 9.3.3](https://www.rfc-editor.org/rfc/rfc9110.html#section-9.3.3)
+
+Check the zone's Cache Rules before publishing. A dashboard rule for all of `/_nuxt/*` can give the build manifest a stale one-year lifetime. Limit any edge TTL overrides to successful responses for the fingerprinted bundles. [Cloudflare static asset headers](https://developers.cloudflare.com/workers/static-assets/headers/)

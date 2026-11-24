@@ -1,7 +1,6 @@
 <script setup lang="ts">
 const colorMode = useColorMode()
-const { t } = useI18n()
-const { displayLocale } = useSiteContext()
+const { tr } = useSiteContext()
 const modes = ['system', 'light', 'dark'] as const
 const mounted = ref(false)
 const preference = computed(() => mounted.value ? colorMode.preference : 'system')
@@ -15,10 +14,6 @@ const icon = computed(() => ({
   light: 'i-lucide-sun',
   dark: 'i-lucide-moon',
 }[preference.value] ?? 'i-lucide-monitor-cog'))
-
-function tr(key: string) {
-  return t(key, {}, { locale: displayLocale.value })
-}
 
 function cycleTheme() {
   const current = modes.indexOf(colorMode.preference as typeof modes[number])

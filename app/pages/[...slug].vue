@@ -1,46 +1,42 @@
 <script setup lang="ts">
-import type { WolfxContentPage, WolfxLocale } from '~/types/site'
+import type { WolfxLocale } from '~/types/site'
 
-definePageMeta({ layout: false })
+definePageMeta({
+  layout: false,
+  validate: route => !/^\/ja(?:\/|$)/.test(route.path) || /^\/ja\/mc(?:\/|$)/.test(route.path),
+})
 
 const siteOrigin = 'https://wolfx.jp'
 const route = useRoute()
 const { locale, loadLocaleMessages } = useI18n()
-const { localizeWolfxMc, unlocalize } = usePublicPath()
+const { localize, localizeWolfxMc, unlocalize } = usePublicPath()
 const { displayLocale, isWolfxMc } = useSiteContext()
 
 if (isWolfxMc.value && displayLocale.value !== locale.value)
   await loadLocaleMessages(displayLocale.value)
 
-const requestedPath = computed(() => {
-  const routePath = route.path.replace(/\/$/, '') || '/'
-  const pathLocale = routePath.match(/^\/(ja|zh|en)(?=\/|$)/)?.[1] as WolfxLocale | undefined
-  if (isWolfxMc.value)
-    return `/${pathLocale ?? 'zh'}${unlocalize(routePath)}`
-  if (!pathLocale)
-    return routePath === '/' ? '/ja' : `/ja${routePath}`
-  return routePath
-})
+const publicPath = computed(() => unlocalize(route.path).replace(/\/$/, '') || '/')
+const requestedPath = computed(() => `/${displayLocale.value}${publicPath.value === '/' ? '' : publicPath.value}`)
 
-const { data: result } = await useAsyncData(
+const { data: result, error } = await useAsyncData(
   () => `content-page:${requestedPath.value}`,
   async () => {
     const direct = await queryCollection('pages').path(requestedPath.value).first()
     if (direct)
       return { page: direct, isFallback: false }
 
-    if (locale.value !== 'ja' && !isWolfxMc.value) {
-      const fallbackPath = unlocalize(route.path) === '/'
-        ? '/ja'
-        : `/ja${unlocalize(route.path)}`
+    if (displayLocale.value !== 'ja' && !isWolfxMc.value) {
+      const fallbackPath = publicPath.value === '/' ? '/ja' : `/ja${publicPath.value}`
       const fallback = await queryCollection('pages').path(fallbackPath).first()
       if (fallback)
         return { page: fallback, isFallback: true }
     }
     return null
   },
-  { watch: [requestedPath] },
 )
+
+if (error.value)
+  throw createError({ statusCode: 500, statusMessage: 'Unable to load page', cause: error.value, fatal: true })
 
 if (!result.value?.page) {
   throw createError({
@@ -50,18 +46,10 @@ if (!result.value?.page) {
   })
 }
 
-const page = computed(() => result.value!.page as unknown as WolfxContentPage)
+const page = computed(() => result.value!.page)
 const isFallback = computed(() => result.value?.isFallback ?? false)
-const publicPath = computed(() => unlocalize(route.path))
-const canonicalPath = computed(() => {
-  if (isWolfxMc.value)
-    return localizeWolfxMc(publicPath.value, displayLocale.value)
-  if (locale.value === 'ja')
-    return publicPath.value
-  return `/${locale.value}${publicPath.value === '/' ? '/' : publicPath.value}`
-})
 const siteName = computed(() => isWolfxMc.value ? 'Wolfx Survival' : 'Wolfx Project')
-const canonical = computed(() => new URL(canonicalPath.value, siteOrigin).toString())
+const canonical = computed(() => new URL(alternatePath(displayLocale.value), siteOrigin).toString())
 const pageTitle = computed(() => page.value.title.toLocaleLowerCase().includes(siteName.value.toLocaleLowerCase())
   ? page.value.title
   : `${page.value.title} · ${siteName.value}`)
@@ -79,9 +67,7 @@ const ogLocale: Record<WolfxLocale, string> = {
 function alternatePath(targetLocale: WolfxLocale) {
   if (isWolfxMc.value)
     return localizeWolfxMc(publicPath.value, targetLocale)
-  if (targetLocale === 'ja')
-    return publicPath.value
-  return `/${targetLocale}${publicPath.value === '/' ? '/' : publicPath.value}`
+  return localize(publicPath.value, targetLocale)
 }
 
 const contentLocale = computed(() => page.value.sourceLocale ?? page.value.locale)
@@ -166,7 +152,7 @@ useHead(() => ({
   script: [
     {
       type: 'application/ld+json',
-      innerHTML: JSON.stringify(structuredData.value),
+      textContent: JSON.stringify(structuredData.value).replaceAll('<', '\\u003c'),
     },
   ],
 }))

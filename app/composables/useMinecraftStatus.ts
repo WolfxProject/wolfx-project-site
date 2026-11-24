@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import * as z from 'zod/mini'
 import { wolfxMc } from '~~/data/wolfxmc'
 
 export type MinecraftStatus = { state: 'loading' }
@@ -16,9 +16,9 @@ export const MINECRAFT_STATUS_ENDPOINT = endpoint.toString()
 const responseSchema = z.object({
   status: z.string(),
   online: z.boolean(),
-  players: z.object({
-    now: z.number().int().nonnegative().optional(),
-  }).optional(),
+  players: z.optional(z.object({
+    now: z.optional(z.int().check(z.nonnegative())),
+  })),
 })
 
 const sharedStatus = shallowRef<MinecraftStatus>({ state: 'loading' })

@@ -1,24 +1,23 @@
 ---
-title: "Wolfx WebSocket API 调用说明"
-description: "Wolfx WebSocket API 连接地址、all_eew 数据源排除设置、手动查询指令与 JSON 数据说明。"
+title: "Wolfx WebSocket API 使用指南"
+description: "订阅地震预警、地震和海啸信息。包含各数据源的连接地址、all_eew 过滤参数、手动查询命令和消息格式。"
 locale: zh
 layout: docs
-updated: 2026-11-19
+updated: 2026-11-24
 source: wsapi_zh.html
 ---
+
 ## WebSocket 简介
 
-- WebSocket API 在对应业务 JSON 更新时，向订阅该数据源的客户端自动推送相关信息。
-- 心跳包机制：服务端将在每分钟和建立连接后发送一个heartbeat心跳包以保持连接，客户端可选回复ping包（推荐）
+订阅的数据源更新时，服务器会推送最新的 JSON 数据。服务器在连接建立后以及此后每分钟发送一次 `heartbeat` 心跳消息。建议客户端回复 `ping`，此操作可选。
 
-## 连接及使用规范
+## 连接复用
 
-- 请尽可能复用连接，避免不必要的重复连接及短时间内反复重连。
-- 需要获取多个数据源时，请结合下方连接地址的说明，考虑使用 `all_eew` 聚合频道。
+尽量复用已有连接，避免重复连接同一数据源或在短时间内频繁重连。需要订阅多个数据源时，可以使用聚合频道 `all_eew`。
 
-## WebSocket 调用地址
+## 聚合订阅与过滤
 
-- `all_eew` 聚合订阅可接收多个数据源的更新。
+通过以下地址可同时订阅多个数据源。
 
 ```text
 wss://ws-api.wolfx.jp/all_eew
@@ -35,146 +34,50 @@ wss://ws-api.wolfx.jp/all_eew?exclude=sc_eew,fj_eew,cq_eew
 
 在同一连接中，仍可使用原有手动查询指令获取被排除的公开数据源的缓存 JSON。
 
-- 四川省地震局 地震预警 JSON API:
+## 单独订阅与手动查询
 
-```text
-wss://ws-api.wolfx.jp/sc_eew
-```
+连接下表中的单个数据源即可接收该源的更新。向对应连接或 `all_eew` 发送查询命令，可获取该数据源缓存的 JSON 数据。
 
-- JMA 緊急地震速報 JSON API:
+| 数据源 | 单独订阅地址 | 查询命令 |
+| --- | --- | --- |
+| 四川省地震局地震预警 | `wss://ws-api.wolfx.jp/sc_eew` | `query_sceew` |
+| 日本气象厅紧急地震速报 | `wss://ws-api.wolfx.jp/jma_eew` | `query_jmaeew` |
+| 福建省地震局地震预警 | `wss://ws-api.wolfx.jp/fj_eew` | `query_fjeew` |
+| 重庆市地震局地震预警 | `wss://ws-api.wolfx.jp/cq_eew` | `query_cqeew` |
+| 中国地震台网地震预警 | `wss://ws-api.wolfx.jp/cenc_eew` | `query_cenceew` |
+| 中国地震台网地震信息 | `wss://ws-api.wolfx.jp/cenc_eqlist` | `query_cenceqlist` |
+| 日本气象厅地震信息 | `wss://ws-api.wolfx.jp/jma_eqlist` | `query_jmaeqlist` |
+| 日本气象厅海啸信息 | `wss://ws-api.wolfx.jp/jma_tsunami` | `query_jmatsunami` |
+| 日本气象厅南海海槽及北海道、三陆近海相关信息 | `wss://ws-api.wolfx.jp/jma_special_eq` | `query_jmaspecialeq` |
 
-```text
-wss://ws-api.wolfx.jp/jma_eew
-```
+各数据源的 JSON 字段见 [Open API 文档](/zh/docs/open-api)和 [API 首页](https://api.wolfx.jp)。
 
-- 福建省地震局 地震预警 JSON API:
-
-```text
-wss://ws-api.wolfx.jp/fj_eew
-```
-
-- 重庆市地震局 地震预警 JSON API:
-
-```text
-wss://ws-api.wolfx.jp/cq_eew
-```
-
-- 中国地震台网 地震预警 JSON API:
-
-```text
-wss://ws-api.wolfx.jp/cenc_eew
-```
-
-- 中国地震台网 地震信息 JSON API:
-
-```text
-wss://ws-api.wolfx.jp/cenc_eqlist
-```
-
-- JMA 地震情報 JSON API:
-
-```text
-wss://ws-api.wolfx.jp/jma_eqlist
-```
-
-- JMA 海啸情报 JSON API:
-
-```text
-wss://ws-api.wolfx.jp/jma_tsunami
-```
-
-- JMA 特别地震情报 JSON API:
-
-```text
-wss://ws-api.wolfx.jp/jma_special_eq
-```
-
-- JSON字段解析详见：[https://api.wolfx.jp](https://api.wolfx.jp)
-
-## WebSocket 手动查询指令
-
-手动查询可在对应数据源或 `all_eew` 连接中取得该源缓存的 JSON。
-
-- Ping:
+连接检测命令
 
 ```text
 ping
 ```
 
-- 四川省地震局 地震预警 JSON:
+## WebSocket 消息格式
 
-```text
-query_sceew
-```
+### 通用字段
 
-- JMA 緊急地震速報 JSON:
-
-```text
-query_jmaeew
-```
-
-- 福建省地震局 地震预警 JSON:
-
-```text
-query_fjeew
-```
-
-- 重庆市地震局 地震预警 JSON:
-
-```text
-query_cqeew
-```
-
-- 中国地震台网 地震预警 JSON:
-
-```text
-query_cenceew
-```
-
-- 中国地震台网 地震信息 JSON:
-
-```text
-query_cenceqlist
-```
-
-- JMA 地震情報 JSON:
-
-```text
-query_jmaeqlist
-```
-
-- JMA 海啸情报 JSON API:
-
-```text
-query_jmatsunami
-```
-
-- JMA 特别地震情报 JSON API:
-
-```text
-query_jmaspecialeq
-```
-
-## WebSocket JSON 资料说明
-
-- 共有JSON字段解析:
-
-| Field | Description |
+| 字段 | 说明 |
 | --- | --- |
-| `type` | 资料类型/提供源(对应值详见API主页)(字符串型) |
+| `type` | 数据类型或数据来源（字符串型） |
 
-- WebSocket 心跳包JSON字段解析:
+### 心跳消息 (`heartbeat`)
 
-| Field | Description |
+| 字段 | 说明 |
 | --- | --- |
-| `type` | heartbeat(字符串型) |
-| `ver` | 服务端版本号(数值型) |
-| `id` | 客户端连接UUID(字符串型) |
-| `timestamp` | 心跳包发送毫秒级时间戳(字符串型) |
+| `type` | `heartbeat`（字符串型） |
+| `ver` | 服务端版本号（数值型） |
+| `id` | 本次连接的 UUID（字符串型） |
+| `timestamp` | 发送时间戳（毫秒，字符串型） |
 
-- WebSocket Pong包JSON字段解析:
+### ping 响应 (`pong`)
 
-| Field | Description |
+| 字段 | 说明 |
 | --- | --- |
-| `type` | pong(字符串型) |
-| `timestamp` | Pong包发送毫秒级时间戳(字符串型) |
+| `type` | `pong`（字符串型） |
+| `timestamp` | 发送时间戳（毫秒，字符串型） |

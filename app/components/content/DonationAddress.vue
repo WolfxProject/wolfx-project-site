@@ -17,7 +17,7 @@ const addressLabel = computed(() => `${props.label} (${props.network}) — ${t('
     data-donation-address
   >
     <div class="donation-address__heading">
-      <h2>{{ label }}</h2>
+      <h3>{{ label }}</h3>
       <span>{{ network }}</span>
     </div>
     <div class="donation-address__value">

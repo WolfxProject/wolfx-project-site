@@ -1,5 +1,11 @@
 const siteUrl = 'https://wolfx.jp'
 
+const locales = [
+  { code: 'ja', language: 'ja-JP', name: '日本語', file: 'ja.json' },
+  { code: 'zh', language: 'zh-CN', name: '简体中文', file: 'zh.json' },
+  { code: 'en', language: 'en-US', name: 'English', file: 'en.json' },
+] as const
+
 const mainContentRoutes = [
   '/',
   '/projects',
@@ -11,33 +17,30 @@ const mainContentRoutes = [
   '/legal/terms',
 ]
 
-const localizedRoutes = [
-  ...mainContentRoutes,
-  ...mainContentRoutes.flatMap(path => [`/zh${path}`, `/en${path}`]),
+const wolfxMcRouteFamilies = ['/mc', '/mc/rules', '/mc/join', '/mc/vote']
+
+function contentPath(path: string, locale: string) {
+  const defaultLocale = wolfxMcRouteFamilies.includes(path) ? 'zh' : 'ja'
+  return locale === defaultLocale ? path : `/${locale}${path}`
+}
+
+const routeFamilies = [...mainContentRoutes, ...wolfxMcRouteFamilies]
+const sitemaps = Object.fromEntries(locales.map(({ code, language }) => [
+  language,
+  {
+    urls: routeFamilies.map(path => ({
+      loc: contentPath(path, code),
+      alternatives: [
+        { hreflang: 'x-default', href: path },
+        ...locales.map(locale => ({ hreflang: locale.code === 'zh' ? locale.language : locale.code, href: contentPath(path, locale.code) })),
+      ],
+    })),
+  },
+]))
+const prerenderRoutes = [
+  ...routeFamilies.flatMap(path => locales.map(locale => contentPath(path, locale.code))),
+  ...wolfxMcRouteFamilies.map(path => `/zh${path}`),
 ]
-
-const wolfxMcRouteFamilies = [
-  '/mc',
-  '/mc/rules',
-  '/mc/join',
-  '/mc/vote',
-]
-
-const wolfxMcRoutes = wolfxMcRouteFamilies.flatMap(path => [
-  path,
-  ...['zh', 'ja', 'en'].map(locale => `/${locale}${path}`),
-])
-
-const wolfxMcSitemapUrls = wolfxMcRouteFamilies.flatMap((path) => {
-  const alternatives = [
-    { hreflang: 'x-default', href: path },
-    { hreflang: 'zh-CN', href: path },
-    { hreflang: 'ja-JP', href: `/ja${path}` },
-    { hreflang: 'en-US', href: `/en${path}` },
-  ]
-  return [path, `/ja${path}`, `/en${path}`]
-    .map(loc => ({ loc, alternatives }))
-})
 
 export default defineNuxtConfig({
   modules: [
@@ -45,7 +48,6 @@ export default defineNuxtConfig({
     '@nuxt/ui',
     '@nuxtjs/i18n',
     '@nuxtjs/sitemap',
-    './modules/static-sitemap-alias',
     '@nuxt/eslint',
   ],
   $development: {
@@ -89,11 +91,21 @@ export default defineNuxtConfig({
   ui: {
     fonts: false,
   },
+  routeRules: {
+    '/404.html': { noScripts: true },
+  },
+  experimental: {
+    prerenderErrorPages: [404],
+  },
   compatibilityDate: '2026-08-04',
   nitro: {
+    // Match the minimum supported Node.js major for prerendering and the default server build.
+    esbuild: {
+      options: { target: 'node22' },
+    },
     prerender: {
       crawlLinks: true,
-      routes: [...localizedRoutes, ...wolfxMcRoutes, '/404.html'],
+      routes: [...prerenderRoutes, '/404.html'],
       ignore: ['/sitemap.xml', '/__site-config__/debug.json', '/__sitemap__/debug.json'],
       failOnError: true,
     },
@@ -122,11 +134,7 @@ export default defineNuxtConfig({
     strategy: 'prefix_except_default',
     detectBrowserLanguage: false,
     langDir: 'locales',
-    locales: [
-      { code: 'ja', language: 'ja-JP', name: '日本語', file: 'ja.json' },
-      { code: 'zh', language: 'zh-CN', name: '简体中文', file: 'zh.json' },
-      { code: 'en', language: 'en-US', name: 'English', file: 'en.json' },
-    ],
+    locales: [...locales],
   },
   icon: {
     provider: 'none',
@@ -163,9 +171,9 @@ export default defineNuxtConfig({
     },
   },
   sitemap: {
-    urls: [...localizedRoutes, ...wolfxMcSitemapUrls],
+    autoI18n: false,
+    sitemaps,
     excludeAppSources: true,
-    autoLastmod: true,
     zeroRuntime: true,
   },
 })

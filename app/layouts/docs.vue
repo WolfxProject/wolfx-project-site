@@ -30,11 +30,12 @@ defineProps<{
       <aside class="docs-sidebar-wrap">
         <DocsSidebar />
       </aside>
-      <main class="docs-main">
+      <main
+        id="main-content"
+        class="docs-main"
+        tabindex="-1"
+      >
         <header class="document-header">
-          <p class="eyebrow">
-            WOLFX DOCUMENTATION
-          </p>
           <h1>{{ page.title }}</h1>
           <p class="document-header__description">
             {{ page.description }}
@@ -49,6 +50,10 @@ defineProps<{
             </div>
           </dl>
         </header>
+        <DocsToc
+          compact
+          :links="page.body.toc?.links ?? []"
+        />
         <article class="prose-document">
           <slot />
         </article>

@@ -3,9 +3,10 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import TurndownService from 'turndown'
 import { gfm } from 'turndown-plugin-gfm'
+import { readLegacyFile } from './legacy-source.mjs'
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
-const legacyRoot = path.resolve(root, '../wolfx-project')
+const output = path.join(root, '.data/legacy-migration/content')
 
 const pages = [
   ['apidoc.html', 'ja', 'docs/open-api.md', 'Wolfx Open API 利用説明', 'Wolfx Open API（地震・緊急地震速報 EEW）の利用説明。JSON、GET、WebSocket に対応。', 'docs', '2026-07-29'],
@@ -131,7 +132,7 @@ function rewriteInternalLinks(markdown, locale) {
 }
 
 for (const [source, locale, destination, title, description, layout, updated] of pages) {
-  const html = await fs.readFile(path.join(legacyRoot, source), 'utf8')
+  const html = await readLegacyFile(source)
   let bodyHtml = extractAds(html, source)
     .replaceAll(/<p>\s*<\/p>/gi, '')
     .replaceAll(/<img\b[^>]*\bid=["'][^"']+["'][^>]*>/gi, '')
@@ -161,8 +162,8 @@ for (const [source, locale, destination, title, description, layout, updated] of
     '',
   ].filter(line => line !== undefined).join('\n')
 
-  const target = path.join(root, 'content', locale, destination)
+  const target = path.join(output, locale, destination)
   await fs.mkdir(path.dirname(target), { recursive: true })
   await fs.writeFile(target, `${frontmatter}${markdown}\n`)
-  console.log(`${source} -> content/${locale}/${destination}`)
+  console.log(`${source} -> ${path.relative(root, target)}`)
 }

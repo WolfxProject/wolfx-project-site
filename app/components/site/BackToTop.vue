@@ -1,4 +1,5 @@
 <script setup lang="ts">
+const { tr } = useSiteContext()
 const visible = ref(false)
 const footerVisible = ref(false)
 let footerObserver: IntersectionObserver | undefined
@@ -8,7 +9,7 @@ function onScroll() {
 }
 
 function backToTop() {
-  window.scrollTo({ top: 0, behavior: 'smooth' })
+  window.scrollTo({ top: 0 })
 }
 
 onMounted(() => {
@@ -34,8 +35,8 @@ onBeforeUnmount(() => {
     v-show="visible && !footerVisible"
     class="back-to-top"
     type="button"
-    :aria-label="$t('docs.backToTop')"
-    :title="$t('docs.backToTop')"
+    :aria-label="tr('docs.backToTop')"
+    :title="tr('docs.backToTop')"
     @click="backToTop"
   >
     <UIcon name="i-lucide-arrow-up" />

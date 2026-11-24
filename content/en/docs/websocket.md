@@ -1,24 +1,23 @@
 ---
-title: "Wolfx WebSocket API Call Instructions"
-description: "Wolfx WebSocket endpoints, all_eew source exclusions, manual query commands, and JSON data specification."
+title: "Wolfx WebSocket API"
+description: "Subscribe to earthquake and tsunami feeds, filter the all_eew stream, and request cached JSON using text commands."
 locale: en
 layout: docs
-updated: 2026-11-19
+updated: 2026-11-24
 source: wsapi_en.html
 ---
-## Introduction to WebSocket
 
-- The WebSocket API automatically pushes updates to subscribers when the corresponding business JSON changes.
-- Heartbeat mechanism: The server sends a heartbeat packet every minute or after the connection is established to maintain the connection. The client can optionally reply with a ping packet (recommended).
+## How updates work
 
-## Connection and Usage Guidelines
+When a subscribed feed changes, the server sends the updated JSON. It sends a `heartbeat` message when the connection opens and once per minute after that. Clients are encouraged to reply with `ping`, but a reply is optional.
 
-- Reuse connections where possible and avoid unnecessary duplicate connections or rapid repeated reconnection attempts.
-- When you need multiple data sources, consider the `all_eew` aggregate channel based on the endpoint descriptions below.
+## Reusing connections
 
-## WebSocket Call URLs
+Reuse existing connections and avoid reconnecting in rapid succession. To receive updates from several sources over one connection, use the `all_eew` channel.
 
-- Subscribe to `all_eew` to receive updates from multiple data sources.
+## Aggregate subscriptions and filters
+
+Subscribe here to receive updates from multiple sources.
 
 ```text
 wss://ws-api.wolfx.jp/all_eew
@@ -35,146 +34,50 @@ Set `exclude` when connecting. It applies only to automatic updates on that `all
 
 You can still use the existing manual query commands on the same connection to fetch cached JSON for excluded public sources.
 
-- Sichuan Earthquake Early Warning JSON API:
+## Individual subscriptions and query commands
 
-```text
-wss://ws-api.wolfx.jp/sc_eew
-```
+Connect to an individual feed below to receive its updates. To retrieve its cached JSON, send the corresponding command over that connection or over `all_eew`.
 
-- JMA Earthquake Early Warning JSON API:
+| Source | Subscription endpoint | Query command |
+| --- | --- | --- |
+| Sichuan earthquake early warnings | `wss://ws-api.wolfx.jp/sc_eew` | `query_sceew` |
+| Japan Meteorological Agency (JMA) Earthquake Early Warnings | `wss://ws-api.wolfx.jp/jma_eew` | `query_jmaeew` |
+| Fujian earthquake early warnings | `wss://ws-api.wolfx.jp/fj_eew` | `query_fjeew` |
+| Chongqing earthquake early warnings | `wss://ws-api.wolfx.jp/cq_eew` | `query_cqeew` |
+| China Earthquake Networks Center (CENC) earthquake early warnings | `wss://ws-api.wolfx.jp/cenc_eew` | `query_cenceew` |
+| CENC earthquake information | `wss://ws-api.wolfx.jp/cenc_eqlist` | `query_cenceqlist` |
+| JMA earthquake information | `wss://ws-api.wolfx.jp/jma_eqlist` | `query_jmaeqlist` |
+| JMA tsunami information | `wss://ws-api.wolfx.jp/jma_tsunami` | `query_jmatsunami` |
+| JMA Nankai Trough and Hokkaido/Sanriku information | `wss://ws-api.wolfx.jp/jma_special_eq` | `query_jmaspecialeq` |
 
-```text
-wss://ws-api.wolfx.jp/jma_eew
-```
+For the JSON fields in each feed, see the [Open API reference](/en/docs/open-api) and the [API homepage](https://api.wolfx.jp).
 
-- Fujian Earthquake Early Warning JSON API:
-
-```text
-wss://ws-api.wolfx.jp/fj_eew
-```
-
-- Chongqing Earthquake Early Warning JSON API:
-
-```text
-wss://ws-api.wolfx.jp/cq_eew
-```
-
-- China Earthquake Networks Center Earthquake Early Warning JSON API:
-
-```text
-wss://ws-api.wolfx.jp/cenc_eew
-```
-
-- China Earthquake Networks Center Earthquake Information JSON API:
-
-```text
-wss://ws-api.wolfx.jp/cenc_eqlist
-```
-
-- JMA Earthquake Information JSON API:
-
-```text
-wss://ws-api.wolfx.jp/jma_eqlist
-```
-
-- JMA Tsunami Information JSON API:
-
-```text
-wss://ws-api.wolfx.jp/jma_tsunami
-```
-
-- JMA Special Earthquake Information JSON API:
-
-```text
-wss://ws-api.wolfx.jp/jma_special_eq
-```
-
-- For detailed JSON field parsing, refer to: [https://api.wolfx.jp](https://api.wolfx.jp)
-
-## WebSocket Manual Query Commands
-
-Manual queries return the source’s cached JSON on its own connection or on `all_eew`.
-
-- Ping:
+Connection check
 
 ```text
 ping
 ```
 
-- Sichuan Earthquake Early Warning JSON:
+## WebSocket message format
 
-```text
-query_sceew
-```
-
-- JMA Earthquake Early Warning JSON:
-
-```text
-query_jmaeew
-```
-
-- Fujian Earthquake Early Warning JSON:
-
-```text
-query_fjeew
-```
-
-- Chongqing Earthquake Early Warning JSON:
-
-```text
-query_cqeew
-```
-
-- China Earthquake Networks Center Earthquake Early Warning JSON:
-
-```text
-query_cenceew
-```
-
-- China Earthquake Networks Center Earthquake Information JSON:
-
-```text
-query_cenceqlist
-```
-
-- JMA Earthquake Information JSON:
-
-```text
-query_jmaeqlist
-```
-
-- JMA Tsunami Information JSON API:
-
-```text
-query_jmatsunami
-```
-
-- JMA Special Earthquake Information JSON API:
-
-```text
-query_jmaspecialeq
-```
-
-## WebSocket JSON Data Specification
-
-- Common JSON Field Description:
+### Common field
 
 | Field | Description |
 | --- | --- |
-| `type` | Data type / data source (see API homepage for specific values) (String) |
+| `type` | Message type or data source (string) |
 
-- WebSocket Heartbeat Packet - JSON Field Description:
-
-| Field | Description |
-| --- | --- |
-| `type` | heartbeat (String) |
-| `ver` | Server version number (Number) |
-| `id` | Client connection UUID (String) |
-| `timestamp` | Heartbeat sent timestamp in milliseconds (String) |
-
-- WebSocket Pong Packet - JSON Field Description:
+### Heartbeat (`heartbeat`)
 
 | Field | Description |
 | --- | --- |
-| `type` | pong (String) |
-| `timestamp` | Pong sent timestamp in milliseconds (String) |
+| `type` | `heartbeat` (string) |
+| `ver` | Server version (number) |
+| `id` | UUID for this connection (string) |
+| `timestamp` | Time the message was sent, in milliseconds (string) |
+
+### Reply to ping (`pong`)
+
+| Field | Description |
+| --- | --- |
+| `type` | `pong` (string) |
+| `timestamp` | Time the message was sent, in milliseconds (string) |

@@ -7,12 +7,4 @@ export default defineNuxtRouteMiddleware((to) => {
     : to.path.replace(/\/+$/, '') || '/'
   if (path !== to.path)
     return navigateTo({ path, query: to.query, hash: to.hash }, { replace: true })
-
-  if (import.meta.server)
-    return
-
-  const { localeRedirectTarget } = useLocaleRedirect()
-  const target = localeRedirectTarget(to)
-  if (target)
-    return navigateTo(target, { replace: true })
 })

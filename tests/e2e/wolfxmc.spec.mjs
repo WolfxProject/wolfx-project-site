@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test'
+import { wolfxMc } from '../../data/wolfxmc.ts'
 
 const mcStatusEndpoint = 'https://mcapi.us/server/status?ip=wolfx.jp'
 const mcStatusRoute = 'https://mcapi.us/server/status?*'
@@ -178,6 +179,9 @@ test('WolfxMC language switching preserves the current translated page', async (
   await mockMinecraftStatus(page)
   await page.goto('/mc/rules', { waitUntil: 'networkidle' })
   const language = page.locator('.language-select select')
+  await page.evaluate(() => {
+    window.__mcDocument = 'retained'
+  })
 
   await language.selectOption('ja')
   await expect(page).toHaveURL(/\/ja\/mc\/rules\/?$/)
@@ -196,6 +200,7 @@ test('WolfxMC language switching preserves the current translated page', async (
   await page.waitForLoadState('networkidle')
   await expect(page.locator('html')).toHaveAttribute('lang', 'zh-CN')
   expect(await page.evaluate(() => localStorage.getItem('wolfx-locale'))).toBe('zh')
+  expect(await page.evaluate(() => window.__mcDocument)).toBe('retained')
 })
 
 test('visitor-facing WolfxMC pages contain no reconstruction labels', async ({ page }) => {
@@ -207,12 +212,12 @@ test('visitor-facing WolfxMC pages contain no reconstruction labels', async ({ p
   }
 })
 
-test('WolfxMC loads only the JSON status endpoint and no archived third-party script', async ({ page }) => {
+test('WolfxMC loads only the JSON status endpoint and no archived third-party script', async ({ page, baseURL }) => {
   const statusRequests = await mockMinecraftStatus(page)
   const external = []
   page.on('request', (request) => {
     const url = new URL(request.url())
-    if (url.origin !== 'http://127.0.0.1:4381')
+    if (url.origin !== new URL(baseURL).origin)
       external.push(url.href)
   })
 
@@ -276,7 +281,7 @@ test('online status displays the current count without maximum slots or map size
   await expect(status).toContainText('7 players online')
   await expect(status).not.toContainText('100')
   await expect(page.locator('.mc-hero__facts > div')).toHaveCount(3)
-  await expect(page.locator('.mc-hero__facts')).toContainText('26.3')
+  await expect(page.locator('.mc-hero__facts')).toContainText(wolfxMc.currentCoreVersion)
   await expect(page.locator('.mc-hero')).not.toContainText(/Map size/i)
   expect(requests).toEqual([mcStatusEndpoint])
 
@@ -365,4 +370,18 @@ test('loading state is stable while the initial request is pending', async ({ pa
 
   releaseRequest()
   await expect(status).toHaveAttribute('data-state', 'online')
+})
+
+test('copy feedback follows the displayed language on the unprefixed Chinese site', async ({ page }) => {
+  await mockMinecraftStatus(page)
+  await page.addInitScript(() => Object.defineProperty(navigator, 'clipboard', {
+    configurable: true,
+    value: { writeText: async () => {} },
+  }))
+  await page.goto('/mc', { waitUntil: 'networkidle' })
+  const button = page.locator('.mc-server-chip .copy-button')
+  await expect(button).toHaveText('复制')
+  await button.click()
+  await expect(button).toHaveText('已复制')
+  await expect(page.locator('.back-to-top')).toHaveAttribute('aria-label', '返回顶部')
 })

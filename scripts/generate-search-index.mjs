@@ -1,61 +1,43 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { parsePage } from './content-markdown.mjs'
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const contentRoot = path.join(root, 'content')
 const outputFile = path.join(root, 'public/search-index.json')
 const locales = ['ja', 'zh', 'en']
 
-function parseFrontmatter(markdown, file) {
-  const match = markdown.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?/)
-  if (!match)
-    throw new Error(`${file}: missing frontmatter`)
-  const data = {}
-  for (const line of match[1].split(/\r?\n/)) {
-    const field = line.match(/^([A-Za-z][\w-]*):\s*(.*)$/)
-    if (!field)
-      continue
-    const [, key, raw] = field
-    try {
-      data[key] = JSON.parse(raw)
+const inlineContainers = new Set(['heading', 'paragraph', 'tableCell', 'strong', 'emphasis', 'delete', 'link'])
+const visibleProp = /^(?:(?:.*-)?(?:title|label|description)|address|action|eyebrow|network|tag|method)$/
+
+function searchableContent(tree) {
+  const headings = []
+  function textOf(node) {
+    if (node.type === 'html' || node.type === 'definition')
+      return ''
+    if (typeof node.value === 'string')
+      return node.value
+    if (node.type === 'image')
+      return node.alt || ''
+    const children = (node.children || []).map(textOf)
+    const text = children.join(inlineContainers.has(node.type) ? '' : ' ')
+    if (node.type === 'heading') {
+      headings.push(text.trim())
+      return ''
     }
-    catch {
-      data[key] = raw.trim()
+    if (node.type === 'link' && text !== node.url)
+      return `${text} ${node.url}`
+    if (node.attributes) {
+      const labels = Object.entries(node.attributes)
+        .filter(([key, value]) => visibleProp.test(key) && typeof value === 'string')
+        .map(([, value]) => value)
+      return [...labels, text].join(' ')
     }
+    return text
   }
-  return { data, body: markdown.slice(match[0].length) }
-}
-
-function plainInline(value) {
-  return value
-    .replace(/!\[([^\]]*)\]\([^)]+\)/g, '$1')
-    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '$1 $2')
-    .replace(/<https?:\/\/[^>]+>/g, match => match.slice(1, -1))
-    .replace(/<[^>]+>/g, ' ')
-    .replace(/[`*_~]/g, '')
-    .replace(/\\([\W_])/g, '$1')
-    .replace(/\s+/g, ' ')
-    .trim()
-}
-
-function plainBody(body) {
-  return body
-    .replace(/^#{1,6}\s+.*$/gm, ' ')
-    .replace(/^::+[^\n]*$/gm, ' ')
-    .replace(/^```[^\n]*$/gm, ' ')
-    .replace(/^---+$/gm, ' ')
-    .replace(/^\s*\|?\s*:?-{3,}:?\s*(?:\|\s*:?-{3,}:?\s*)+\|?\s*$/gm, ' ')
-    .replace(/^\s*>\s?/gm, '')
-    .replace(/^\s*[-+*]\s+/gm, '')
-    .replace(/^\s*\d+[.)]\s+/gm, '')
-    .replace(/\|/g, ' ')
-    .split(/\r?\n/)
-    .map(plainInline)
-    .filter(Boolean)
-    .join(' ')
-    .replace(/\s+/g, ' ')
-    .trim()
+  const text = textOf(tree).replace(/\s+/g, ' ').trim()
+  return { headings, text }
 }
 
 function publicPath(locale, relativeFile) {
@@ -64,7 +46,7 @@ function publicPath(locale, relativeFile) {
   let prefix = `/${locale}`
   if ((isWolfxMc && locale === 'zh') || (!isWolfxMc && locale === 'ja'))
     prefix = ''
-  return `${prefix}/${route}`.replace(/\/{2,}/g, '/').replace(/\/$/, '') || '/'
+  return `${prefix}/${route}`
 }
 
 async function markdownFiles(directory) {
@@ -86,12 +68,10 @@ for (const locale of locales) {
   for (const file of (await markdownFiles(localeRoot)).sort()) {
     const markdown = await fs.readFile(file, 'utf8')
     const relativeFile = path.relative(localeRoot, file).replaceAll(path.sep, '/')
-    const { data, body } = parseFrontmatter(markdown, path.relative(root, file))
+    const { data, tree } = parsePage(markdown)
     if (data.locale !== locale || typeof data.title !== 'string')
       throw new Error(`${path.relative(root, file)}: invalid locale or title`)
-    const headings = [...body.matchAll(/^#{1,6}\s+(.+)$/gm)]
-      .map(match => plainInline(match[1]))
-      .filter(Boolean)
+    const { headings, text } = searchableContent(tree)
     searchEntries.push({
       title: data.title,
       ...(typeof data.description === 'string' ? { description: data.description } : {}),
@@ -99,11 +79,17 @@ for (const locale of locales) {
       locale,
       ...(typeof data.layout === 'string' ? { section: data.layout } : {}),
       ...(headings.length ? { headings } : {}),
-      text: plainBody(body),
+      text,
     })
   }
 }
 
-await fs.mkdir(path.dirname(outputFile), { recursive: true })
-await fs.writeFile(outputFile, `${JSON.stringify(searchEntries)}\n`)
-console.log(`Generated ${searchEntries.length} search entries at public/search-index.json.`)
+const json = `${JSON.stringify(searchEntries)}\n`
+if (process.argv.includes('--check')) {
+  if (await fs.readFile(outputFile, 'utf8') !== json)
+    throw new Error('public/search-index.json is stale. Run pnpm search:generate.')
+}
+else {
+  await fs.writeFile(outputFile, json)
+  console.log(`Generated ${searchEntries.length} search entries at public/search-index.json.`)
+}

@@ -1,22 +1,21 @@
 import type { WolfxLocale } from '~/types/site'
 
 export function usePublicPath() {
-  function localize(path: string, targetLocale?: WolfxLocale) {
+  function localize(path: string, targetLocale: WolfxLocale) {
     if (!path.startsWith('/') || path.startsWith('//'))
       return path
 
-    const locale = targetLocale ?? useI18n().locale.value as WolfxLocale
-    const cleanPath = path.replace(/^\/(?:ja|zh|en)(?=\/|$)/, '') || '/'
-    if (locale === 'ja')
+    const cleanPath = unlocalize(path)
+    if (targetLocale === 'ja')
       return cleanPath
-    return `/${locale}${cleanPath === '/' ? '/' : cleanPath}`
+    return `/${targetLocale}${cleanPath}`
   }
 
   function localizeWolfxMc(path: string, targetLocale: WolfxLocale, explicitChinese = false) {
     if (!path.startsWith('/') || path.startsWith('//'))
       return path
 
-    const cleanPath = path.replace(/^\/(?:ja|zh|en)(?=\/|$)/, '') || '/'
+    const cleanPath = unlocalize(path)
     if (targetLocale === 'zh')
       return explicitChinese ? `/zh${cleanPath}` : cleanPath
     return `/${targetLocale}${cleanPath}`

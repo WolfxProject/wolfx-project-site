@@ -1,39 +1,38 @@
 ---
-title: "Wolfx Open API Usage"
-description: "Wolfx Open API documentation for earthquake, EEW, and utility APIs over JSON, GET, and WebSocket."
+title: "Wolfx Open API reference"
+description: "HTTP endpoints and response fields for earthquake reports, early warnings, tsunami bulletins, and weather data. Selected feeds also support WebSocket subscriptions."
 locale: en
 layout: docs
-updated: 2026-11-23
+updated: 2026-11-24
 source: apidoc_en.html
 ---
 ## Wolfx Open API Usage Guidelines
 
-- Thank you for using the Wolfx Open API. Before using this service, please review the Privacy Policy and Terms of Service provided at the bottom of this page. For any questions, please contact contact@mtf.edu.kg. Wolfx Project is an unofficial project and is not affiliated with any government agency, meteorological organization, or earthquake-related authority in any country or region. The information provided by this service is for reference only and must not be used as a substitute for official earthquake warnings, disaster information, evacuation notices, or other official alert channels. During an emergency, always refer to the latest information issued by the relevant authorities.
+Before using this service, review the [Privacy Policy](/en/legal/privacy) and [Terms of Service](/en/legal/terms). Send questions to [contact@mtf.edu.kg](mailto:contact@mtf.edu.kg). Wolfx Project is an unofficial project and is not affiliated with any government agency, meteorological organization, or earthquake-related authority in any country or region. The information provided by this service is for reference only and must not be used as a substitute for official earthquake warnings, disaster information, evacuation notices, or other official alert channels. During an emergency, always refer to the latest information issued by the relevant authorities.
 
-## WebSocket API Usage Instructions
+## WebSocket subscriptions
 
-- For more details, please visit: [/en/docs/websocket\_en](/en/docs/websocket)
+See the [WebSocket API guide](/en/docs/websocket) for subscription endpoints, filters, and query commands.
 
 ## JMA Earthquake Early Warning JSON API
 
-- Description: Receive real-time Earthquake Early Warnings issued by the Japan Meteorological Agency. Low-latency reception support: [t0729](https://x.com/t0729_)
-- HTTP GET API Endpoint:
+Receive real-time Earthquake Early Warnings issued by the Japan Meteorological Agency. [t0729](https://x.com/t0729_) helps provide low-latency reception.
+
+**HTTP GET**
 
 ```text
 https://api.wolfx.jp/jma_eew.json
 ```
 
-- WebSocket API Endpoint:
+**WebSocket**
 
 ```text
 wss://ws-api.wolfx.jp/jma_eew
 ```
 
-- JSON Field Descriptions (Data Types):
-
 | Field | Description |
 | --- | --- |
-| `type` | (WebSocket only) jma_eew (string) |
+| `type` | WebSocket only. The value is `jma_eew` (string) |
 | `Title` | Earthquake Early Warning (EEW) title (string) |
 | `CodeType` | EEW announcement category. Reports issued using the level method with only the maximum predicted seismic intensity are labeled "最大予測震度のみの緊急地震速報". This field does not provide a comprehensive classification of hypocenter estimation methods (string) |
 | `Issue.Source` | Issuing meteorological office (string) |
@@ -46,9 +45,9 @@ wss://ws-api.wolfx.jp/jma_eew
 | `Latitude` | Latitude of the hypocenter (number) |
 | `Longitude` | Longitude of the hypocenter (number) |
 | `Magnitude` | Magnitude. The compatibility value 0 for unknown magnitude and the fixed value 1.0 for formal assumed hypocenter parameters are not measured values (number; recommended) |
-| `Magunitude` | **Deprecated** legacy misspelling retained for backward compatibility with existing clients. Its value is always identical to `Magnitude`. New integrations should use `Magnitude`. This field may be removed in the future, so migration is strongly recommended. |
+| `Magunitude` | **Deprecated.** Legacy spelling retained for compatibility. It always has the same value as `Magnitude` and may be removed in the future. Use `Magnitude` in new and existing clients (number). |
 | `Depth` | Hypocenter depth (km). The 10 km value for the level method or formal assumed hypocenter parameters is assumed; unknown depth also maps to the compatibility value 0. These values are not necessarily measurements (number) |
-| `MaxIntensity` | Maximum predicted seismic intensity (lower/upper) (string) |
+| `MaxIntensity` | Maximum predicted JMA seismic intensity, for example `5弱` (5 lower) or `6強` (6 upper). May be `不明` (unknown) (string) |
 | `Accuracy.Epicenter` | Information about epicenter accuracy (string) |
 | `Accuracy.Depth` | Information about depth accuracy (string) |
 | `Accuracy.Magnitude` | Information about magnitude accuracy (string) |
@@ -56,10 +55,10 @@ wss://ws-api.wolfx.jp/jma_eew
 | `MaxIntChange.Reason` | Reason for the maximum intensity change (string) |
 | `WarnArea` | List of forecast and warning areas (array / JSON value) |
 | `WarnArea[].Chiiki` | Forecast or warning area (string) |
-| `WarnArea[].Shindo1` | Maximum seismic intensity in the area (lower/upper) (string) |
-| `WarnArea[].Shindo2` | Minimum seismic intensity in the area (lower/upper) (string) |
-| `WarnArea[].Time` | Predicted principal-motion arrival time; for a PLUM category, the time this intensity was first predicted. This is not the warning announcement time (UTC+9, HHMMSS, ////// when unknown; string) |
-| `WarnArea[].Type` | Announcement type for the area, either "Forecast" or "Warning" (string) |
+| `WarnArea[].Shindo1` | Upper bound of the predicted seismic intensity in this area (string) |
+| `WarnArea[].Shindo2` | Lower bound of the predicted seismic intensity in this area. May be `不明` (unknown) (string) |
+| `WarnArea[].Time` | Predicted arrival time of strong shaking. For a PLUM prediction, this is the time the intensity was first predicted. Use `AnnouncedTime` for the issue time (UTC+9, `HHMMSS`, `//////` when unknown, string) |
+| `WarnArea[].Type` | Bulletin category for the area. The JSON contains `予報` (forecast) or `警報` (warning) (string) |
 | `WarnArea[].Arrive` | Description of the regional arrival prediction or PLUM category (string) |
 | `isSea` | Whether the earthquake occurred in a sea area (boolean) |
 | `isTraining` | Whether this is a training report (boolean) |
@@ -67,16 +66,16 @@ wss://ws-api.wolfx.jp/jma_eew
 | `isWarn` | Whether this is a warning (boolean) |
 | `isFinal` | Whether this is the final report (boolean) |
 | `isCancel` | Whether this is a cancellation report (boolean) |
-| `OriginalText` | Emergency Earthquake Warning (EEW) telegram text. An empty string is returned when unavailable (string) |
+| `OriginalText` | Original Earthquake Early Warning bulletin text. An empty string is returned when unavailable (string) |
 
 **JSON Response Examples**
 
-Historical Earthquake Early Warning JSON response examples for development and testing. These examples do not represent current earthquake warnings.
+Historical Earthquake Early Warning JSON response examples for development and testing. These examples do not represent current earthquake warnings. They also contain a string field called `Pond`. Use `isWarn` to determine whether a bulletin is a warning.
 
 - [First Forecast](/examples/jma_eew/forecast_first.json){external}
 - [Forecast Update](/examples/jma_eew/forecast_update.json){external}
 - [Final Report](/examples/jma_eew/forecast_final.json){external}
-- [Earthquake Early Warning](/examples/jma_eew/warning.json){external}
+- [EEW warning](/examples/jma_eew/warning.json){external}
 - [Level Method](/examples/jma_eew/level_method.json){external}
 - [Forecast with PLUM](/examples/jma_eew/plum_forecast.json){external}
 - [Warning with PLUM](/examples/jma_eew/plum_warning.json){external}
@@ -86,25 +85,24 @@ Historical Earthquake Early Warning JSON response examples for development and t
 
 ## JMA Earthquake Information JSON API
 
-- Description: Retrieves the latest 50 earthquake reports issued by the Japan Meteorological Agency (JMA)
-- HTTP GET API Endpoint:
+Returns up to 50 recent earthquakes reported by the Japan Meteorological Agency (JMA).
+
+**HTTP GET**
 
 ```text
 https://api.wolfx.jp/jma_eqlist.json
 ```
 
-- WebSocket API Endpoint:
+**WebSocket**
 
 ```text
 wss://ws-api.wolfx.jp/jma_eqlist
 ```
 
-- JSON Field Descriptions (Data Types):
-
 | Field | Description |
 | --- | --- |
-| `type` | (WebSocket only) jma_eqlist (String) |
-| `No (1~50)` | 50 objects named `No1`–`No50`, holding up to 50 events ordered by known origin time, then event ID, descending; unused slots retain empty strings and other compatibility values |
+| `type` | WebSocket only. The value is `jma_eqlist` (String) |
+| `No (1~50)` | 50 objects named `No1`–`No50`, holding up to 50 events ordered by known origin time, then event ID, descending; unused slots retain empty strings and other compatibility values (object) |
 | `Title` | Publication title within each `NoN` (String) |
 | `EventID` | Official event ID within each `NoN` (String) |
 | `time` | Event time (UTC+9), `YYYY/MM/DD HH:mm` (String) |
@@ -122,14 +120,13 @@ Fields from `Title` through `info` belong to each `NoN`. Neither `time` nor `tim
 
 ## JMA Earthquake Detail JSON API
 
-- Description: Retrieves earthquake events with hypocenters, seismic intensity and long-period observations, official comments, and report status
-- HTTP GET API Endpoint:
+Retrieves earthquake events with hypocenters, seismic intensity and long-period ground motion observations, official comments, and report status
+
+**HTTP GET**
 
 ```text
 https://api.wolfx.jp/jma_earthquake_detail.json
 ```
-
-- JSON Field Descriptions (Data Types):
 
 | Field | Description |
 | --- | --- |
@@ -150,7 +147,7 @@ https://api.wolfx.jp/jma_earthquake_detail.json
 | `events[].reports[].magnitude` | Magnitude; null for unknown or nonnumeric qualitative descriptions (Number / null; optional) |
 | `events[].reports[].magnitudeType`, `events[].reports[].magnitudeText`, `events[].reports[].magnitudeCondition` | Magnitude scale, such as `Mj`, qualitative description, and condition (String; optional) |
 | `events[].reports[].observation` | This report's observations; do not merge different products or times into simultaneous measurements (Object; optional) |
-| `events[].reports[].observation.maxIntensity`, `events[].reports[].observation.maxLongPeriod` | Maximum seismic intensity and long-period class; intensity retains official strings such as `5-` and `5+` (String; optional) |
+| `events[].reports[].observation.maxIntensity`, `events[].reports[].observation.maxLongPeriod` | Maximum seismic intensity and long-period ground motion class; intensity retains official strings such as `5-` and `5+` (String; optional) |
 | `events[].reports[].observation.prefs` | Prefectures with `code`, `name`, and optional `int` (intensity), `lg` (long-period class), and related fields (Object array; optional) |
 | `events[].reports[].observation.areas` | Subregions; `pref` indexes this observation's `prefs`, with `0` valid (Object array; optional) |
 | `events[].reports[].observation.cities` | Municipalities; `area` indexes this observation's `areas`, with `0` valid (Object array; optional) |
@@ -162,24 +159,23 @@ https://api.wolfx.jp/jma_earthquake_detail.json
 
 ## JMA Tsunami Information JSON API
 
-- Description: Retrieves the nationwide tsunami warning/forecast state and official tsunami observation reports
-- HTTP GET API Endpoint:
+Returns the status of tsunami warnings, advisories, and forecasts across Japan, along with official observations.
+
+**HTTP GET**
 
 ```text
 https://api.wolfx.jp/jma_tsunami.json
 ```
 
-- WebSocket API Endpoint:
+**WebSocket**
 
 ```text
 wss://ws-api.wolfx.jp/jma_tsunami
 ```
 
-- JSON Field Descriptions (Data Types):
-
 | Field | Description |
 | --- | --- |
-| `type` | (WebSocket only) jma_tsunami (String) |
+| `type` | WebSocket only. The value is `jma_tsunami` (String) |
 | `status` | `uninitialized`: not yet obtained; `unknown`: state unknown, no assurance of safety; `active`: warning/advisory present; `forecast_only`: forecast only; `cleared`: officially lifted; `expired`: official validity elapsed, not lifted; `none_reported`: explicitly classified as no tsunami (String) |
 | `reason` | Reason for the state; not an independent risk assessment (String) |
 | `trusted` | Whether trust conditions following reconciliation with the current authoritative state are met; true does not mean no tsunami risk (Boolean) |
@@ -190,7 +186,7 @@ wss://ws-api.wolfx.jp/jma_tsunami
 | `areas[].kind`, `areas[].previousKind` | Official category code and previous category code; `previousKind` is optional (String) |
 | `areas[].firstWave`, `areas[].maxWave` | First/maximum wave, with optional `time` (UTC RFC 3339), `height` (number/null, m), `text`, and conditions; 巨大, 高い, 10m超, and 以上 are qualitative/lower-bound descriptions, not precise measurements (Object; optional) |
 | `areas[].stations` | Area stations with `code`, `name`, and optional high-tide time `highTide`, `firstWave`, `maxWave`, and related fields (Object array; optional) |
-| `observations` | Latest relevant `VTSE51` and `VTSE52` observation reports with their own IDs, times, and cancellation states; do not overwrite `VTSE41` warning areas (Object array) |
+| `observations` | Latest relevant `VTSE51` and `VTSE52` observation reports with their own IDs, times, and cancellation states. The `VTSE51` example has its own `areas` array. Keep it separate from the `VTSE41` warning areas (Object array) |
 | `observations[].observed`, `observations[].estimated` | Measured/coastal-estimated areas, stations, and wave information; observation times may differ between reports (Object array; optional) |
 | `lastKnown` | Last known areas, observations, and comments when untrusted; reference only, not a currently valid warning (Object; optional) |
 | `comments` | Official comments: optional `forecast`, `warning`, `note`, `text` strings and a `urls` string array (Object; optional) |
@@ -206,30 +202,29 @@ Tsunami information JSON response examples for development and testing. These ex
 - [Tsunami Warning](/examples/jma_tsunami/warning.json){external}
 - [Major Tsunami Warning](/examples/jma_tsunami/major_warning.json){external}
 - [Cancellation](/examples/jma_tsunami/cancelled.json){external}
-- [Official Clearance](/examples/jma_tsunami/cleared.json){external}
+- [Warning or advisory lifted](/examples/jma_tsunami/cleared.json){external}
 - [Expired](/examples/jma_tsunami/expired.json){external}
 - [With Tsunami Observations](/examples/jma_tsunami/with_observations.json){external}
 
 ## JMA Special Earthquake Information JSON API
 
-- Description: Retrieves the latest official reports concerning the Nankai Trough and the areas off Hokkaido and Sanriku
-- HTTP GET API Endpoint:
+Retrieves the latest official reports concerning the Nankai Trough and the areas off Hokkaido and Sanriku
+
+**HTTP GET**
 
 ```text
 https://api.wolfx.jp/jma_special_eq.json
 ```
 
-- WebSocket API Endpoint:
+**WebSocket**
 
 ```text
 wss://ws-api.wolfx.jp/jma_special_eq
 ```
 
-- JSON Field Descriptions (Data Types):
-
 | Field | Description |
 | --- | --- |
-| `type` | (WebSocket only) jma_special_eq (String) |
+| `type` | WebSocket only. The value is `jma_special_eq` (String) |
 | `reports` | Latest report per product, up to four in total; not a complete archive, and a retained report does not mean an alert is still in effect (Object array) |
 | `reports[].id` | Report telegram ID (String) |
 | `reports[].product` | `VYSE50`: Nankai Trough Earthquake Extra Information; `VYSE51`: commentary on that extra information; `VYSE52`: Nankai Trough Earthquake-Related Commentary; `VYSE60`: Off the Coast of Hokkaido and Sanriku Subsequent Earthquake Advisory. Regular commentary does not indicate a temporary alert (String) |
@@ -244,55 +239,56 @@ wss://ws-api.wolfx.jp/jma_special_eq
 
 ## China Earthquake Networks Center - Earthquake Information JSON API
 
-- Description: Retrieves the latest 50 earthquake reports published by the China Earthquake Networks Center (CENC)
-- HTTP GET API Endpoint:
+Retrieves the latest 50 earthquake reports published by the China Earthquake Networks Center (CENC)
+
+**HTTP GET**
 
 ```text
 https://api.wolfx.jp/cenc_eqlist.json
 ```
 
-- WebSocket API Endpoint:
+**WebSocket**
 
 ```text
 wss://ws-api.wolfx.jp/cenc_eqlist
 ```
 
-- JSON Field Descriptions (Data Types):
-
 | Field | Description |
 | --- | --- |
-| `type` | (WebSocket only) cenc_eqlist (String) |
-| `No (1~50)` | Entry number of the earthquake record (ordered by publication time) (String) |
-| `type` | Type of report: either "automatic" or "reviewed" (String) |
+| `type` | WebSocket only. The value is `cenc_eqlist` (String) |
+| `No (1~50)` | Earthquake records ordered by publication time, keyed from `No1` to `No50` (object) |
+| `type` | Report type within each `NoN`: `automatic` or `reviewed` (String) |
+| `EventID` | Earthquake event ID (string) |
+| `ReportTime` | Report time for this record, for example `2026-11-24 15:45:48` (string) |
 | `time` | Origin time of the earthquake (UTC+8) (String) |
-| `location` | Epicenter (String) |
+| `location` | Epicentral region with standardized place names (string) |
+| `placeName` | Original place name supplied by the source (string) |
 | `magnitude` | Magnitude (String) |
 | `depth` | Depth of the hypocenter (String) |
 | `latitude` | Latitude of the epicenter (String) |
 | `longitude` | Longitude of the epicenter (String) |
-| `intensity` | Maximum intensity (String) |
+| `intensity` | Maximum intensity on the Chinese seismic intensity scale (string) |
 | `md5` | MD5 hash used to check for data updates (String) |
 
 ## Sichuan Earthquake Administration - Earthquake Early Warning JSON API
 
-- Description: Real-time access to earthquake early warnings issued by the Sichuan Earthquake Administration
-- HTTP GET API Endpoint:
+Real-time access to earthquake early warnings issued by the Sichuan Earthquake Administration
+
+**HTTP GET**
 
 ```text
 https://api.wolfx.jp/sc_eew.json
 ```
 
-- WebSocket API Endpoint:
+**WebSocket**
 
 ```text
 wss://ws-api.wolfx.jp/sc_eew
 ```
 
-- JSON Field Descriptions (Data Types):
-
 | Field | Description |
 | --- | --- |
-| `type` | (WebSocket only) sc_eew (String) |
+| `type` | WebSocket only. The value is `sc_eew` (String) |
 | `ID` | EEW Report ID (Number) |
 | `EventID` | EEW Event Identifier (String) |
 | `ReportTime` | Time of EEW issuance (UTC+8) (String) |
@@ -302,30 +298,29 @@ wss://ws-api.wolfx.jp/sc_eew
 | `Latitude` | Latitude of the hypocenter (Number) |
 | `Longitude` | Longitude of the hypocenter (Number) |
 | `Magnitude` | Magnitude (Number; recommended) |
-| `Magunitude` | **Deprecated** legacy misspelling retained for backward compatibility with existing clients. Its value is always identical to `Magnitude`. New integrations should use `Magnitude`. This field may be removed in the future, so migration is strongly recommended. |
-| `Depth` | Depth of hypocenter (may be null) (Number) |
-| `MaxIntensity` | Maximum seismic intensity (Number) |
+| `Magunitude` | **Deprecated.** Legacy spelling retained for compatibility. It always has the same value as `Magnitude` and may be removed in the future. Use `Magnitude` in new and existing clients (number). |
+| `Depth` | Hypocenter depth (number or `null`) |
+| `MaxIntensity` | Maximum intensity on the Chinese seismic intensity scale (number) |
 
 ## China Earthquake Networks Center - Earthquake Early Warning JSON API
 
-- Description: Real-time access to earthquake early warnings issued by the China Earthquake Networks Center
-- HTTP GET API Endpoint:
+Real-time access to earthquake early warnings issued by the China Earthquake Networks Center
+
+**HTTP GET**
 
 ```text
 https://api.wolfx.jp/cenc_eew.json
 ```
 
-- WebSocket API Endpoint:
+**WebSocket**
 
 ```text
 wss://ws-api.wolfx.jp/cenc_eew
 ```
 
-- JSON Field Descriptions (Data Types):
-
 | Field | Description |
 | --- | --- |
-| `type` | (WebSocket only) cenc_eew (String) |
+| `type` | WebSocket only. The value is `cenc_eew` (String) |
 | `ID` | EEW Report ID (String) |
 | `EventID` | EEW Event Identifier (String) |
 | `ReportTime` | Time of EEW issuance (UTC+8) (String) |
@@ -335,29 +330,28 @@ wss://ws-api.wolfx.jp/cenc_eew
 | `Latitude` | Latitude of the hypocenter (Number) |
 | `Longitude` | Longitude of the hypocenter (Number) |
 | `Magnitude` | Magnitude (Number) |
-| `Depth` | Depth of hypocenter (may be null) (Number) |
-| `MaxIntensity` | Maximum seismic intensity (Number) |
+| `Depth` | Hypocenter depth (number or `null`) |
+| `MaxIntensity` | Maximum intensity on the Chinese seismic intensity scale (number) |
 
 ## Fujian Earthquake Administration - Earthquake Early Warning JSON API
 
-- Description: Real-time access to earthquake early warnings issued by the Fujian Earthquake Administration
-- HTTP GET API Endpoint:
+Real-time access to earthquake early warnings issued by the Fujian Earthquake Administration
+
+**HTTP GET**
 
 ```text
 https://api.wolfx.jp/fj_eew.json
 ```
 
-- WebSocket API Endpoint:
+**WebSocket**
 
 ```text
 wss://ws-api.wolfx.jp/fj_eew
 ```
 
-- JSON Field Descriptions (Data Types):
-
 | Field | Description |
 | --- | --- |
-| `type` | (WebSocket only) fj_eew (String) |
+| `type` | WebSocket only. The value is `fj_eew` (String) |
 | `ID` | EEW Report ID (Number) |
 | `EventID` | EEW Event Identifier (String) |
 | `ReportTime` | Time of EEW issuance (UTC+8) (String) |
@@ -367,29 +361,28 @@ wss://ws-api.wolfx.jp/fj_eew
 | `Latitude` | Latitude of the hypocenter (Number) |
 | `Longitude` | Longitude of the hypocenter (Number) |
 | `Magnitude` | Magnitude (Number; recommended) |
-| `Magunitude` | **Deprecated** legacy misspelling retained for backward compatibility with existing clients. Its value is always identical to `Magnitude`. New integrations should use `Magnitude`. This field may be removed in the future, so migration is strongly recommended. |
+| `Magunitude` | **Deprecated.** Legacy spelling retained for compatibility. It always has the same value as `Magnitude` and may be removed in the future. Use `Magnitude` in new and existing clients (number). |
 | `isFinal` | True if this is the final report (Boolean) |
 
 ## Chongqing Earthquake Administration - Earthquake Early Warning JSON API
 
-- Description: Real-time access to earthquake early warnings issued by the Chongqing Earthquake Administration
-- HTTP GET API Endpoint:
+Real-time access to earthquake early warnings issued by the Chongqing Earthquake Administration
+
+**HTTP GET**
 
 ```text
 https://api.wolfx.jp/cq_eew.json
 ```
 
-- WebSocket API Endpoint:
+**WebSocket**
 
 ```text
 wss://ws-api.wolfx.jp/cq_eew
 ```
 
-- JSON Field Descriptions (Data Types):
-
 | Field | Description |
 | --- | --- |
-| `type` | (WebSocket only) cq_eew (String) |
+| `type` | WebSocket only. The value is `cq_eew` (String) |
 | `ID` | EEW Report ID (String) |
 | `EventID` | EEW Event Identifier (String) |
 | `ReportTime` | Time of EEW issuance (UTC+8) (String) |
@@ -399,44 +392,42 @@ wss://ws-api.wolfx.jp/cq_eew
 | `Latitude` | Latitude of the hypocenter (Number) |
 | `Longitude` | Longitude of the hypocenter (Number) |
 | `Magnitude` | Magnitude (Number) |
-| `Depth` | Depth of hypocenter (may be null) (Number) |
-| `MaxIntensity` | Maximum seismic intensity (Number) |
+| `Depth` | Hypocenter depth (number or `null`) |
+| `MaxIntensity` | Maximum intensity on the Chinese seismic intensity scale (number) |
 
 ## China Real-Time Weather Ranking JSON API
 
-- Description: Provides hourly rankings of temperature, precipitation, and wind speed from national-level weather observation stations across China
-- HTTP GET API Endpoint:
+Provides hourly rankings of temperature, precipitation, and wind speed from national-level weather observation stations across China
+
+**HTTP GET**
 
 ```text
 https://api.wolfx.jp/weather_rank.json
 ```
 
-- JSON Field Descriptions (Data Types):
-
 | Field | Description |
 | --- | --- |
-| `YYYYMMDDHH00` | Weather ranking data for each of the past 8 hours (UTC+8) (String) |
-| `tempRank` | Top 10 highest temperatures nationwide (String) |
-| `rainRank` | Top 10 highest precipitation amounts nationwide (String) |
-| `windSRank` | Top 10 highest wind speeds nationwide (String) |
+| `YYYYMMDDHH00` | Hourly rankings for the past eight hours. Each key is an hour in UTC+8 and its value contains the three rankings below (object) |
+| `tempRank` | The 10 highest temperatures nationwide, in descending order (array of objects) |
+| `rainRank` | The 10 largest precipitation amounts nationwide, in descending order (array of objects) |
+| `windSRank` | The 10 highest wind speeds nationwide, in descending order (array of objects) |
 | `md5` | Checksum for verifying data updates (String) |
+
+Each entry in `tempRank`, `rainRank`, and `windSRank` contains the region (`province`), city (`city`), and observed value (`value`). All three are strings.
 
 ## IP Address Information Lookup JSON API
 
-- Description: Retrieve information about the requester’s IP address or a specified IP address
-- HTTP GET API Endpoint:
+Retrieve information about the requester’s IP address or a specified IP address
+
+**HTTP GET**
 
 ```text
 https://api.wolfx.jp/geoip.php
 ```
 
- 
-
 ```text
 https://api.wolfx.jp/geoip.php?ip=<IP address>
 ```
-
-- JSON Field Descriptions (Data Types):
 
 | Field | Description |
 | --- | --- |
@@ -454,14 +445,13 @@ https://api.wolfx.jp/geoip.php?ip=<IP address>
 
 ## Latest Server Time JSON API
 
-- Description: Provides the latest accurate server time for synchronization purposes
-- HTTP GET API Endpoint:
+Provides the latest accurate server time for synchronization purposes
+
+**HTTP GET**
 
 ```text
 https://api.wolfx.jp/ntp.json
 ```
-
-- JSON Field Descriptions (Data Types):
 
 | Field | Description |
 | --- | --- |
@@ -473,8 +463,9 @@ https://api.wolfx.jp/ntp.json
 
 ## Public IP Address Retrieval PLAIN API
 
-- Description: Retrieve the public IP address of the requester in plain text format.
-- HTTP GET API URL:
+Retrieve the public IP address of the requester in plain text format.
+
+**HTTP GET**
 
 ```text
 https://api.wolfx.jp/ip.php
@@ -482,14 +473,13 @@ https://api.wolfx.jp/ip.php
 
 ## Random Anime Image Retrieval JPEG API
 
-- Description: Retrieve a random anime image.
-- HTTP GET API URL:
+Retrieve a random anime image.
+
+**HTTP GET**
 
 ```text
 https://api.wolfx.jp/img.php
 ```
-
- 
 
 ```text
 https://api.wolfx.jp/img.php?return=<img/json>

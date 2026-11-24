@@ -8,6 +8,7 @@ const props = defineProps<{
   icon?: string
 }>()
 
+const headingTag = inject('projectCardHeading', computed(() => 'h3'))
 const external = computed(() => /^https?:\/\//.test(props.href))
 </script>
 
@@ -19,7 +20,7 @@ const external = computed(() => /^https?:\/\//.test(props.href))
     >
       <img
         :src="image"
-        :alt="`${title} preview`"
+        alt=""
         loading="lazy"
       >
     </div>
@@ -34,7 +35,12 @@ const external = computed(() => /^https?:\/\//.test(props.href))
       <p class="eyebrow">
         {{ eyebrow }}
       </p>
-      <h3>{{ title }}</h3>
+      <component
+        :is="headingTag"
+        class="project-card__title"
+      >
+        {{ title }}
+      </component>
       <div class="project-card__description">
         <slot />
       </div>

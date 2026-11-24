@@ -41,9 +41,9 @@ onBeforeUnmount(() => resizeObserver?.disconnect())
     <div
       ref="scroller"
       class="table-scroll"
-      tabindex="0"
-      role="region"
-      :aria-label="t('docs.tableScroll')"
+      :tabindex="hasOverflow ? 0 : undefined"
+      :role="hasOverflow ? 'region' : undefined"
+      :aria-label="hasOverflow ? t('docs.tableScroll') : undefined"
       @scroll.passive="updateScrollState"
     >
       <table><slot /></table>

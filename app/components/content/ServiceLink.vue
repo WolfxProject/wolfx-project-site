@@ -8,10 +8,10 @@ defineProps<{ title: string, href: string, icon: string }>()
     class="service-link"
   >
     <UIcon :name="icon" />
-    <span>
+    <div class="service-link__copy">
       <strong>{{ title }}</strong>
-      <span><slot /></span>
-    </span>
+      <div><slot /></div>
+    </div>
     <UIcon name="i-lucide-arrow-right" />
   </NuxtLink>
 </template>

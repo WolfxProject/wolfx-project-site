@@ -4,10 +4,10 @@ description: "Minecraft 纯净原版生存服务器，地图永不重置，高�
 locale: zh
 availableLocales: [zh, ja, en]
 layout: mc
-updated: 2026-08-22
+updated: 2026-11-24
 ---
 
-::mc-hero{eyebrow="PURE VANILLA · NEVER RESET · FREE" title="来玩点轻松的生存吧 ☁️ — Wolfx Survival" copy-label="复制服务器地址" rules-label="查看规则" join-label="加入教程 / Join Guide" minecraft-label="获取 Minecraft" core-label="当前服务器核心" version-label="支持版本" since-label="持续开放自"}
+::mc-hero{eyebrow="原版生存 · 永不重置 · 免费游玩" title="来玩点轻松的生存吧 ☁️ — Wolfx Survival" copy-label="复制服务器地址" rules-label="查看规则" join-label="加入指南" minecraft-label="获取 Minecraft" core-label="当前服务器核心" version-label="支持版本" since-label="开服时间"}
 以原版生存为核心，尽量不改机制。高自由度、少限制，长期稳定运行，自 2019 年持续开放。
 ::
 
@@ -30,9 +30,9 @@ updated: 2026-08-22
 :::
 ::
 
-## 加入社群 / Community
+## 加入社群
 
 找队友、晒建筑、看公告、反馈问题，都在这里。
 
-::mc-community-links{discord-title="Discord" discord-description="推荐加入：公告 & 讨论更集中。" qq-title="QQ群" qq-description="国内交流方便，随时随地唠两句。" donate-title="捐助" donate-description="通过爱发电支持服务器。" plan-title="Plan" plan-description="查看 Wolfx Project Plan。"}
+::mc-community-links{discord-title="Discord" discord-description="推荐加入：查看公告，参与讨论。" qq-title="QQ群" qq-description="国内交流方便，随时随地唠两句。" donate-title="捐助" donate-description="通过爱发电支持服务器。" plan-title="Plan" plan-description="查看 Wolfx Project Plan。"}
 ::

@@ -86,6 +86,8 @@ test('all 24 content pages keep the mobile document flow inside the viewport', a
     expect(geometry.h1Left, `${route}: h1 left edge`).toBeGreaterThanOrEqual(8)
     expect(geometry.h1Right, `${route}: h1 right edge`).toBeLessThanOrEqual(382)
     expect(geometry.mainBottom, `${route}: footer overlap`).toBeLessThanOrEqual(geometry.footerTop + 1)
+    // Finish hydrating this document before navigating away from its static directory URL.
+    await expect(page.locator('.language-select select'), route).toBeEnabled()
   }
 })
 
@@ -122,6 +124,8 @@ test('header, hero, and breakpoint geometry stay stable across the device matrix
           controls,
           icons,
           h1: h1.toJSON(),
+          heroCopy: rect(document.querySelector('.hero-section__copy')),
+          heroWave: rect(document.querySelector('.hero-section__wave')),
           heroButtons,
           desktopNavVisible: getComputedStyle(document.querySelector('.desktop-nav')).display !== 'none',
           menuVisible: getComputedStyle(document.querySelector('.mobile-menu-button')).display !== 'none',
@@ -143,14 +147,21 @@ test('header, hero, and breakpoint geometry stay stable across the device matrix
       expect(geometry.heroButtons.every(button => button.left >= 0 && button.right <= viewport.width), `${viewport.name} ${route}: hero actions`).toBeTruthy()
 
       if (viewport.width <= 1000) {
+        expect(geometry.heroWave.width, `${viewport.name} ${route}: hidden decorative wave`).toBe(0)
         expect(geometry.controls, `${viewport.name} ${route}: five header controls`).toHaveLength(5)
         expect(geometry.desktopNavVisible, `${viewport.name} ${route}: desktop navigation`).toBeFalsy()
         expect(geometry.menuVisible, `${viewport.name} ${route}: menu button`).toBeTruthy()
       }
       else {
+        expect(geometry.heroWave.width, `${viewport.name} ${route}: visible decorative wave`).toBeGreaterThan(0)
+        expect(geometry.heroWave.left, `${viewport.name} ${route}: wave clear of hero copy`).toBeGreaterThan(geometry.heroCopy.right)
+        expect(geometry.heroWave.right, `${viewport.name} ${route}: wave in viewport`).toBeLessThanOrEqual(viewport.width)
         expect(geometry.desktopNavVisible, `${viewport.name} ${route}: desktop navigation`).toBeTruthy()
         expect(geometry.menuVisible, `${viewport.name} ${route}: menu button`).toBeFalsy()
       }
+
+      // Measure the static layout first, then let the router finish mounting before the next visit.
+      await expect(page.locator('.language-select select'), `${viewport.name} ${route}`).toBeEnabled()
     }
   }
 })
@@ -164,7 +175,10 @@ test('mobile navigation and search trap interaction inside the visual viewport',
   const menu = page.locator('.mobile-navigation')
   await expect(menu).toBeVisible()
   await expect(menu.locator('[data-mobile-nav-close]')).toBeFocused()
-  await expect(page.locator('html')).toHaveClass(/has-modal-open/)
+  await page.keyboard.press('/')
+  await expect(page.locator('dialog[open]')).toHaveCount(1)
+  await expect(page.locator('.search-dialog')).toBeHidden()
+  await expect(page.locator('html')).toHaveCSS('overflow', 'hidden')
   const menuBox = await menu.boundingBox()
   const menuPanelBox = await menu.locator('.mobile-navigation__panel').boundingBox()
   expect(menuBox).toMatchObject({ x: 0, y: 0, width: 390, height: 844 })
@@ -174,14 +188,14 @@ test('mobile navigation and search trap interaction inside the visual viewport',
   await page.keyboard.press('Escape')
   await expect(menu).toBeHidden()
   await expect(menuButton).toBeFocused()
-  await expect(page.locator('html')).not.toHaveClass(/has-modal-open/)
+  await expect(page.locator('html')).not.toHaveCSS('overflow', 'hidden')
 
   const searchButton = page.locator('.search-trigger')
   await searchButton.click()
   const search = page.locator('.search-dialog')
   const searchPanel = search.locator('.search-panel')
   await expect(search.locator('input')).toBeFocused()
-  await expect(page.locator('html')).toHaveClass(/has-modal-open/)
+  await expect(page.locator('html')).toHaveCSS('overflow', 'hidden')
   const searchBox = await searchPanel.boundingBox()
   expect(searchBox.y).toBeGreaterThanOrEqual(0)
   expect(searchBox.x).toBeGreaterThanOrEqual(0)
@@ -190,7 +204,7 @@ test('mobile navigation and search trap interaction inside the visual viewport',
   expect(await search.locator('input').evaluate(element => Number.parseFloat(getComputedStyle(element).fontSize))).toBeGreaterThanOrEqual(16)
   await search.getByRole('button').click()
   await expect(searchButton).toBeFocused()
-  await expect(page.locator('html')).not.toHaveClass(/has-modal-open/)
+  await expect(page.locator('html')).not.toHaveCSS('overflow', 'hidden')
 })
 
 test('tables, code, endpoints, anchors, and floating controls contain their own overflow', async ({ page }) => {
@@ -249,14 +263,6 @@ test('tables, code, endpoints, anchors, and floating controls contain their own 
     expect(endpointStyle.textOverflow).not.toBe('ellipsis')
   }
 
-  const firstAnchor = page.locator('.anchored-heading > a').first()
-  await firstAnchor.click()
-  const anchorGeometry = await firstAnchor.locator('..').evaluate(element => ({
-    top: element.getBoundingClientRect().top,
-    headerBottom: document.querySelector('.site-header').getBoundingClientRect().bottom,
-  }))
-  expect(anchorGeometry.top).toBeGreaterThanOrEqual(anchorGeometry.headerBottom)
-
   await page.evaluate(() => window.scrollTo(0, 1200))
   const backToTop = page.locator('.back-to-top')
   await expect(backToTop).toBeVisible()
@@ -264,8 +270,20 @@ test('tables, code, endpoints, anchors, and floating controls contain their own 
   expect(floatingBox.x).toBeGreaterThanOrEqual(0)
   expect(floatingBox.x + floatingBox.width).toBeLessThanOrEqual(390)
   expect(floatingBox.y + floatingBox.height).toBeLessThanOrEqual(844)
+  await backToTop.click()
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0)
   await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight))
   await expect(backToTop).toBeHidden()
+
+  const firstAnchor = page.locator('.anchored-heading > a').first()
+  await firstAnchor.click()
+  const fragment = await firstAnchor.getAttribute('href')
+  await expect.poll(() => decodeURIComponent(new URL(page.url()).hash)).toBe(fragment)
+  await expect.poll(() => firstAnchor.locator('..').evaluate((heading) => {
+    const target = heading.getBoundingClientRect()
+    const header = document.querySelector('.site-header').getBoundingClientRect()
+    return target.top >= header.bottom && target.bottom <= innerHeight
+  })).toBe(true)
   expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(1)
 })
 
@@ -273,8 +291,71 @@ test('404 and missing routes preserve mobile-safe layout', async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 667 })
   for (const route of ['/404.html', '/this-route-does-not-exist']) {
     const response = await page.goto(route, { waitUntil: 'domcontentloaded' })
-    expect([200, 404]).toContain(response?.status())
+    if (route === '/404.html')
+      expect([200, 404]).toContain(response?.status())
+    else
+      expect(response?.status()).toBe(404)
     await expect(page.locator('h1')).toHaveCount(1)
     expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth), route).toBeLessThanOrEqual(1)
   }
+})
+
+test('keyboard readers can skip navigation and open a mobile table of contents', async ({ page }) => {
+  await page.goto('/en/docs/seisjs-api', { waitUntil: 'networkidle' })
+  await page.keyboard.press('Tab')
+  const skip = page.getByRole('link', { name: 'Skip to main content' })
+  await expect(skip).toBeFocused()
+  await skip.press('Enter')
+  await expect(page.locator('main')).toBeFocused()
+
+  for (const path of ['/en/docs/seisjs-api', '/en/legal/privacy']) {
+    await page.goto(path, { waitUntil: 'networkidle' })
+    const toc = page.getByRole('navigation', { name: 'On this page', exact: true })
+    const links = toc.locator('a')
+    await expect(links.first()).toBeHidden()
+    await toc.locator('summary').click()
+    const fragment = await links.last().getAttribute('href')
+    await links.last().click()
+    expect(decodeURIComponent(new URL(page.url()).hash)).toBe(fragment)
+    await expect.poll(() => page.evaluate((id) => {
+      const heading = document.getElementById(id)?.getBoundingClientRect()
+      return heading && heading.top >= 0 && heading.top < innerHeight
+    }, fragment.slice(1))).toBeTruthy()
+  }
+})
+
+test.describe('without JavaScript', () => {
+  test.use({ javaScriptEnabled: false })
+
+  test('the static 404 links to each localized home page', async ({ page }) => {
+    for (const [language, home] of [['ja-JP', '/'], ['zh-CN', '/zh/'], ['en-US', '/en/']]) {
+      await page.goto('/404.html')
+      await expect(page.getByRole('heading', { level: 1 })).toHaveText('404')
+      const section = page.locator(`main section[lang="${language}"]`)
+      await expect(section.getByRole('heading')).toBeVisible()
+      const link = section.getByRole('link')
+      await expect(link).toHaveAttribute('href', home)
+      await link.click()
+      await expect(page.locator('html')).toHaveAttribute('lang', language)
+    }
+  })
+
+  test('mobile visitors can read, change language, and follow ordinary navigation', async ({ page }) => {
+    await page.goto('/mc')
+    await expect(page.locator('html')).toHaveAttribute('lang', 'zh-CN')
+    await expect(page.locator('.mc-server-status')).toBeHidden()
+    await expect(page.locator('.mc-hero .static-status')).toContainText('JavaScript')
+    await expect(page.locator('.mc-hero .static-status')).toBeVisible()
+    await page.locator('.language-links a[hreflang="en-US"]').click()
+    await expect(page).toHaveURL(/\/en\/mc\/?$/)
+    await expect(page.locator('html')).toHaveAttribute('lang', 'en-US')
+    const docs = page.locator('.desktop-nav a[href="/en/docs/open-api"]')
+    await expect(docs).toBeVisible()
+    await docs.click()
+    await expect(page.locator('.api-status-panel .static-status')).toBeVisible()
+    await expect(page.locator('.api-status-panel__summary')).toBeHidden()
+    await page.locator('.docs-toc--compact summary').click()
+    await expect(page.locator('.docs-toc--compact a').first()).toBeVisible()
+    expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1)
+  })
 })

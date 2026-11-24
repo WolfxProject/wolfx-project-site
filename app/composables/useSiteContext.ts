@@ -2,7 +2,7 @@ import type { WolfxLocale } from '~/types/site'
 
 export function useSiteContext() {
   const route = useRoute()
-  const { locale } = useI18n()
+  const { t } = useI18n()
   const { localize, unlocalize } = usePublicPath()
 
   const isWolfxMc = computed(() => {
@@ -11,22 +11,24 @@ export function useSiteContext() {
   })
 
   const displayLocale = computed<WolfxLocale>(() => {
-    if (!isWolfxMc.value)
-      return locale.value as WolfxLocale
-    if (/^\/ja(?:\/|$)/.test(route.path))
-      return 'ja'
-    if (/^\/en(?:\/|$)/.test(route.path))
-      return 'en'
-    return 'zh'
+    const prefix = route.path.split('/')[1]
+    if (prefix === 'ja' || prefix === 'zh' || prefix === 'en')
+      return prefix
+    return isWolfxMc.value ? 'zh' : 'ja'
   })
 
   function sitePath(path: string) {
     return localize(path, displayLocale.value)
   }
 
+  function tr(key: string, values: Record<string, string | number> = {}) {
+    return t(key, values, { locale: displayLocale.value })
+  }
+
   return {
     displayLocale,
     isWolfxMc,
     sitePath,
+    tr,
   }
 }

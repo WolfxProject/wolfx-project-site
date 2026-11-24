@@ -1,99 +1,97 @@
 <!doctype html>
-<html>
+<html lang="zh-CN">
   <head>
     <meta charset="utf-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>气象站数据</title>
-    <link href="ui.css" rel="stylesheet" />
-    <script defer src="https://r2.wolfx.jp/js/jquery/3.7.1.min.js"></script>
-    <script defer src="https://wolfx.jp/geiger/main.js"></script>
+    <link href="/geiger/ui.css" rel="stylesheet" />
+    <script defer src="/geiger/main.js"></script>
   </head>
 
   <body>
     <div id="main">
       <div id="weather">
         <div class="blacktext temperature">
-          <img src="https://wolfx.jp/geiger/img/temperature.png" />温度
+          <img alt="" src="/geiger/img/temperature.png" />温度
         </div>
         <div id="tempcolor"></div>
-        <div><span id="temp">0.0</span>℃</div>
+        <div><span id="temp">--</span>℃</div>
         <div class="blacktext humidity">
-          <img src="https://wolfx.jp/geiger/img/humidity.png" />湿度
+          <img alt="" src="/geiger/img/humidity.png" />湿度
         </div>
         <div id="humcolor"></div>
-        <div><span id="hum">0</span>%</div>
+        <div><span id="hum">--</span>%</div>
         <div class="blacktext pressure">
-          <img
-            src="https://wolfx.jp/geiger/img/pressure.png"
+          <img alt=""
+            src="/geiger/img/pressure.png"
             style="transform: scale(0.7) translateY(1px)"
           />气压
         </div>
         <div id="atomcolor"></div>
-        <div><span id="atom">0.0</span>hPa</div>
+        <div><span id="atom">--</span>hPa</div>
       </div>
 
       <div id="air">
         <div class="blacktext pm25">
-          <img
-            src="https://wolfx.jp/geiger/img/pm2.5.png"
+          <img alt=""
+            src="/geiger/img/pm2.5.png"
             style="transform: scale(0.8) translateY(2px)"
           />PM2.5
         </div>
         <div id="pm25color"></div>
-        <div><span id="pm25">0.0</span>μg/m³</div>
+        <div><span id="pm25">--</span>μg/m³</div>
         <div style="margin-top: 0; position: absolute; left: 173px">
           <div class="blacktext pm10">
-            <img
-              src="https://wolfx.jp/geiger/img/pm10.png"
+            <img alt=""
+              src="/geiger/img/pm10.png"
               style="transform: scale(0.8) translateY(2px)"
             />PM10
           </div>
           <div id="pm10color"></div>
-          <div><span id="pm10">0.0</span>μg/m³</div>
+          <div><span id="pm10">--</span>μg/m³</div>
         </div>
       </div>
 
       <div id="radiation">
         <div class="blacktext radiation">
-          <img
-            src="https://wolfx.jp/geiger/img/radiation.png"
+          <img alt=""
+            src="/geiger/img/radiation.png"
             style="transform: scale(0.8) translateY(2px)"
           />电离辐射
         </div>
         <div id="radcolor"></div>
-        <div><span id="rad">0.00μSv/h</span></div>
+        <div><span id="rad">--</span></div>
         <div style="margin-top: 0; position: absolute; left: 169px">
           <div class="blacktext radiationavg">
-            <img
-              src="https://wolfx.jp/geiger/img/radiation.png"
+            <img alt=""
+              src="/geiger/img/radiation.png"
               style="transform: scale(0.8) translateY(2px)"
             />平均值
           </div>
           <div id="radavgcolor"></div>
-          <div><span id="radavg">0.00μSv/h</span></div>
+          <div><span id="radavg">--</span></div>
         </div>
       </div>
 
       <div id="seisair">
         <div class="blacktext c1">
-          <img src="https://wolfx.jp/geiger/img/temperature.png" />测温
+          <img alt="" src="/geiger/img/temperature.png" />测温
         </div>
         <div id="c1color"></div>
-        <div><span id="c1">0.0</span>℃</div>
+        <div><span id="c1">--</span>℃</div>
         <div class="blacktext c2">
-          <img src="https://wolfx.jp/geiger/img/humidity.png" />测湿
+          <img alt="" src="/geiger/img/humidity.png" />测湿
         </div>
         <div id="c2color"></div>
-        <div><span id="c2">0.0</span>%</div>
+        <div><span id="c2">--</span>%</div>
         <div class="blacktext c3">
-          <img
-            src="https://wolfx.jp/geiger/img/pressure.png"
+          <img alt=""
+            src="/geiger/img/pressure.png"
             style="transform: scale(0.7) translateY(2px)"
           />测压
         </div>
         <div id="c3color"></div>
-        <div><span id="c3">0.0</span>hPa</div>
+        <div><span id="c3">--</span>hPa</div>
       </div>
     </div>
   </body>

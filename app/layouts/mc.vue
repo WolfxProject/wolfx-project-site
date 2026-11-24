@@ -11,7 +11,10 @@ defineProps<{
   <div class="site-shell mc-layout">
     <SiteHeader />
     <McNavigation />
-    <main>
+    <main
+      id="main-content"
+      tabindex="-1"
+    >
       <div
         v-if="isFallback"
         class="fallback-banner"

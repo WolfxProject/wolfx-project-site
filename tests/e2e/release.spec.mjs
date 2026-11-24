@@ -202,23 +202,23 @@ test('API Status renders localized live data and accessible charts in all langua
     {
       route: '/docs/open-api/',
       heading: 'API ステータス',
-      clients: 'アクティブな WebSocket クライアント',
+      clients: '接続中の WebSocket クライアント数',
       updated: 'データ更新日時',
-      alts: ['Nginx リクエスト — 日間', 'Nginx リクエスト — 週間', 'ネットワークトラフィック — 日間', 'ネットワークトラフィック — 週間'],
+      alts: ['Nginx のリクエスト数 — 日次', 'Nginx のリクエスト数 — 週次', 'ネットワークトラフィック — 日次', 'ネットワークトラフィック — 週次'],
     },
     {
       route: '/zh/docs/open-api/',
       heading: 'API 状态',
-      clients: '活跃 WebSocket 客户端',
+      clients: '当前连接的 WebSocket 客户端数',
       updated: '数据更新时间',
-      alts: ['Nginx 请求量 — 每日', 'Nginx 请求量 — 每周', '网络流量 — 每日', '网络流量 — 每周'],
+      alts: ['Nginx 请求量 — 日图', 'Nginx 请求量 — 周图', '网络流量 — 日图', '网络流量 — 周图'],
     },
     {
       route: '/en/docs/open-api/',
       heading: 'API Status',
-      clients: 'Active WebSocket clients',
-      updated: 'Count data updated at',
-      alts: ['Nginx Requests — Daily', 'Nginx Requests — Weekly', 'Network Traffic — Daily', 'Network Traffic — Weekly'],
+      clients: 'Connected WebSocket clients',
+      updated: 'Client count updated',
+      alts: ['Nginx requests — Daily', 'Nginx requests — Weekly', 'Network traffic — Daily', 'Network traffic — Weekly'],
     },
   ]
 
@@ -372,6 +372,7 @@ test('static search works in Japanese, Chinese, and English after navigation and
     await expect(input).toHaveAttribute('aria-activedescendant', /^search-result-\d+$/)
     await input.press('ArrowUp')
     await expect(input).toHaveAttribute('aria-activedescendant', 'search-result-0')
+    await expect(page.getByRole('listbox').getByRole('option', { selected: true })).toHaveAttribute('id', 'search-result-0')
     await firstResult.click()
     await expect.poll(() => new URL(page.url()).pathname.replace(/\/$/, '')).toBe(firstPath.replace(/\/$/, ''))
     await page.reload({ waitUntil: 'networkidle' })
@@ -380,6 +381,33 @@ test('static search works in Japanese, Chinese, and English after navigation and
     await expect(page.locator('.search-dialog input[role="combobox"]')).toBeFocused()
     await page.getByRole('button', { name: /閉じる|关闭|Close/ }).click()
   }
+})
+
+test('search retries a failed index request and reuses the index after navigation', async ({ page }) => {
+  let requests = 0
+  await page.route('**/search-index.json', async (route) => {
+    requests += 1
+    if (requests === 1)
+      await route.fulfill({ status: 503 })
+    else
+      await route.continue()
+  })
+  await page.goto('/en/projects', { waitUntil: 'networkidle' })
+  await page.keyboard.press('/')
+  await page.getByRole('button', { name: 'Try again' }).click()
+  const search = page.locator('.search-dialog')
+  const input = search.getByRole('combobox')
+  await input.fill('ＷｅｂＳｏｃｋｅｔ')
+  await expect(search.locator('a[href="/en/docs/websocket"]')).toBeVisible()
+  await input.dispatchEvent('keydown', { key: 'Enter', isComposing: true })
+  await expect(search).toBeVisible()
+  expect(new URL(page.url()).pathname.replace(/\/$/, '')).toBe('/en/projects')
+  await search.locator('a[href="/en/docs/websocket"]').click()
+  await expect(page).toHaveURL(/\/en\/docs\/websocket\/?$/)
+  await page.locator('.search-trigger').click()
+  await input.fill('jma_eew')
+  await expect(search.locator('a[href="/en/docs/open-api"]')).toBeVisible()
+  expect(requests).toBe(2)
 })
 
 test('Donate pages preserve addresses, copy with localized feedback, and expose a safe Afdian link', async ({ page }) => {
@@ -396,7 +424,7 @@ test('Donate pages preserve addresses, copy with localized feedback, and expose 
   const cases = [
     { route: '/donate', title: 'Wolfx Project への寄付', copied: 'コピーしました' },
     { route: '/zh/donate', title: '支持 Wolfx Project', copied: '已复制' },
-    { route: '/en/donate', title: 'Wolfx Donate', copied: 'Copied' },
+    { route: '/en/donate', title: 'Donate to Wolfx Project', copied: 'Copied' },
   ]
 
   for (const item of cases) {
@@ -509,7 +537,7 @@ test('hero, Markdown, component, document, and legal headings keep separate scal
   const donateSizes = await page.evaluate(() => ({
     hero: Number.parseFloat(getComputedStyle(document.querySelector('.page-intro h1')).fontSize),
     section: Number.parseFloat(getComputedStyle(document.querySelector('.content-prose > h2')).fontSize),
-    component: Number.parseFloat(getComputedStyle(document.querySelector('.donation-address__heading h2')).fontSize),
+    component: Number.parseFloat(getComputedStyle(document.querySelector('.donation-address__heading h3')).fontSize),
   }))
   expect(donateSizes.section).toBeLessThan(donateSizes.hero * 0.65)
   expect(donateSizes.component).toBeLessThan(donateSizes.section)
@@ -524,7 +552,7 @@ test('hero, Markdown, component, document, and legal headings keep separate scal
   await page.goto('/projects')
   const projectSizes = await page.evaluate(() => ({
     page: Number.parseFloat(getComputedStyle(document.querySelector('.page-intro h1')).fontSize),
-    component: Number.parseFloat(getComputedStyle(document.querySelector('.project-card h3')).fontSize),
+    component: Number.parseFloat(getComputedStyle(document.querySelector('.project-card__title')).fontSize),
   }))
   expect(projectSizes.component).toBeLessThan(projectSizes.page * 0.6)
 
@@ -559,6 +587,17 @@ for (const viewport of viewports) {
       await page.goto(route)
       const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)
       expect(overflow, route).toBeLessThanOrEqual(1)
+      if (route === '/' && viewport.width < 768) {
+        const menu = page.locator('.mobile-menu-button')
+        await expect(menu).toBeVisible()
+        await menu.click()
+        await expect(page.locator('#mobile-navigation')).toBeVisible()
+      }
+      if (route === '/404.html') {
+        await expect(page.getByRole('heading', { level: 1 })).toHaveText('404')
+        for (const home of ['/', '/zh/', '/en/'])
+          await expect(page.locator(`main a[href="${home}"]`)).toBeVisible()
+      }
       if (route === '/donate') {
         const geometry = await page.evaluate(() => {
           const reading = document.querySelector('.content-section--reading').getBoundingClientRect()
@@ -577,13 +616,6 @@ for (const viewport of viewports) {
         expect(geometry.sectionSize, `${viewport.width}: Donate title scale`).toBeLessThan(geometry.heroSize * 0.65)
       }
     }
-
-    if (viewport.width < 768) {
-      const menu = page.locator('.mobile-menu-button')
-      await expect(menu).toBeVisible()
-      await menu.click()
-      await expect(page.locator('#mobile-navigation')).toBeVisible()
-    }
   })
 }
 
@@ -598,10 +630,22 @@ test('explicit light and dark themes remain legible and persisted', async ({ pag
     await expect(page.locator('html')).toHaveClass(new RegExp(`(^|\\s)${theme}(\\s|$)`))
     await page.reload()
     await expect(page.locator('html')).toHaveClass(new RegExp(`(^|\\s)${theme}(\\s|$)`))
-    const colors = await page.locator('body').evaluate((element) => {
-      const style = getComputedStyle(element)
-      return { color: style.color, background: style.backgroundColor }
+    const contrast = await page.locator('.hero-section__actions a').first().evaluate((button) => {
+      const style = getComputedStyle(button)
+      const context = document.createElement('canvas').getContext('2d')
+      function luminance(color) {
+        context.fillStyle = color
+        context.fillRect(0, 0, 1, 1)
+        const channels = context.getImageData(0, 0, 1, 1).data.slice(0, 3)
+        return Array.from(channels).reduce((sum, channel, index) => {
+          const value = channel / 255
+          const linear = value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4
+          return sum + linear * [0.2126, 0.7152, 0.0722][index]
+        }, 0)
+      }
+      const [darker, lighter] = [luminance(style.color), luminance(style.backgroundColor)].sort((a, b) => a - b)
+      return (lighter + 0.05) / (darker + 0.05)
     })
-    expect(colors.color).not.toBe(colors.background)
+    expect(contrast, theme).toBeGreaterThanOrEqual(4.5)
   }
 })

@@ -55,7 +55,7 @@ Second offense: Permanent ban from official PVP areas
 
 ### 5. Copying or stealing map artworks without permission
 
-Map artworks belong to their original creators. Copying, reproducing, or stealing them without permission is prohibited.
+The owner of the plot where the original map artwork is located holds the rights to that artwork. Copying, reproducing, or stealing it without permission is prohibited.
 
 ::content-notice{type="danger" title="Penalty"}
 Confiscation of all copied artworks and related gains

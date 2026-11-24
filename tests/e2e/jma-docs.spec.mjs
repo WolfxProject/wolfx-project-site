@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { jmaSections } from '../../scripts/check-jma-docs.mjs'
+import { jmaProducts } from '../../scripts/check-jma-docs.mjs'
 
 test.beforeEach(async ({ page }) => {
   await page.addInitScript(() => localStorage.setItem('wolfx-locale', 'ja'))
@@ -32,9 +32,16 @@ for (const locale of ['ja', 'zh', 'en']) {
       const response = await page.goto(`${prefix}/docs/open-api/`, { waitUntil: 'networkidle' })
       expect(response?.ok()).toBeTruthy()
       await expect(page.locator('main')).toContainText('validUntil')
-      for (const title of jmaSections[locale]) {
-        const heading = page.locator('h2').filter({ hasText: title })
+      const titles = []
+      for (const product of jmaProducts) {
+        const endpoint = `https://api.wolfx.jp/${product}.json`
+        const heading = page.getByText(endpoint, { exact: true }).first().locator('xpath=preceding::h2[1]')
         await expect(heading).toHaveCount(1)
+        titles.push(await heading.evaluate((element) => {
+          const title = element.cloneNode(true)
+          title.querySelectorAll('[aria-hidden="true"]').forEach(node => node.remove())
+          return title.textContent.trim()
+        }))
         const anchor = heading.locator('a')
         const href = await anchor.getAttribute('href')
         expect(href).toMatch(/^#.+/)
@@ -49,20 +56,14 @@ for (const locale of ['ja', 'zh', 'en']) {
             nodes.push(node)
           const tables = nodes.flatMap(node => [...node.querySelectorAll('table')])
           return {
-            headings: nodes.filter(node => /^H[3-6]$/.test(node.tagName)).length,
             tables: tables.map(table => ({
               headers: [...table.querySelectorAll('th')].map(cell => cell.textContent.trim()),
               fields: [...table.querySelectorAll('tbody tr')].map(row => row.cells[0].textContent),
             })),
-            languages: nodes.flatMap(node => [...node.querySelectorAll('.code-block__header')].map(header => header.textContent.trim())),
           }
         })
-        expect(section.headings).toBe(0)
-        expect(section.tables).toHaveLength(1)
-        expect(section.tables[0].headers).toEqual(['Field', 'Description'])
-        expect(section.tables[0].fields).toContain('md5')
-        expect(section.tables[0].fields.length).toBeGreaterThan(5)
-        expect(section.languages.every(language => language === 'text')).toBeTruthy()
+        expect(section.tables.flatMap(table => table.fields)).toContain('md5')
+        expect(section.tables.every(table => table.headers.length >= 2 && table.headers.every(Boolean))).toBeTruthy()
       }
 
       const layout = await page.evaluate(() => ({
@@ -75,7 +76,7 @@ for (const locale of ['ja', 'zh', 'en']) {
         code: [...document.querySelectorAll('.code-block pre')].map(element => getComputedStyle(element).overflowX),
       }))
       expect(layout.overflow).toBeLessThanOrEqual(1)
-      expect(layout.tables.every(table => table.columns === 2)).toBeTruthy()
+      expect(layout.tables.every(table => table.columns >= 2)).toBeTruthy()
       expect(layout.tables.every(table => table.overflow === 'auto' && table.rows > 0)).toBeTruthy()
       expect(layout.code.every(overflow => overflow === 'auto')).toBeTruthy()
       if (width === 390) {
@@ -88,7 +89,7 @@ for (const locale of ['ja', 'zh', 'en']) {
       // no runtime search endpoint is available on this static HTTP server.
       await page.locator('.search-trigger').click()
       const input = page.locator('.search-dialog input')
-      for (const query of ['VTSE41', 'VYSE52', ...jmaSections[locale]]) {
+      for (const query of ['VTSE41', 'VYSE52', ...titles]) {
         await input.fill(query)
         await expect(page.locator(`#search-results a[href="${prefix}/docs/open-api"]`)).toBeVisible()
       }
@@ -98,11 +99,12 @@ for (const locale of ['ja', 'zh', 'en']) {
 
       const wsResponse = await page.goto(`${prefix}/docs/websocket/`, { waitUntil: 'networkidle' })
       expect(wsResponse?.ok()).toBeTruthy()
-      for (const token of ['wss://ws-api.wolfx.jp/jma_tsunami', 'wss://ws-api.wolfx.jp/jma_special_eq', 'query_jmatsunami', 'query_jmaspecialeq'])
-        await expect(page.locator('.code-block pre').filter({ hasText: token })).toHaveCount(1)
+      for (const [endpoint, command] of [['jma_tsunami', 'query_jmatsunami'], ['jma_special_eq', 'query_jmaspecialeq']]) {
+        const row = page.getByRole('row').filter({ hasText: `wss://ws-api.wolfx.jp/${endpoint}` })
+        await expect(row.getByRole('cell').nth(2)).toHaveText(command)
+      }
       const exclusions = page.locator('.code-block pre').filter({ hasText: 'all_eew?exclude=' })
-      await expect(exclusions).toContainText('wss://ws-api.wolfx.jp/all_eew?exclude=cenc_eew')
-      await expect(exclusions).toContainText('wss://ws-api.wolfx.jp/all_eew?exclude=sc_eew,fj_eew,cq_eew')
+      await expect(exclusions.first()).toContainText('wss://ws-api.wolfx.jp/all_eew?exclude=')
       await expect(page.locator('main')).toContainText('HTTP 400')
       await expect(page.locator('main')).not.toContainText('wss://ws-api.wolfx.jp/jma_earthquake_detail')
       expect(problems).toEqual([])

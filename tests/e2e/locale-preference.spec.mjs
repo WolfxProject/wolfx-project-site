@@ -29,60 +29,20 @@ async function expectStablePath(page, path) {
 
 const mainSiteCases = [
   {
-    name: 'Japanese browser keeps the unprefixed home page',
-    languages: ['ja-JP'],
-    language: 'ja-JP',
+    name: 'a first visit uses the Japanese unprefixed main site',
+    languages: ['en-US', 'zh-CN'],
+    language: 'en-US',
     storedLocale: null,
     route: '/',
     expected: '/',
   },
   {
-    name: 'Chinese browser selects the Chinese home page',
+    name: 'an unprefixed deep link stays in Japanese',
     languages: ['zh-CN'],
     language: 'zh-CN',
     storedLocale: null,
-    route: '/',
-    expected: '/zh/',
-  },
-  {
-    name: 'English browser selects the English home page',
-    languages: ['en-US'],
-    language: 'en-US',
-    storedLocale: null,
-    route: '/',
-    expected: '/en/',
-  },
-  {
-    name: 'navigator.languages uses the first supported language',
-    languages: ['fr-FR', 'zh-CN', 'en-US'],
-    language: 'fr-FR',
-    storedLocale: null,
-    route: '/',
-    expected: '/zh/',
-  },
-  {
-    name: 'navigator.languages can fall through to English',
-    languages: ['fr-FR', 'en-US'],
-    language: 'fr-FR',
-    storedLocale: null,
-    route: '/',
-    expected: '/en/',
-  },
-  {
-    name: 'unsupported browser languages fall back to Japanese',
-    languages: ['ko-KR'],
-    language: 'en-US',
-    storedLocale: null,
-    route: '/',
-    expected: '/',
-  },
-  {
-    name: 'navigator.language is used when navigator.languages is empty',
-    languages: [],
-    language: 'zh-SG',
-    storedLocale: null,
-    route: '/',
-    expected: '/zh/',
+    route: '/projects',
+    expected: '/projects',
   },
   {
     name: 'stored English overrides a Chinese browser',
@@ -117,14 +77,20 @@ const mainSiteCases = [
     expected: '/zh/projects',
   },
   {
-    name: 'an invalid stored locale falls back to browser detection',
+    name: 'an invalid stored locale preserves the requested page',
     languages: ['zh-Hans-CN'],
     language: 'zh-Hans-CN',
     storedLocale: 'abc',
     route: '/',
-    expected: '/zh/',
+    expected: '/',
   },
 ]
+
+test.beforeEach(async ({ page }) => {
+  await page.route('https://mcapi.us/server/status?*', route => route.fulfill({
+    json: { status: 'success', online: false },
+  }))
+})
 
 for (const scenario of mainSiteCases) {
   test(scenario.name, async ({ page }) => {
@@ -154,8 +120,8 @@ for (const scenario of mainSiteCases) {
 
 const wolfxMcCases = [
   { name: 'Chinese browser keeps unprefixed WolfxMC', languages: ['zh-CN'], language: 'zh-CN', storedLocale: null, route: '/mc', expected: '/mc' },
-  { name: 'Japanese browser localizes WolfxMC', languages: ['ja-JP'], language: 'ja-JP', storedLocale: null, route: '/mc', expected: '/ja/mc' },
-  { name: 'English browser localizes WolfxMC', languages: ['en-US'], language: 'en-US', storedLocale: null, route: '/mc', expected: '/en/mc' },
+  { name: 'Japanese browser reads unprefixed WolfxMC in Chinese', languages: ['ja-JP'], language: 'ja-JP', storedLocale: null, route: '/mc', expected: '/mc' },
+  { name: 'English browser reads unprefixed WolfxMC in Chinese', languages: ['en-US'], language: 'en-US', storedLocale: null, route: '/mc', expected: '/mc' },
   { name: 'stored English localizes a WolfxMC child route', languages: ['zh-CN'], language: 'zh-CN', storedLocale: 'en', route: '/mc/rules', expected: '/en/mc/rules' },
   { name: 'stored Japanese localizes WolfxMC', languages: ['zh-CN'], language: 'zh-CN', storedLocale: 'ja', route: '/mc', expected: '/ja/mc' },
   { name: 'stored Chinese keeps unprefixed WolfxMC', languages: ['en-US'], language: 'en-US', storedLocale: 'zh', route: '/mc', expected: '/mc' },
@@ -170,18 +136,18 @@ for (const scenario of wolfxMcCases) {
   })
 }
 
-test('automatic redirects preserve query and hash without persisting browser detection', async ({ page }) => {
+test('a saved preference preserves query and hash when opening a new document', async ({ page }) => {
   await configureLocale(page, {
     languages: ['en-GB'],
     language: 'en-GB',
-    storedLocale: null,
+    storedLocale: 'en',
   })
   await page.goto('/projects?foo=1#bar', { waitUntil: 'domcontentloaded' })
   await expect(page).toHaveURL(/\/en\/projects\/?\?foo=1#bar$/)
-  expect(await page.evaluate(() => localStorage.getItem('wolfx-locale'))).toBeNull()
+  expect(await page.evaluate(() => localStorage.getItem('wolfx-locale'))).toBe('en')
 })
 
-test('unavailable locale storage does not prevent browser detection', async ({ page }) => {
+test('unavailable locale storage preserves the default URL and language', async ({ page }) => {
   await configureLocale(page, {
     languages: ['en-US'],
     language: 'en-US',
@@ -196,7 +162,8 @@ test('unavailable locale storage does not prevent browser detection', async ({ p
     }
   })
   await page.goto('/', { waitUntil: 'domcontentloaded' })
-  await expectStablePath(page, '/en/')
+  await expectStablePath(page, '/')
+  await expect(page.locator('html')).toHaveAttribute('lang', 'ja-JP')
 })
 
 test('manual choices persist, preserve location details, and control later entries', async ({ page }) => {
@@ -259,4 +226,22 @@ test('language selection waits for hydration when locale messages are delayed', 
   finally {
     releaseMessages()
   }
+})
+
+test('a manual language change still works if the preference cannot be written', async ({ page }) => {
+  await configureLocale(page, { languages: ['en-US'], language: 'en-US', storedLocale: 'en' })
+  await page.goto('/en/projects', { waitUntil: 'networkidle' })
+  await page.evaluate(() => {
+    const setItem = Storage.prototype.setItem
+    Storage.prototype.setItem = function (key, value) {
+      if (key === 'wolfx-locale')
+        throw new DOMException('Storage unavailable', 'SecurityError')
+      return setItem.call(this, key, value)
+    }
+  })
+  await page.locator('.language-select select').selectOption('ja')
+  await expectStablePath(page, '/projects')
+  await expect(page.locator('html')).toHaveAttribute('lang', 'ja-JP')
+  await page.locator('.desktop-nav a[href="/donate"]').click()
+  await expectStablePath(page, '/donate')
 })

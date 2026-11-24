@@ -1,44 +1,23 @@
 <script setup lang="ts">
-import type { WolfxLocale } from '~/types/site'
-
 interface NavigationItem {
   label: string
   to: string
 }
 
-const props = defineProps<{
+defineProps<{
   navigation: NavigationItem[]
-  localeOverride?: WolfxLocale
 }>()
 
 const emit = defineEmits<{
   close: []
 }>()
 
-const { t } = useI18n()
+const { tr } = useSiteContext()
 const dialog = useTemplateRef<HTMLDialogElement>('dialog')
-let scrollPosition = 0
-
-function tr(key: string) {
-  return t(key, {}, { locale: props.localeOverride })
-}
-
-function lockPageScroll() {
-  scrollPosition = window.scrollY
-  document.documentElement.classList.add('has-modal-open')
-  document.body.classList.add('has-modal-open')
-}
-
-function unlockPageScroll() {
-  document.documentElement.classList.remove('has-modal-open')
-  document.body.classList.remove('has-modal-open')
-  window.scrollTo(0, scrollPosition)
-}
 
 async function open() {
   if (!dialog.value || dialog.value.open)
     return
-  lockPageScroll()
   dialog.value.showModal()
   await nextTick()
   dialog.value.querySelector<HTMLElement>('[data-mobile-nav-close]')?.focus()
@@ -53,16 +32,6 @@ function closeOnBackdrop(event: MouseEvent) {
     close()
 }
 
-function handleClose() {
-  unlockPageScroll()
-  emit('close')
-}
-
-onBeforeUnmount(() => {
-  if (import.meta.client && dialog.value?.open)
-    unlockPageScroll()
-})
-
 defineExpose({ open, close })
 </script>
 
@@ -72,7 +41,7 @@ defineExpose({ open, close })
     class="mobile-navigation"
     :aria-label="tr('nav.menu')"
     @click="closeOnBackdrop"
-    @close="handleClose"
+    @close="emit('close')"
   >
     <div class="mobile-navigation__panel">
       <div class="mobile-navigation__header">

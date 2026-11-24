@@ -6,7 +6,7 @@
       name="viewport"
       content="width=device-width, initial-scale=1, viewport-fit=cover"
     />
-    <title>STUN 泄露检测</title>
+    <title>WebRTC 公网 IP 暴露检测</title>
 
     <style>
       :root {
@@ -407,20 +407,19 @@
   </head>
 
   <body>
-    <div class="container">
-      <h1>STUN 泄露检测</h1>
+    <main class="container">
+      <h1>WebRTC 公网 IP 暴露检测</h1>
       <div class="subtitle">
-        对比正常 TCP/HTTPS 出口 GeoIP 与 WebRTC STUN 暴露 IP，检测是否存在国内
-        STUN 分流泄露。
+        比较 HTTPS 请求和各 STUN 服务器看到的公网 IP，检查 WebRTC 是否使用了不同的网络出口。
       </div>
 
       <div class="card action-card">
         <button id="startBtn">开始检测</button>
-        <div id="statusBox" class="status warn">尚未检测</div>
+        <div id="statusBox" role="status" class="status warn">尚未检测</div>
       </div>
 
       <div class="card">
-        <h2>TCP / HTTPS 正常出口</h2>
+        <h2>HTTPS 出口</h2>
 
         <div class="info-grid">
           <div class="row">
@@ -429,17 +428,17 @@
           </div>
 
           <div class="row">
-            <div class="label">TCP 出口 IP</div>
+            <div class="label">出口 IP 地址</div>
             <div class="value" id="tcpIp">-</div>
           </div>
 
           <div class="row">
-            <div class="label">TCP 出口位置</div>
+            <div class="label">IP 归属地</div>
             <div class="value" id="tcpLocation">-</div>
           </div>
 
           <div class="row">
-            <div class="label">TCP IP 类型</div>
+            <div class="label">地址类型</div>
             <div class="value" id="tcpIpType">-</div>
           </div>
         </div>
@@ -454,9 +453,9 @@
               <tr>
                 <th>类型</th>
                 <th>STUN 服务器</th>
-                <th>暴露 IP</th>
+                <th>公网 IP</th>
                 <th>GeoIP</th>
-                <th>与 TCP 是否一致</th>
+                <th>与 HTTPS 出口是否一致</th>
                 <th>判断</th>
               </tr>
             </thead>
@@ -474,7 +473,7 @@
       </div>
 
       <div class="card">
-        <h2>原始 ICE Candidate</h2>
+        <h2>原始 ICE 候选信息</h2>
         <pre id="rawCandidates">-</pre>
       </div>
 
@@ -482,44 +481,39 @@
         <h2>说明</h2>
         <div class="small">
           <p>
-            本页面通过 <code>https://api.wolfx.jp/geoip.php</code> 获取正常
-            TCP/HTTPS 出口。 然后分别使用国外 STUN 与国内 STUN 获取 WebRTC 暴露
-            IP。
+            点击“开始检测”后，浏览器会联系 Wolfx 的 GeoIP 服务和下列 STUN 服务商：Cloudflare、Google、MiWiFi、哔哩哔哩。GeoIP 用于查询公网 IP 的归属地。
           </p>
           <p>
-            本版使用“同协议族比较”：TCP 如果只拿到 IPv4，STUN 额外出现 IPv6
-            时，不会直接误判为泄露； 会显示为“IPv4 一致，另有 IPv6”或“额外
-            IPv6，需 IPv6 TCP 基准”。
+            IPv4 和 IPv6 分开比较。例如，HTTPS 只返回 IPv4 地址时，STUN 返回的 IPv6 地址会单独列出，供你判断。
           </p>
           <p>
-            若正常 TCP 出口不是中国大陆，并且国内 STUN 暴露出了同协议族、不同于
-            TCP 出口的 <code>CN</code> IP， 则判断为明显国内 STUN 泄露。
+            如果 HTTPS 出口位于中国大陆以外，而 MiWiFi 或哔哩哔哩看到另一个同类型、归属地为 <code>CN</code> 的地址，页面会提示可能存在分流。
           </p>
         </div>
       </div>
-    </div>
+    </main>
 
     <script>
       const GEOIP_API = "https://api.wolfx.jp/geoip.php";
 
       const STUN_TESTS = [
         {
-          type: "国外 STUN",
+          domestic: false,
           name: "Cloudflare",
           url: "stun:stun.cloudflare.com:3478",
         },
         {
-          type: "国外 STUN",
+          domestic: false,
           name: "Google",
           url: "stun:stun.l.google.com:19302",
         },
         {
-          type: "国内 STUN",
+          domestic: true,
           name: "MiWiFi",
           url: "stun:stun.miwifi.com:3478",
         },
         {
-          type: "国内 STUN",
+          domestic: true,
           name: "Bilibili Chat",
           url: "stun:stun.chat.bilibili.com:3478",
         },
@@ -543,9 +537,14 @@
       }
 
       function normalizeIp(ip) {
-        return String(ip || "")
-          .trim()
-          .toLowerCase();
+        const value = String(ip || "").trim().toLowerCase();
+        if (!value.includes(":")) return value;
+        // The URL parser serializes equivalent IPv6 spellings identically.
+        try {
+          return new URL(`http://[${value}]/`).hostname.slice(1, -1);
+        } catch {
+          return "";
+        }
       }
 
       function isIPv4(ip) {
@@ -577,108 +576,26 @@
         return "未知";
       }
 
-      /**
-       * 同协议族比较：
-       * TCP 只有 IPv4 时，STUN 额外 IPv6 不直接判泄露；
-       * TCP 只有 IPv6 时，STUN 额外 IPv4 也不直接判泄露。
-       */
-      function compareStunWithTcp(stunIps, tcpIps) {
-        const tcpList = Array.isArray(tcpIps) ? tcpIps : [tcpIps];
-
-        const tcpByFamily = {
-          ipv4: tcpList
-            .filter((ip) => getIpFamily(ip) === "ipv4")
-            .map(normalizeIp),
-          ipv6: tcpList
-            .filter((ip) => getIpFamily(ip) === "ipv6")
-            .map(normalizeIp),
-        };
-
-        const result = {
-          hasAnyStunIp: stunIps.length > 0,
-          matched: [],
-          mismatched: [],
-          extraWithoutTcpBaseline: [],
-        };
-
-        for (const ip of stunIps) {
-          const family = getIpFamily(ip);
-          const normalized = normalizeIp(ip);
-
-          if (family !== "ipv4" && family !== "ipv6") {
-            continue;
-          }
-
-          const tcpSameFamily = tcpByFamily[family] || [];
-
-          if (tcpSameFamily.length === 0) {
-            result.extraWithoutTcpBaseline.push(ip);
-          } else if (tcpSameFamily.includes(normalized)) {
-            result.matched.push(ip);
-          } else {
-            result.mismatched.push(ip);
-          }
-        }
-
-        result.allComparableSame =
-          result.hasAnyStunIp &&
-          result.mismatched.length === 0 &&
-          result.matched.length > 0;
-
-        result.hasComparableMismatch = result.mismatched.length > 0;
-
-        return result;
-      }
-
-      function isPrivateOrReservedIp(ip) {
+      function isPublicCandidate(ip) {
+        // Only submit publicly routable candidate addresses to GeoIP. In
+        // particular, a carrier's shared IPv4 address is not a public exit.
         if (isIPv4(ip)) {
-          const parts = ip.split(".").map(Number);
-          const [a, b] = parts;
-
-          if (a === 10) return true;
-          if (a === 127) return true;
-          if (a === 169 && b === 254) return true;
-          if (a === 172 && b >= 16 && b <= 31) return true;
-          if (a === 192 && b === 168) return true;
-          if (a === 0) return true;
-          if (a >= 224) return true;
-
-          return false;
+          const [a, b, c] = ip.split(".").map(Number);
+          return a > 0 && a < 224 && a !== 10 && a !== 127
+            && !(a === 100 && b >= 64 && b <= 127)
+            && !(a === 169 && b === 254)
+            && !(a === 172 && b >= 16 && b <= 31)
+            && !(a === 192 && (b === 168 || (b === 0 && (c === 0 || c === 2)) || (b === 88 && c === 99)))
+            && !(a === 198 && (b === 18 || b === 19 || (b === 51 && c === 100)))
+            && !(a === 203 && b === 0 && c === 113);
         }
-
-        const lower = normalizeIp(ip);
-
-        if (lower === "::1") return true;
-        if (lower.startsWith("fe80:")) return true;
-        if (lower.startsWith("fc") || lower.startsWith("fd")) return true;
-        if (lower.endsWith(".local")) return true;
-
-        return false;
-      }
-
-      function extractIpsFromCandidate(candidate) {
-        const ips = new Set();
-
-        const ipv4Regex =
-          /\b(?:(?:25[0-5]|2[0-4]\d|1?\d?\d)\.){3}(?:25[0-5]|2[0-4]\d|1?\d?\d)\b/g;
-        const ipv4Matches = candidate.match(ipv4Regex) || [];
-
-        for (const ip of ipv4Matches) {
-          ips.add(ip);
-        }
-
-        const parts = candidate.split(/\s+/);
-        for (const part of parts) {
-          if (
-            part.includes(":") &&
-            /^[0-9a-fA-F:.]+$/.test(part) &&
-            part.length >= 3
-          ) {
-            ips.add(part);
-          }
-        }
-
-        return [...ips];
+        // Global unicast (2000::/3), excluding special-purpose and
+        // documentation blocks. normalizeIp has already canonicalized it.
+        if (!isIPv6(ip)) return false;
+        const [prefix, subnet] = ip.split(":").map(part => parseInt(part || "0", 16));
+        return prefix >= 0x2000 && prefix <= 0x3fff
+          && !(prefix === 0x2001 && (subnet < 0x200 || subnet === 0xdb8))
+          && !(prefix === 0x3fff && subnet < 0x1000);
       }
 
       async function getGeoip(ip = "") {
@@ -691,6 +608,7 @@
         const res = await fetch(url.toString(), {
           cache: "no-store",
           mode: "cors",
+          signal: AbortSignal.timeout(7000),
         });
 
         const data = await res.json().catch(() => null);
@@ -701,6 +619,9 @@
           throw new Error(msg);
         }
 
+        if (!data || typeof data !== "object" || Array.isArray(data)) {
+          throw new Error("GeoIP API 返回了无效数据");
+        }
         return data;
       }
 
@@ -727,141 +648,85 @@
         return `${location}${code}`;
       }
 
+      // Only the server-reflexive candidate's address describes a STUN result.
+      // Host candidates and related addresses stay in the local diagnostic log.
       async function getStunIpsByServer(stunUrl) {
-        return new Promise(async (resolve) => {
-          const ips = new Set();
-          const rawCandidates = [];
-
-          const pc = new RTCPeerConnection({
-            iceServers: [
-              {
-                urls: stunUrl,
-              },
-            ],
-            iceCandidatePoolSize: 0,
+        let pc;
+        const ips = new Set();
+        const rawCandidates = [];
+        let timeout;
+        try {
+          pc = new RTCPeerConnection({ iceServers: [{ urls: stunUrl }] });
+          const deadline = new Promise((_, reject) => {
+            timeout = setTimeout(() => reject(new Error("STUN 请求超时")), 7000);
           });
-
-          pc.createDataChannel("stun-leak-test");
-
-          pc.onicecandidate = (event) => {
-            if (!event.candidate) return;
-
-            const candidate = event.candidate.candidate;
-            rawCandidates.push(candidate);
-
-            for (const ip of extractIpsFromCandidate(candidate)) {
-              if (!isPrivateOrReservedIp(ip)) {
+          const gathering = new Promise((resolve) => {
+            pc.onicecandidate = ({ candidate }) => {
+              if (!candidate) return resolve();
+              rawCandidates.push(candidate.candidate);
+              const ip = normalizeIp(candidate.address);
+              if (candidate.type === "srflx" && isPublicCandidate(ip)) {
                 ips.add(ip);
               }
-            }
+            };
+            pc.onicegatheringstatechange = () => {
+              if (pc.iceGatheringState === "complete") resolve();
+            };
+          });
+          pc.createDataChannel("stun-leak-test");
+          const negotiate = async () => {
+            await pc.setLocalDescription(await pc.createOffer());
+            await gathering;
           };
-
-          pc.onicegatheringstatechange = () => {
-            if (pc.iceGatheringState === "complete") {
-              pc.close();
-              resolve({
-                ips: [...ips],
-                rawCandidates,
-              });
-            }
-          };
-
-          try {
-            const offer = await pc.createOffer({
-              offerToReceiveAudio: false,
-              offerToReceiveVideo: false,
-            });
-
-            await pc.setLocalDescription(offer);
-          } catch (err) {
+          // The gathering deadline also bounds a stalled WebRTC negotiation.
+          await Promise.race([negotiate(), deadline]);
+          return { ips: [...ips], rawCandidates };
+        } catch (error) {
+          return { ips: [...ips], rawCandidates, error };
+        } finally {
+          clearTimeout(timeout);
+          if (pc) {
+            pc.onicecandidate = null;
+            pc.onicegatheringstatechange = null;
             pc.close();
-            resolve({
-              ips: [],
-              rawCandidates,
-              error: err,
-            });
-            return;
           }
+        }
+      }
 
-          setTimeout(() => {
-            pc.close();
-            resolve({
-              ips: [...ips],
-              rawCandidates,
-            });
-          }, 7000);
-        });
+      function geoLines(ipGeoList) {
+        return ipGeoList.map(({ ip, geo }) =>
+          escapeHtml(`${ip}: ${geo ? formatGeoip(geo) : "GeoIP 失败"}`)
+        ).join("<br>") || "-";
       }
 
       function tag(text, type) {
         return `<span class="tag tag-${type}">${escapeHtml(text)}</span>`;
       }
 
-      function analyzeOneResult(result, tcpIp, tcpCountry) {
-        const cmp = compareStunWithTcp(result.ips, [tcpIp]);
+      function analyzeOneResult(result, httpsIp, httpsCountry) {
+        const family = getIpFamily(httpsIp);
+        const comparable = result.ips.filter(ip => getIpFamily(ip) === family);
+        const mismatched = comparable.filter(ip => !sameIp(ip, httpsIp));
+        const extra = comparable.length < result.ips.length;
+        const domesticMismatch = result.domestic && httpsCountry && httpsCountry !== "CN" &&
+          result.ipGeoList.some(item => mismatched.includes(item.ip) && item.geo?.country_code === "CN");
 
-        const allSame = cmp.allComparableSame;
-        const anyDifferent = cmp.hasComparableMismatch;
-        const hasOnlyExtraIp =
-          result.ips.length > 0 &&
-          cmp.mismatched.length === 0 &&
-          cmp.matched.length === 0 &&
-          cmp.extraWithoutTcpBaseline.length > 0;
-
-        const cnDifferentIps = result.ipGeoList.filter((item) => {
-          const code = item.geo?.country_code;
-          const family = getIpFamily(item.ip);
-          const hasTcpSameFamily = [tcpIp].some(
-            (tcp) => getIpFamily(tcp) === family,
-          );
-
-          return code === "CN" && hasTcpSameFamily && !sameIp(item.ip, tcpIp);
-        });
-
-        const isDomesticStun = result.type.includes("国内");
-
-        let matchText = "-";
-
-        if (result.ips.length === 0) {
+        let matchText;
+        let verdict;
+        if (!result.ips.length) {
           matchText = tag("无 STUN 公网 IP", "warn");
-        } else if (allSame && cmp.extraWithoutTcpBaseline.length === 0) {
-          matchText = tag("一致", "ok");
-        } else if (allSame && cmp.extraWithoutTcpBaseline.length > 0) {
-          matchText = tag("同协议族一致，另有额外 IP", "warn");
-        } else if (hasOnlyExtraIp) {
-          matchText = tag("无同协议族基准", "warn");
-        } else {
+          verdict = tag(result.error ? "检测未完成" : "未检测到", "warn");
+        } else if (mismatched.length) {
           matchText = tag("不一致", "bad");
-        }
-
-        let verdict = "-";
-
-        if (result.ips.length === 0) {
-          verdict = tag("未检测到", "warn");
-        } else if (
-          isDomesticStun &&
-          tcpCountry !== "CN" &&
-          cnDifferentIps.length > 0
-        ) {
-          verdict = tag("国内 STUN 泄露", "bad");
-        } else if (anyDifferent) {
-          verdict = tag("STUN 出口不一致", "bad");
-        } else if (cmp.extraWithoutTcpBaseline.length > 0) {
-          verdict = tag("额外 IP，需对应 TCP 基准", "warn");
+          verdict = tag(domesticMismatch ? "可能经中国大陆出口分流" : "STUN 出口不一致", "bad");
+        } else if (extra) {
+          matchText = tag(comparable.length ? "同类型地址一致，另有其他地址" : "无同类型地址可比较", "warn");
+          verdict = tag("缺少同类型的 HTTPS 地址", "warn");
         } else {
-          verdict = tag("正常", "ok");
+          matchText = tag("一致", "ok");
+          verdict = tag(result.error ? "检测未完成" : "出口一致", result.error ? "warn" : "ok");
         }
-
-        return {
-          cmp,
-          allSame,
-          anyDifferent,
-          hasOnlyExtraIp,
-          cnDifferentIps,
-          isDomesticStun,
-          matchText,
-          verdict,
-        };
+        return { anyDifferent: mismatched.length > 0, extra, domesticMismatch, matchText, verdict };
       }
 
       function renderMobileCards(stunResults, tcpIp, tcpCountry) {
@@ -877,14 +742,7 @@
             ? result.ips.map((ip) => `${ip} (${formatIpFamily(ip)})`).join(", ")
             : "未获取到公网 STUN IP";
 
-          const geoText = result.ipGeoList.length
-            ? result.ipGeoList
-                .map((item) => {
-                  if (!item.geo) return `${item.ip}: GeoIP 失败`;
-                  return `${item.ip}: ${formatGeoip(item.geo)}`;
-                })
-                .join("<br>")
-            : "-";
+          const geoText = geoLines(result.ipGeoList);
 
           return `
           <div class="stun-card">
@@ -896,7 +754,7 @@
             </div>
 
             <div class="stun-card-row">
-              <div class="k">暴露 IP</div>
+              <div class="k">公网 IP</div>
               <div class="v">${escapeHtml(ipsText)}</div>
             </div>
 
@@ -930,25 +788,37 @@
         $("stunTableBody").innerHTML =
           `<tr><td colspan="6">检测中...</td></tr>`;
         $("mobileCards").innerHTML = `<div class="small">检测中...</div>`;
-        setStatus("正在检测 TCP 出口与各 STUN 分流出口...", "warn");
+        setStatus("正在比较 HTTPS 和 STUN 的网络出口…", "warn");
 
         const allRawCandidates = [];
         const stunResults = [];
 
         try {
           const tcpGeo = await getGeoip();
-          const tcpIp = tcpGeo.ip;
+          const tcpIp = normalizeIp(tcpGeo.ip);
+          if (getIpFamily(tcpIp) === "unknown") {
+            throw new Error("GeoIP API 未返回有效的出口 IP 地址");
+          }
           const tcpCountry = tcpGeo.country_code || "";
+          const locations = new Map([[tcpIp, tcpGeo]]);
 
           $("tcpIp").textContent = tcpIp || "-";
           $("tcpLocation").textContent = formatGeoip(tcpGeo);
           $("tcpIpType").textContent = tcpIp ? formatIpFamily(tcpIp) : "-";
 
-          for (const test of STUN_TESTS) {
-            const stun = await getStunIpsByServer(test.url);
+          if (typeof RTCPeerConnection !== "function") {
+            throw new Error("当前浏览器无法使用 WebRTC");
+          }
+
+          const observations = await Promise.all(STUN_TESTS.map(async (test) => ({
+            ...test,
+            type: test.domestic ? "国内 STUN" : "国际 STUN",
+            ...await getStunIpsByServer(test.url),
+          })));
+          for (const stun of observations) {
 
             allRawCandidates.push(
-              `===== ${test.type} / ${test.name} / ${test.url} =====`,
+              `===== ${stun.type} / ${stun.name} / ${stun.url} =====`,
               ...stun.rawCandidates,
               "",
             );
@@ -957,10 +827,10 @@
 
             for (const ip of stun.ips) {
               try {
-                const geo = await getGeoip(ip);
+                if (!locations.has(ip)) locations.set(ip, await getGeoip(ip));
                 ipGeoList.push({
                   ip,
-                  geo,
+                  geo: locations.get(ip),
                 });
               } catch (err) {
                 ipGeoList.push({
@@ -971,12 +841,7 @@
               }
             }
 
-            stunResults.push({
-              ...test,
-              ips: stun.ips,
-              ipGeoList,
-              error: stun.error,
-            });
+            stunResults.push({ ...stun, ipGeoList });
           }
 
           $("rawCandidates").textContent = allRawCandidates.join("\n") || "-";
@@ -996,14 +861,7 @@
                   .join(", ")
               : "未获取到公网 STUN IP";
 
-            const geoText = result.ipGeoList.length
-              ? result.ipGeoList
-                  .map((item) => {
-                    if (!item.geo) return `${item.ip}: GeoIP 失败`;
-                    return `${item.ip}: ${formatGeoip(item.geo)}`;
-                  })
-                  .join("<br>")
-              : "-";
+            const geoText = geoLines(result.ipGeoList);
 
             if (result.ips.length > 0) {
               hasAnyStunIp = true;
@@ -1013,15 +871,11 @@
               hasMismatch = true;
             }
 
-            if (analysis.cmp.extraWithoutTcpBaseline.length > 0) {
+            if (analysis.extra) {
               hasOnlyExtra = true;
             }
 
-            if (
-              analysis.isDomesticStun &&
-              tcpCountry !== "CN" &&
-              analysis.cnDifferentIps.length > 0
-            ) {
+            if (analysis.domesticMismatch) {
               hasCnLeak = true;
             }
 
@@ -1045,32 +899,34 @@
 
           if (hasCnLeak) {
             setStatus(
-              "检测到国内 STUN 泄露：国内 STUN 暴露了不同于 TCP 出口的 CN IP",
+              "可能存在分流。国内 STUN 服务看到的公网 IP 位于中国大陆，与 HTTPS 出口不同。",
               "bad",
             );
           } else if (hasMismatch) {
             setStatus(
-              "检测到 STUN 出口与 TCP 出口不一致，存在 WebRTC/STUN 泄露风险",
+              "STUN 发现了不同于 HTTPS 出口的公网 IP，WebRTC 可能暴露该地址。",
               "bad",
             );
           } else if (!hasAnyStunIp) {
             setStatus(
               "未检测到公网 STUN IP，可能浏览器已隐藏本机地址或 STUN 被阻断",
-              "ok",
+              "warn",
             );
+          } else if (stunResults.some(result => result.error || !result.ips.length)) {
+            setStatus("部分 STUN 服务器未返回可比较的结果", "warn");
           } else if (hasOnlyExtra) {
             setStatus(
-              "同协议族未发现泄露，但 STUN 返回了额外 IP；如需严格判断，需要额外 TCP IPv4/IPv6 基准",
+              "STUN 返回了另一种类型的 IP 地址，缺少对应的 HTTPS 地址进行比较。",
               "warn",
             );
           } else {
-            setStatus("未发现 STUN 泄露，STUN 出口与 TCP 出口一致", "ok");
+            setStatus("本次检测中，各 STUN 服务器看到的公网 IP 均与 HTTPS 出口一致。", "ok");
           }
 
-          console.log("TCP GeoIP:", tcpGeo);
-          console.log("STUN results:", stunResults);
         } catch (err) {
-          console.error(err);
+          for (const field of ["tcpIp", "tcpLocation", "tcpIpType"]) {
+            if ($(field).textContent === "检测中...") $(field).textContent = "-";
+          }
           setStatus("检测失败：" + err.message, "bad");
 
           $("stunTableBody").innerHTML = `

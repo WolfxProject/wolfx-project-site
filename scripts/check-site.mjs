@@ -2,6 +2,10 @@ import fs from 'node:fs/promises'
 import { createRequire } from 'node:module'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { collectSitemap } from '@nuxtjs/sitemap/utils'
+import { parse } from 'parse5'
+import { parseConfigFileTextToJson } from 'typescript'
+import { wolfxMc } from '../data/wolfxmc.ts'
 import { checkJmaDocs } from './check-jma-docs.mjs'
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
@@ -34,7 +38,6 @@ const wolfxMcPages = wolfxMcRouteFamilies.flatMap(path => [
   { route: `/en${path}`, canonical: `/en${path}`, locale: 'en', htmlLang: 'en-US' },
 ])
 const wolfxMcAlternates = ['zh-CN', 'ja', 'en', 'x-default']
-const wolfxMcSitemapRoutes = wolfxMcRouteFamilies.flatMap(path => [path, `/ja${path}`, `/en${path}`])
 const retiredRoutes = [
   '/apidoc', '/apidoc.html', '/apidoc_zh', '/apidoc_zh.html', '/apidoc_en', '/apidoc_en.html',
   '/wsapi', '/wsapi.html', '/wsapi_ja', '/wsapi_zh', '/wsapi_zh.html', '/wsapi_en', '/wsapi_en.html',
@@ -70,17 +73,12 @@ const apiStatusResources = [
   'https://api.wolfx.jp/status/if_eth0-day.png',
   'https://api.wolfx.jp/status/if_eth0-week.png',
 ]
-const apiStatusPages = {
-  ja: { heading: '## API ステータス', invocation: '::api-status-panel{locale="ja"}' },
-  zh: { heading: '## API 状态', invocation: '::api-status-panel{locale="zh"}' },
-  en: { heading: '## API Status', invocation: '::api-status-panel{locale="en"}' },
-}
 const failures = []
 try {
   await checkJmaDocs(root)
 }
 catch (error) {
-  failures.push(`JMA documentation: ${error instanceof Error ? error.message : String(error)}`)
+  failures.push(`API documentation: ${error instanceof Error ? error.message : String(error)}`)
 }
 const donationValues = {
   bitcoinSegwit: 'bc1qqrlqfhf3enhjexf5hl068el0rctv07zupcld23',
@@ -104,7 +102,7 @@ function fail(message) {
 }
 
 async function sourceFiles(directory) {
-  const excludedDirectories = new Set(['.git', '.nuxt', '.output', '.wrangler', 'node_modules', 'test-results'])
+  const excludedDirectories = new Set(['.git', '.nuxt', '.output', '.wrangler', '.data', '.cache', 'node_modules', 'test-results', 'playwright-report'])
   const files = []
   for (const entry of await fs.readdir(directory, { withFileTypes: true })) {
     if (entry.isDirectory() && excludedDirectories.has(entry.name))
@@ -204,11 +202,8 @@ for (const locale of locales) {
       const markdown = await fs.readFile(file, 'utf8')
       docs.push(markdown)
       if (page.file === 'docs/open-api.md') {
-        const expected = apiStatusPages[locale.locale]
-        if (!markdown.includes(expected.heading))
-          fail(`${locale.locale}: Open API is missing ${expected.heading}`)
-        if (!markdown.includes(expected.invocation))
-          fail(`${locale.locale}: Open API is missing ${expected.invocation}`)
+        if (!markdown.includes(`::api-status-panel{locale="${locale.locale}"}`))
+          fail(`${locale.locale}: Open API is missing its localized API Status panel`)
         if (/<script\b/i.test(markdown))
           fail(`${locale.locale}: Open API contains an inline script`)
         if (/document\.getElementById/i.test(markdown))
@@ -260,22 +255,28 @@ else {
     fail('API Status component contains a local address, development port, or token pattern')
 }
 
+for (const locale of locales) {
+  for (const family of wolfxMcRouteFamilies) {
+    const relative = family === '/mc' ? 'mc/index' : family.slice(1)
+    markdownFiles.push(path.join(root, 'content', locale.locale, `${relative}.md`))
+  }
+}
+const contentPaths = new Set([
+  ...locales.flatMap(locale => routePages.map(page => publicRoute(locale.prefix, page.route))),
+  ...wolfxMcPages.map(page => page.route),
+])
 for (const file of markdownFiles) {
-  if (!await exists(file))
+  if (!await exists(file)) {
+    fail(`Missing ${path.relative(root, file)}`)
     continue
+  }
   const markdown = await fs.readFile(file, 'utf8')
   for (const match of markdown.matchAll(/\[[^\]]*\]\((\/[^)]+)\)/g)) {
-    const href = match[1].split('#')[0]
-    if (!href || href.startsWith('/images'))
+    const href = new URL(match[1], 'https://wolfx.jp')
+    if (href.origin !== 'https://wolfx.jp' || contentPaths.has(href.pathname.replace(/\/$/, '') || '/'))
       continue
-    const unprefixed = href.replace(/^\/(zh|en)(?=\/|$)/, '').replace(/^\//, '') || 'index'
-    const targetLocale = href.startsWith('/zh') ? 'zh' : href.startsWith('/en') ? 'en' : 'ja'
-    const target = path.join(root, 'content', targetLocale, `${unprefixed}.md`.replace('/index.md', '.md'))
-    if (await exists(target))
-      continue
-    const publicFile = path.join(root, 'public', path.posix.normalize(href))
-    if (!(await fs.stat(publicFile).catch(() => null))?.isFile())
-      fail(`${path.relative(root, file)}: unresolved internal link ${href}`)
+    if (!(await fs.stat(path.join(root, 'public', decodeURIComponent(href.pathname))).catch(() => null))?.isFile())
+      fail(`${path.relative(root, file)}: unresolved internal link ${href.pathname}`)
   }
 }
 
@@ -290,14 +291,16 @@ for (const relative of ['worker/index.ts', 'wrangler.jsonc', 'deploy/nginx-cache
     fail(`${relative}: retired Minecraft address must not be used for website routing`)
 }
 
-const wolfxMcData = await fs.readFile(path.join(root, 'data/wolfxmc.ts'), 'utf8')
-if (!wolfxMcData.includes(`export const wolfxMcServerAddress = 'wolfx.jp'`)
-  || !wolfxMcData.includes('serverAddress: wolfxMcServerAddress'))
+const wrangler = parseConfigFileTextToJson('wrangler.jsonc', await fs.readFile(path.join(root, 'wrangler.jsonc'), 'utf8'))
+if (wrangler.error || wrangler.config?.workers_dev !== false || wrangler.config?.preview_urls !== false)
+  fail('Wrangler must disable its public workers.dev and version preview URLs for this single-host site')
+
+if (wolfxMc.serverAddress !== 'wolfx.jp')
   fail('WolfxMC data must define the unified lowercase Minecraft address')
-if (!wolfxMcData.includes('statusAddress: wolfxMcServerAddress'))
-  fail('WolfxMC status address must derive from the unified Minecraft address')
-if (!wolfxMcData.includes(`currentCoreVersion: '26.3'`))
-  fail('WolfxMC data must define current server core 26.3')
+if (wolfxMc.statusAddress !== wolfxMc.serverAddress)
+  fail('WolfxMC status must use the published Minecraft address')
+if (!wolfxMc.currentCoreVersion?.trim())
+  fail('WolfxMC data must specify the current server core version')
 
 const minecraftStatusSource = await fs.readFile(path.join(root, 'app/composables/useMinecraftStatus.ts'), 'utf8')
 if (!minecraftStatusSource.includes(`new URL('https://mcapi.us/server/status')`) || !minecraftStatusSource.includes(`endpoint.searchParams.set('ip', wolfxMc.statusAddress)`))
@@ -324,8 +327,8 @@ else {
   catch (error) {
     fail(`Invalid public/search-index.json: ${error instanceof Error ? error.message : String(error)}`)
   }
-  if (index.length !== 36)
-    fail(`Expected 36 search entries, found ${index.length}`)
+  if (index.length !== markdownFiles.length)
+    fail(`Expected one search entry for each of ${markdownFiles.length} content pages, found ${index.length}`)
   const paths = new Set()
   for (const [position, entry] of index.entries()) {
     const label = `search entry ${position}`
@@ -344,7 +347,7 @@ else {
     if (paths.has(entry.path))
       fail(`${label}: duplicate path ${entry.path}`)
     paths.add(entry.path)
-    if (/<[^>]+>|^---$|\n#{1,6}\s|```/.test(entry.text))
+    if (/<(?:div|script|style|table)\b[^>]*>|^---$|\n#{1,6}\s|```/.test(entry.text))
       fail(`${label}: text contains markup or frontmatter noise`)
     const contentRoute = /^\/(?:(?:ja|zh|en)\/)?mc$/.test(entry.path) ? `${entry.path}/index` : entry.path
     const expectedContent = contentRoute === '/'
@@ -362,6 +365,18 @@ else {
     const found = index.some(entry => entry.locale === locale && `${entry.title} ${(entry.headings ?? []).join(' ')} ${entry.text}`.toLocaleLowerCase().includes(term.toLocaleLowerCase()))
     if (!found)
       fail(`Static search has no ${locale} result for ${term}`)
+  }
+  for (const { locale, prefix } of locales) {
+    for (const [route, term] of [
+      ['docs/websocket', 'query_jmaeew'],
+      ['docs/seisjs-api', 'PGA_EW'],
+      ['docs/open-api', 'https://api.wolfx.jp/jma_eew.json'],
+      ['projects', 'Seismic Stations Viewer'],
+    ]) {
+      const entry = index.find(entry => entry.path === publicRoute(prefix, route))
+      if (!entry?.text.includes(term))
+        fail(`Static search is missing ${term} in ${locale}/${route}`)
+    }
   }
   const donationSearchCases = [
     ['ja', '寄付', '/donate'],
@@ -391,6 +406,9 @@ if (!await exists(outputRoot)) {
   fail('Missing .output/public; run pnpm generate')
 }
 else {
+  const builtIndex = await fs.readFile(path.join(outputRoot, 'search-index.json'), 'utf8').catch(() => '')
+  if (builtIndex !== await fs.readFile(sourceIndexFile, 'utf8'))
+    fail('Generated search-index.json differs from public/search-index.json')
   const generatedPages = []
   for (const locale of locales) {
     for (const page of routePages) {
@@ -504,28 +522,14 @@ else {
         fail(`${page.route}: page does not expose exactly one unified Minecraft address`)
     }
     if (page.route === '/mc' || page.route === '/zh/mc' || page.route === '/ja/mc' || page.route === '/en/mc') {
-      if (!html.includes('>26.3<'))
-        fail(`${page.route}: homepage does not expose current server core 26.3`)
+      if (!html.includes(`>${wolfxMc.currentCoreVersion}<`))
+        fail(`${page.route}: homepage does not expose current server core ${wolfxMc.currentCoreVersion}`)
     }
   }
 
   for (const required of ['404.html', 'robots.txt', 'sitemap.xml', 'sitemap_index.xml', '__sitemap__/ja-JP.xml', '__sitemap__/zh-CN.xml', '__sitemap__/en-US.xml', 'search-index.json']) {
     if (!await exists(path.join(outputRoot, required)))
       fail(`Missing generated ${required}`)
-  }
-  const rootSitemapPath = path.join(outputRoot, 'sitemap.xml')
-  if (await exists(rootSitemapPath)) {
-    const rootSitemapStat = await fs.stat(rootSitemapPath)
-    if (!rootSitemapStat.isFile()) {
-      fail('Generated sitemap.xml must be a file')
-    }
-    else {
-      const rootSitemap = await fs.readFile(rootSitemapPath, 'utf8')
-      if (!/^\s*(?:<\?xml\b[^>]*\?>\s*)?(?:<\?xml-stylesheet\b[^>]*\?>\s*)?<(?:sitemapindex|urlset)\b/.test(rootSitemap))
-        fail('Generated sitemap.xml does not start with an XML declaration or sitemap root element')
-      if (/<!doctype\s+html|<html\b/i.test(rootSitemap))
-        fail('Generated sitemap.xml contains HTML')
-    }
   }
   if (await exists(path.join(outputRoot, 'sitemap.xml', 'index.html')))
     fail('Obsolete sitemap.xml/index.html redirect exists')
@@ -544,6 +548,14 @@ else {
   const localeSitemapFiles = ['ja-JP', 'zh-CN', 'en-US'].map(locale => `__sitemap__/${locale}.xml`)
   const sitemapFiles = ['sitemap.xml', 'sitemap_index.xml', ...localeSitemapFiles]
   const sitemapContents = new Map(await Promise.all(sitemapFiles.map(async file => [file, await fs.readFile(path.join(outputRoot, file), 'utf8')])))
+  const indexXml = sitemapContents.get('sitemap_index.xml')
+  if (sitemapContents.get('sitemap.xml') !== indexXml)
+    fail('Both public sitemap index URLs must serve the same XML')
+  const index = await collectSitemap(indexXml)
+  if (index._tag !== 'document' || index.document._tag !== 'index'
+    || index.document.entries.length !== localeSitemapFiles.length
+    || !localeSitemapFiles.every(file => index.document.entries.some(entry => entry.loc === `https://wolfx.jp/${file}`)))
+    fail('The sitemap index must link to all three published language sitemaps')
   const sitemapText = [...sitemapContents.values()].join('\n')
   if (sitemapText.includes(retiredMinecraftAddress))
     fail('Sitemap exposes the retired Minecraft address')
@@ -551,22 +563,39 @@ else {
     if (sitemapText.includes(`<loc>https://wolfx.jp${forbidden}</loc>`))
       fail(`Sitemap contains forbidden route ${forbidden}`)
   }
-  for (const file of localeSitemapFiles) {
-    const localeSitemap = sitemapContents.get(file) ?? ''
-    if (!/<urlset\b/.test(localeSitemap))
+  for (const locale of locales) {
+    const file = `__sitemap__/${locale.htmlLang}.xml`
+    const parsed = await collectSitemap(sitemapContents.get(file))
+    if (parsed._tag !== 'document' || parsed.document._tag !== 'urlset') {
       fail(`${file} is not a sitemap urlset`)
-    for (const hreflang of ['x-default', 'ja-JP', 'zh-CN', 'en-US']) {
-      if (!localeSitemap.includes(`hreflang="${hreflang}"`))
-        fail(`${file} is missing hreflang ${hreflang}`)
+      continue
     }
-  }
-  for (const route of ['/donate', '/zh/donate', '/en/donate', ...wolfxMcSitemapRoutes]) {
-    if (!sitemapText.includes(`https://wolfx.jp${route}`))
-      fail(`Sitemap is missing ${route}`)
-  }
-  for (const route of wolfxMcRouteFamilies) {
-    if (sitemapText.includes(`<loc>https://wolfx.jp/zh${route}</loc>`))
-      fail(`Sitemap exposes duplicate explicit-Chinese WolfxMC URL /zh${route}`)
+    const entries = new Map(parsed.document.entries.map(entry => [entry.loc, entry]))
+    const families = [
+      ...routePages.map(page => ({ route: page.route, mc: false })),
+      ...wolfxMcRouteFamilies.map(route => ({ route: route.slice(1), mc: true })),
+    ]
+    if (parsed.document.entries.length !== families.length)
+      fail(`${file}: expected ${families.length} canonical pages`)
+    for (const family of families) {
+      const paths = new Map(locales.map((language) => {
+        const prefix = family.mc ? (language.locale === 'zh' ? '' : language.locale) : language.prefix
+        return [language.htmlLang, `https://wolfx.jp${canonicalForRoute(publicRoute(prefix, family.route))}`]
+      }))
+      const address = paths.get(locale.htmlLang)
+      const entry = entries.get(address)
+      if (!entry) {
+        fail(`${file}: missing canonical URL ${address}`)
+        continue
+      }
+      paths.set('x-default', paths.get(family.mc ? 'zh-CN' : 'ja-JP'))
+      const alternatesByLanguage = new Map([...paths].map(([lang, url]) =>
+        [lang === 'ja-JP' || lang === 'en-US' ? lang.slice(0, 2) : lang, url]))
+      const alternatives = entry.extensions?.alternatives ?? []
+      if (alternatives.length !== paths.size || !alternatives.every(alt => alternatesByLanguage.get(alt.hreflang) === alt.href)
+        || new Set(alternatives.map(alt => alt.hreflang)).size !== paths.size)
+        fail(`${file}: incorrect language alternatives for ${address}`)
+    }
   }
 
   const robots = await fs.readFile(path.join(outputRoot, 'robots.txt'), 'utf8')
@@ -583,6 +612,40 @@ else {
     for (const tag of html.matchAll(/<(?:script|link|img)\b[^>]*(?:src|href)="([^"]+)"[^>]*>/gi)) {
       if (forbiddenResourceHosts.test(tag[1]) || /(?:jquery|bootstrap)/i.test(tag[1]))
         fail(`${route}: forbidden third-party resource ${tag[1]}`)
+    }
+  }
+
+  // Walk actual anchors and resource tags, including links rendered by MDC and Vue.
+  const pagesByPath = new Map()
+  for (const { file, route } of generatedPages) {
+    if (!await exists(file))
+      continue
+    const ids = new Set()
+    const links = []
+    function visit(node) {
+      const attrs = Object.fromEntries((node.attrs ?? []).map(attr => [attr.name, attr.value]))
+      if (attrs.id)
+        ids.add(attrs.id)
+      const href = node.tagName === 'a' || node.tagName === 'link' ? attrs.href : attrs.src
+      if (href)
+        links.push(new URL(href, `https://wolfx.jp${canonicalForRoute(route)}`))
+      node.childNodes?.forEach(visit)
+    }
+    visit(parse(await fs.readFile(file, 'utf8')))
+    pagesByPath.set(route, { ids, links })
+  }
+  for (const [route, { links }] of pagesByPath) {
+    for (const href of links) {
+      if (href.origin !== 'https://wolfx.jp')
+        continue
+      const target = pagesByPath.get(href.pathname.replace(/\/$/, '') || '/')
+      if (target) {
+        if (href.hash && !target.ids.has(decodeURIComponent(href.hash.slice(1))))
+          fail(`${route}: broken fragment ${href.pathname}${href.hash}`)
+      }
+      else if (!(await fs.stat(path.join(outputRoot, decodeURIComponent(href.pathname))).catch(() => null))?.isFile()) {
+        fail(`${route}: missing generated resource ${href.pathname}`)
+      }
     }
   }
 

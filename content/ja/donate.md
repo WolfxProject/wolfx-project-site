@@ -3,10 +3,10 @@ title: "Wolfx Project への寄付"
 description: "Wolfx Project の継続的な改善と運営を支援するための寄付方法。"
 locale: ja
 layout: landing
-updated: 2026-08-04
+updated: 2026-11-24
 ---
 
-::page-intro{eyebrow="SUPPORT WOLFX PROJECT" title="Wolfx Project への寄付"}
+::page-intro{eyebrow="活動を支援する" title="Wolfx Project への寄付"}
 皆さまからのご寄付は、Wolfx Project の継続的な改善と発展に活用されます。
 ::
 
@@ -30,5 +30,5 @@ updated: 2026-08-04
 Afdian で Wolfx Project を支援する
 :::
 
-ご支援に心より感謝いたします。皆さまの支えが、Wolfx Project をさらに輝かせます。
+ご支援ありがとうございます。
 ::
