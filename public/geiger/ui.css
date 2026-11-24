@@ -1,0 +1,137 @@
+@font-face {
+  font-family: OPPOSans-R;
+  src: url("https://wolfx.jp/fonts/OPPOSans3.0cn-Medium.woff2") format("woff2");
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: "OPPOSans-R";
+}
+
+#main {
+  width: 320px;
+  height: 120px;
+  background-color: #232427;
+  color: #fff;
+  line-height: 23px;
+  font-size: 14px;
+}
+
+#weather div,
+#air div,
+#radiation div,
+#seisair div,
+#hardware div {
+  display: inline-block;
+  vertical-align: middle;
+  margin-top: 5px;
+}
+
+#weather div {
+  margin-top: 5px;
+}
+
+.blacktext {
+  color: var(--black);
+  border-radius: 3px;
+}
+
+.temperature {
+  margin-left: 5px;
+  background: #a5e3b5;
+}
+
+.humidity {
+  background: var(--humiditybackground);
+}
+
+.pressure {
+  background: var(--pressurebackground);
+}
+
+.pm25 {
+  margin-left: 5px;
+  background: var(--pm25background);
+}
+
+.pm10 {
+  background: var(--pm10background);
+}
+
+.radiation {
+  margin-left: 5px;
+  background: var(--radiationbackground);
+}
+
+.radiationavg {
+  background: var(--radiationbackground);
+}
+
+.c1 {
+  margin-left: 5px;
+  background: var(--c1background);
+}
+
+.c2 {
+  background: var(--c2background);
+}
+
+.c3 {
+  background: var(--c3background);
+}
+
+.cpu {
+  margin-left: 5px;
+  background: var(--cpubackground);
+}
+
+.ram {
+  background: var(--rambackground);
+}
+
+.hdd {
+  background: var(--hddbackground);
+}
+
+:root {
+  --black: #000;
+  --temperaturebackground: #97d99b;
+  --humiditybackground: #a2c8e6;
+  --pressurebackground: #b0c4d9;
+  --pm25background: #55cdfc;
+  --pm10background: #f7a8b8;
+  --radiationbackground: #f3a18a;
+  --c1background: #f0d79e;
+  --c2background: #d5b5d9;
+  --c3background: #e6c4a9;
+  --cpubackground: #55cdfc;
+  --rambackground: #f7a8b8;
+  --hddbackground: #a3de9a;
+}
+
+img {
+  width: 14px;
+  height: 14px;
+  transform: translateY(1px);
+}
+
+#tempcolor,
+#humcolor,
+#atomcolor,
+#pm25color,
+#pm10color,
+#radcolor,
+#radavgcolor,
+#c1color,
+#c2color,
+#c3color,
+#cpucolor,
+#ramcolor,
+#hddcolor {
+  width: 3px;
+  height: 23px;
+  background-color: #00fff5;
+  border-radius: 3px;
+  overflow: hidden;
+}
