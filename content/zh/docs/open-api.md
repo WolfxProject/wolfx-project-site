@@ -70,7 +70,7 @@ wss://ws-api.wolfx.jp/jma_eew
 
 **JSON 响应示例**
 
-以下样例取自历史速报，供开发和测试使用，不代表当前预警。样例中的 `Pond` 是字符串。判断是否为警报请使用 `isWarn`。
+以下样例取自历史速报，供开发和测试使用，不代表当前预警。
 
 - [第一报（预报）](/examples/jma_eew/forecast_first.json){external}
 - [续报（预报）](/examples/jma_eew/forecast_update.json){external}

@@ -70,7 +70,7 @@ wss://ws-api.wolfx.jp/jma_eew
 
 **JSON Response Examples**
 
-These historical bulletins are for development and testing. They do not show current warnings. The examples include a string field named `Pond`. Use `isWarn` to identify warnings.
+These historical bulletins are for development and testing. They do not show current warnings.
 
 - [First Forecast](/examples/jma_eew/forecast_first.json){external}
 - [Forecast Update](/examples/jma_eew/forecast_update.json){external}

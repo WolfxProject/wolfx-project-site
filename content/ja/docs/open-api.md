@@ -70,7 +70,7 @@ wss://ws-api.wolfx.jp/jma_eew
 
 **JSON 応答例**
 
-開発・テスト用に過去の緊急地震速報を掲載しています。現在の警報ではありません。例に含まれる `Pond` は文字列です。警報の判定には `isWarn` を使ってください。
+開発・テスト用に過去の緊急地震速報を掲載しています。現在の警報ではありません。
 
 - [第1報（予報）](/examples/jma_eew/forecast_first.json){external}
 - [続報（予報）](/examples/jma_eew/forecast_update.json){external}
