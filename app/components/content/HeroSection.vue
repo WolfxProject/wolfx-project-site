@@ -1,6 +1,5 @@
 <script setup lang="ts">
 defineProps<{
-  eyebrow: string
   title: string
   primaryLabel: string
   primaryHref: string
@@ -17,9 +16,6 @@ defineProps<{
     />
     <div class="hero-section__content site-container">
       <div class="hero-section__copy">
-        <p class="eyebrow">
-          {{ eyebrow }}
-        </p>
         <h1>{{ title }}</h1>
         <div class="hero-section__description">
           <slot />
@@ -40,12 +36,6 @@ defineProps<{
           >
             {{ secondaryLabel }}
           </UButton>
-        </div>
-        <div
-          v-if="$slots.features"
-          class="hero-section__signals"
-        >
-          <slot name="features" />
         </div>
       </div>
       <div

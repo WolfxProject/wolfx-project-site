@@ -1,14 +1,14 @@
 ---
 title: "Wolfx Open API 使用指南"
-description: "通过 HTTP GET 查询地震、海啸和气象数据，或通过 WebSocket 订阅支持推送的数据源。本文列出接口地址、字段、数据类型及响应示例。"
+description: "通过 HTTP GET 查询地震、海啸、气象等数据。支持推送的数据源也可通过 WebSocket 订阅。"
 locale: zh
 layout: docs
-updated: 2026-11-24
+updated: 2026-11-25
 source: apidoc_zh.html
 ---
 ## Wolfx Open API 使用须知
 
-使用本服务前，请阅读[隐私政策](/zh/legal/privacy)和[服务条款](/zh/legal/terms)。如有疑问，请联系 [contact@mtf.edu.kg](mailto:contact@mtf.edu.kg)。Wolfx Project 是一个非官方项目，与任何国家或地区的政府机构、气象机构或地震相关机构均无隶属或合作关系。本服务提供的信息仅供参考，不能替代官方地震预警、灾害信息、疏散信息或其他官方警报渠道。灾害发生时，请务必以相关官方机构发布的最新信息为准。
+地震信息仅供参考。灾害期间，请以官方发布的最新预警和疏散信息为准。使用 API 前请阅读[服务条款](/zh/legal/terms)和[隐私政策](/zh/legal/privacy)。如有疑问，可联系 [contact@mtf.edu.kg](mailto:contact@mtf.edu.kg)。
 
 ## WebSocket 订阅指南
 
@@ -16,7 +16,7 @@ source: apidoc_zh.html
 
 ## JMA 紧急地震速报 JSON API
 
-获取日本气象厅（JMA）发布的紧急地震速报（日本的地震预警）。[t0729](https://x.com/t0729_) 为低延迟数据接收提供支持。
+日本气象厅（JMA）发布的紧急地震速报，即日本的地震预警。感谢 [t0729](https://x.com/t0729_) 协助低延迟接收。
 
 **HTTP GET**
 
@@ -70,7 +70,7 @@ wss://ws-api.wolfx.jp/jma_eew
 
 **JSON 响应示例**
 
-以下为历史紧急地震速报的 JSON 响应示例，仅供开发者参考和测试，不代表当前实际地震预警状态。示例中还包含字符串字段 `Pond`。判断是否为警报请使用 `isWarn`。
+以下样例取自历史速报，供开发和测试使用，不代表当前预警。样例中的 `Pond` 是字符串。判断是否为警报请使用 `isWarn`。
 
 - [第一报（预报）](/examples/jma_eew/forecast_first.json){external}
 - [续报（预报）](/examples/jma_eew/forecast_update.json){external}
@@ -120,7 +120,7 @@ wss://ws-api.wolfx.jp/jma_eqlist
 
 ## JMA 地震详情 JSON API
 
-获取各地震事件的震源、震度与长周期地震动观测、官方说明及报告状态
+按地震事件查询震源、震度、长周期地震动观测、官方说明和报告状态。
 
 **HTTP GET**
 
@@ -195,7 +195,7 @@ wss://ws-api.wolfx.jp/jma_tsunami
 
 **JSON 响应示例**
 
-以下为海啸信息的 JSON 响应示例，仅供开发者参考和测试，不代表当前实际海啸警报状态。
+以下 JSON 样例供开发和测试使用，不代表当前海啸警报状态。
 
 - [海啸预报](/examples/jma_tsunami/forecast_only.json){external}
 - [海啸注意报](/examples/jma_tsunami/advisory.json){external}
@@ -208,7 +208,7 @@ wss://ws-api.wolfx.jp/jma_tsunami
 
 ## JMA 特别地震信息 JSON API
 
-获取南海海槽及北海道、三陆近海相关产品的最新官方报告
+查询南海海槽及北海道、三陆近海的最新官方报告。
 
 **HTTP GET**
 
@@ -272,7 +272,7 @@ wss://ws-api.wolfx.jp/cenc_eqlist
 
 ## 四川省地震局 地震预警 JSON API
 
-实时获取四川省地震局发布的地震预警
+实时获取四川省地震局发布的地震预警。
 
 **HTTP GET**
 
@@ -304,7 +304,7 @@ wss://ws-api.wolfx.jp/sc_eew
 
 ## 中国地震台网 地震预警 JSON API
 
-实时获取中国地震台网发布的地震预警
+实时获取中国地震台网发布的地震预警。
 
 **HTTP GET**
 
@@ -335,7 +335,7 @@ wss://ws-api.wolfx.jp/cenc_eew
 
 ## 福建省地震局 地震预警 JSON API
 
-实时获取福建省地震局发布的地震预警
+实时获取福建省地震局发布的地震预警。
 
 **HTTP GET**
 
@@ -366,7 +366,7 @@ wss://ws-api.wolfx.jp/fj_eew
 
 ## 重庆市地震局 地震预警 JSON API
 
-实时获取重庆市地震局发布的地震预警
+实时获取重庆市地震局发布的地震预警。
 
 **HTTP GET**
 
@@ -497,7 +497,7 @@ https://api.wolfx.jp/ip.php
 
 ## 随机动漫图片 API
 
-使用自建图床，随机获取动漫图片
+从 Wolfx 自建图床随机返回一张动漫图片。
 
 **HTTP GET**
 
@@ -510,8 +510,6 @@ https://api.wolfx.jp/img.php?return=<img/json>
 ```
 
 ## API 状态
-
-客户端数量与统计图表会在页面显示后从 Wolfx Project 自有 API 服务加载。
 
 ::api-status-panel{locale="zh"}
 ::

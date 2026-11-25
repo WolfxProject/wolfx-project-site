@@ -11,7 +11,6 @@ const year = useState('copyright-year', () => new Date().getUTCFullYear())
           :to="sitePath('/')"
           class="footer-brand"
         >Wolfx Project</NuxtLink>
-        <p>{{ tr('footer.statement') }}</p>
       </div>
       <nav :aria-label="tr('footer.project')">
         <NuxtLink :to="sitePath('/projects')">{{ tr('nav.projects') }}</NuxtLink>

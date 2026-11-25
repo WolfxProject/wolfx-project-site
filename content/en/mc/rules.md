@@ -1,22 +1,22 @@
 ---
 title: "Wolfx Survival Server Rules"
-description: "Rules protecting fair gameplay, server stability, and a positive experience for all Wolfx Survival players."
+description: "Wolfx Survival rules, penalties, and how to report a violation."
 locale: en
 availableLocales: [zh, ja, en]
 layout: mc
 updated: 2026-01-06
 ---
 
-::page-intro{eyebrow="WOLFX SURVIVAL" title="Wolfx Survival Server Rules"}
-The rules were last updated on January 6, 2026.
+::page-intro
+# Server rules
 ::
 
 ::content-section{width="reading"}
 ## General Principles
 
-Wolfx Survival is a server focused on **high-freedom vanilla survival**. We respect players’ creativity, play styles, and normal communication. **Server staff will not interfere unless a clear rule violation occurs.**
+Wolfx Survival is a server focused on high-freedom vanilla survival. We respect players’ creativity, play styles, and normal communication. **Server staff will not interfere unless a clear rule violation occurs.**
 
-These rules exist to protect **fair gameplay, server stability, and a positive experience for all players**. Staff actions are limited to cases where a rule violation clearly impacts others or the server.
+These rules exist to protect fair gameplay, server stability, and a positive experience for all players. Staff actions are limited to cases where a rule violation clearly impacts others or the server.
 
 ## Core Rules & Penalties
 
@@ -32,42 +32,33 @@ Permanent ban
 
 Spamming or flooding chat with repetitive, meaningless, or disruptive content (including death-message spam) is not allowed.
 
-::content-notice{type="danger" title="Penalty"}
-7-day chat mute
-::
+Penalty: 7-day chat mute
 
 ### 3. Malicious or meaningless land claims
 
 Claiming land around other players’ areas in a malicious, obstructive, or meaningless manner without a valid purpose is prohibited.
 
-::content-notice{type="danger" title="Penalty"}
-Removal of the offending land claim
-::
+Penalty: Removal of the offending land claim
 
 ### 4. Unfair modifications in official PVP arenas
 
 The use of cheats, hacks, or any unfair modifications in official PVP arenas is strictly prohibited.
 
-::content-notice{type="danger" title="Penalty"}
-First offense: 7-day ban from official PVP areas  
+First offense: 7-day ban from official PVP areas
+
 Second offense: Permanent ban from official PVP areas
-::
 
 ### 5. Copying or stealing map artworks without permission
 
 The owner of the plot where the original map artwork is located holds the rights to that artwork. Copying, reproducing, or stealing it without permission is prohibited.
 
-::content-notice{type="danger" title="Penalty"}
-Confiscation of all copied artworks and related gains
-::
+Penalty: Confiscation of all copied artworks and related gains
 
 ### 6. Disrupting normal gameplay or server stability
 
 Any behavior that disrupts normal gameplay, causes server instability, or prevents players from connecting is prohibited.
 
-::content-notice{type="danger" title="Penalty"}
-Temporary or permanent ban depending on severity
-::
+Penalty: Temporary or permanent ban depending on severity
 
 ## Rule Enforcement
 
@@ -75,7 +66,7 @@ Rule enforcement is primarily based on player reports. Please provide clear and 
 
 ## Final Notes
 
-Last updated: **2026 / 01 / 06**
+Last updated: 2026 / 01 / 06
 
 The final interpretation of these rules belongs to Wolfx Project.
 ::

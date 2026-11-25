@@ -240,20 +240,14 @@ onBeforeUnmount(() => document.removeEventListener('keydown', handleGlobalShortc
         </button>
       </p>
       <p
-        v-else-if="!query.trim()"
-        class="search-hint"
-      >
-        {{ tr('search.hint') }}
-      </p>
-      <p
-        v-else-if="!results.length"
+        v-else-if="query.trim() && !results.length"
         class="search-hint"
         role="status"
       >
         {{ tr('search.empty') }}
       </p>
       <ul
-        v-else
+        v-else-if="results.length"
         id="search-results"
         class="search-results"
         role="listbox"

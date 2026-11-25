@@ -1,19 +1,21 @@
 ---
 title: "支持 Wolfx Project"
-description: "支持 Wolfx Project 持续改进与运营的捐赠方式。"
+description: "通过加密货币或爱发电向 Wolfx Project 捐赠。"
 locale: zh
 layout: landing
-updated: 2026-11-24
+updated: 2026-11-25
 ---
 
-::page-intro{eyebrow="项目捐赠" title="支持 Wolfx Project"}
-您的捐赠将用于支持 Wolfx Project 的持续改进与发展。
+::page-intro
+# 支持 Wolfx Project
+
+捐赠用于服务的日常运营和开发。
 ::
 
 ::content-section{width="reading"}
 ## 使用加密货币捐赠
 
-转账前，请务必确认网络类型和钱包地址均正确无误。
+转账前请核对网络和钱包地址。
 
 :::donation-address{label="Bitcoin" network="SegWit" address="bc1qqrlqfhf3enhjexf5hl068el0rctv07zupcld23"}
 :::
@@ -26,8 +28,8 @@ updated: 2026-11-24
 
 ## Afdian（爱发电）
 
-:::external-link{href="https://ifdian.net/a/wolfx" label="打开外部网站：Afdian"}
-在爱发电上支持 Wolfx Project
+:::external-link{href="https://ifdian.net/a/wolfx"}
+前往爱发电捐赠
 :::
 
 感谢您支持 Wolfx Project。

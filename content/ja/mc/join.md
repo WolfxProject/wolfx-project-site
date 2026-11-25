@@ -4,16 +4,18 @@ description: "Wolfx Survival のサーバーアドレスと参加方法。"
 locale: ja
 availableLocales: [zh, ja, en]
 layout: mc
-updated: 2026-08-22
+updated: 2026-11-25
 ---
 
-::page-intro{eyebrow="JOIN WOLFX SURVIVAL" title="Wolfx Survival への参加方法"}
-Minecraft に下記のサーバーアドレスを追加すると Wolfx Survival に参加できます。
+::page-intro
+# Wolfx Survival への参加方法
+
+Minecraft の「マルチプレイ」で、次のアドレスをサーバー一覧に追加してください。
 ::
 
 ::content-section{width="reading"}
 ::mc-server-address{title="サーバーアドレス" copy-label="サーバーアドレスをコピー"}
 ::
 
-快適にプレイするため、サーバーが対応する範囲内の新しいバージョンの使用をおすすめします。
+対応バージョンのうち、なるべく新しいものをお使いください。
 ::

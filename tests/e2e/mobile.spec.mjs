@@ -237,20 +237,25 @@ test('tables, code, endpoints, anchors, and floating controls contain their own 
     const metrics = await block.evaluate((element) => {
       const pre = element.querySelector('pre')
       const copy = element.querySelector('.copy-button').getBoundingClientRect()
-      const header = element.querySelector('.code-block__header').getBoundingClientRect()
+      const header = element.querySelector('.code-block__header')?.getBoundingClientRect()
       return {
         width: element.getBoundingClientRect().width,
         preOverflow: getComputedStyle(pre).overflowX,
         preClientWidth: pre.clientWidth,
         preScrollWidth: pre.scrollWidth,
         copyBottom: copy.bottom,
-        headerBottom: header.bottom,
+        headerBottom: header?.bottom,
+        copyLeft: copy.left,
+        preRight: pre.getBoundingClientRect().right,
       }
     })
     expect(metrics.width).toBeLessThanOrEqual(358)
     expect(metrics.preOverflow).toBe('auto')
     expect(metrics.preScrollWidth).toBeGreaterThanOrEqual(metrics.preClientWidth)
-    expect(metrics.copyBottom).toBeLessThanOrEqual(metrics.headerBottom + 1)
+    if (metrics.headerBottom !== undefined)
+      expect(metrics.copyBottom).toBeLessThanOrEqual(metrics.headerBottom + 1)
+    else
+      expect(metrics.copyLeft).toBeGreaterThanOrEqual(metrics.preRight - 1)
   }
 
   const endpoint = page.locator('.api-endpoint code').first()

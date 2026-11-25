@@ -1,19 +1,17 @@
 ---
 title: "Vote for Wolfx Survival"
-description: "Server-list voting destinations where you can support Wolfx Survival."
+description: "Vote for Wolfx Survival on Minecraft server lists."
 locale: en
 availableLocales: [zh, ja, en]
 layout: mc
-updated: 2026-11-24
+updated: 2026-11-25
 ---
 
-::page-intro{eyebrow="SUPPORT WOLFX SURVIVAL" title="Vote for Wolfx Survival"}
-Vote for Wolfx Survival through any of the server lists below.
+::page-intro
+# Vote for Wolfx Survival
 ::
 
 ::content-section{width="reading"}
 ::mc-vote-links
 ::
-
-Thank you for voting.
 ::

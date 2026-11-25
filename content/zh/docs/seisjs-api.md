@@ -1,19 +1,19 @@
 ---
 title: "Wolfx SeisJS API 使用指南"
-description: "查询 SeisJS 测站列表，通过 WebSocket 接收测站观测数据，并查看震度、烈度和地面运动各字段的单位。"
+description: "SeisJS 测站列表、WebSocket 接入方式，以及震度、烈度和地面运动观测值的单位。"
 locale: zh
 layout: docs
-updated: 2026-11-24
+updated: 2026-11-25
 source: seisapi_zh.html
 ---
 
 ## 简介
 
-SeisJS 通过 WebSocket 提供实时测站数据，每个测站的推送间隔为 1 秒。
+每个 SeisJS 测站每秒通过 WebSocket 推送一次观测数据。
 
 震度采用日本气象厅震度分级，烈度参考《中国地震烈度表》（GB/T 17742-2020）计算。
 
-服务器在连接建立后以及此后每分钟发送一次 `heartbeat` 心跳消息。建议客户端回复 `ping`，此操作可选。
+连接建立时及之后每分钟，服务器都会发送一次 `heartbeat`。建议客户端回复 `ping`，也可以不回复。
 
 **使用限制**　本 API 仅提供 SeisJS 测站数据，限用于合法研究和开发，禁止用于其他目的。
 
@@ -21,7 +21,7 @@ SeisJS 通过 WebSocket 提供实时测站数据，每个测站的推送间隔�
 
 [测站列表（JSON）](https://api.wolfx.jp/seis_list.json)
 
-测站列表每 10 分钟更新一次。开发者可以从中读取测站状态，用于远程管理测站。
+列表每 10 分钟更新一次，可用于查询状态和远程管理测站。
 
 ## WebSocket 连接地址
 

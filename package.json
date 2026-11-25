@@ -37,7 +37,7 @@
     "@nuxt/ui": "^4.13.0",
     "@nuxtjs/i18n": "^10.6.0",
     "@nuxtjs/sitemap": "^9.2.0",
-    "nuxt": "^4.6.4",
+    "nuxt": "^4.7.0",
     "vue": "^3.5.46",
     "vue-router": "^5.5.1",
     "zod": "^4.6.7"
@@ -66,6 +66,6 @@
     "unist-util-visit": "^5.2.0",
     "unplugin": "^3.7.0",
     "vue-tsc": "^3.3.14",
-    "wrangler": "4.166.0"
+    "wrangler": "4.167.0"
   }
 }

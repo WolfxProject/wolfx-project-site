@@ -13,10 +13,9 @@
     "label": "検索",
     "placeholder": "サイト内を検索…",
     "close": "検索を閉じる",
-    "empty": "一致する内容がありません",
-    "hint": "タイトル・見出し・本文を検索できます。",
-    "loading": "検索インデックスを読み込み中…",
-    "failed": "検索インデックスを読み込めませんでした。",
+    "empty": "検索結果はありません",
+    "loading": "読み込み中…",
+    "failed": "検索を利用できません。",
     "retry": "再読み込み"
   },
   "theme": {
@@ -59,7 +58,7 @@
   },
   "donation": {
     "walletAddress": "ウォレットアドレス",
-    "openExternal": "外部サイトを開く"
+    "openExternal": "新しいタブで開きます"
   },
   "apiStatus": {
     "title": "API ステータス",
@@ -77,7 +76,6 @@
     "requiresScript": "API の稼働状況とグラフを表示するには JavaScript を有効にしてください。"
   },
   "footer": {
-    "statement": "独立して運営される非公式の公益プロジェクトです。",
     "privacy": "プライバシーポリシー",
     "terms": "利用規約",
     "status": "サービスの稼働状況",
@@ -87,7 +85,7 @@
   },
   "error": {
     "title": "ページが見つかりません",
-    "description": "URL を確認するか、ホームから目的のページを探してください。",
+    "description": "URL をご確認ください。",
     "home": "ホームへ戻る",
     "unavailable": "ページを表示できません",
     "retry": "時間をおいて、もう一度お試しください。"

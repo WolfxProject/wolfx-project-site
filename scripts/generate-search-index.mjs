@@ -1,6 +1,7 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { wolfxMc } from '../data/wolfxmc.ts'
 import { parsePage } from './content-markdown.mjs'
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
@@ -9,7 +10,7 @@ const outputFile = path.join(root, 'public/search-index.json')
 const locales = ['ja', 'zh', 'en']
 
 const inlineContainers = new Set(['heading', 'paragraph', 'tableCell', 'strong', 'emphasis', 'delete', 'link'])
-const visibleProp = /^(?:(?:.*-)?(?:title|label|description)|address|action|eyebrow|network|tag|method)$/
+const visibleProp = /^(?:(?:.*-)?(?:title|label|description)|address|action|network|method)$/
 
 function searchableContent(tree) {
   const headings = []
@@ -20,9 +21,11 @@ function searchableContent(tree) {
       return node.value
     if (node.type === 'image')
       return node.alt || ''
+    if (node.name === 'mc-vote-links')
+      return wolfxMc.voteLinks.map(([name]) => name).join(' ')
     const children = (node.children || []).map(textOf)
     const text = children.join(inlineContainers.has(node.type) ? '' : ' ')
-    if (node.type === 'heading') {
+    if (node.type === 'heading' && node.depth > 1) {
       headings.push(text.trim())
       return ''
     }

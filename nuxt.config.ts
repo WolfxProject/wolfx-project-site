@@ -62,8 +62,8 @@ export default defineNuxtConfig({
       htmlAttrs: { lang: 'ja' },
       meta: [
         { name: 'viewport', content: 'width=device-width, initial-scale=1, viewport-fit=cover' },
-        { name: 'theme-color', media: '(prefers-color-scheme: light)', content: '#f4f7f8' },
-        { name: 'theme-color', media: '(prefers-color-scheme: dark)', content: '#081012' },
+        { name: 'theme-color', media: '(prefers-color-scheme: light)', content: '#faf9fb' },
+        { name: 'theme-color', media: '(prefers-color-scheme: dark)', content: '#161923' },
       ],
       link: [
         { rel: 'icon', href: '/images/favicon.ico', sizes: 'any' },

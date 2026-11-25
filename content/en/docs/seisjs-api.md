@@ -1,19 +1,19 @@
 ---
 title: "Wolfx SeisJS API reference"
-description: "Look up SeisJS stations and receive ground motion observations over WebSocket. Includes intensity scales, units, and message fields."
+description: "SeisJS station list, WebSocket connection details, and units for seismic intensity and ground motion readings."
 locale: en
 layout: docs
-updated: 2026-11-24
+updated: 2026-11-25
 source: seisapi_en.html
 ---
 
 ## Overview
 
-SeisJS streams observations over WebSocket. Each station sends data at one-second intervals.
+Each SeisJS station streams observations over WebSocket once per second.
 
 Station data reports intensity on two scales: the Japan Meteorological Agency (JMA) seismic intensity scale and the Chinese seismic intensity scale (CSIS, GB/T 17742-2020).
 
-The server sends a `heartbeat` message when the connection opens and once per minute after that. Clients are encouraged to reply with `ping`, but a reply is optional.
+The server sends a `heartbeat` when you connect and every minute thereafter. We recommend replying with `ping`, though the reply is optional.
 
 **Usage restriction.** This API provides only SeisJS station data. Use is limited to lawful research and development. All other uses are prohibited.
 
@@ -21,7 +21,7 @@ The server sends a `heartbeat` message when the connection opens and once per mi
 
 [Station list (JSON)](https://api.wolfx.jp/seis_list.json)
 
-The list is updated every 10 minutes. Applications can use it to check station status for remote station management.
+The list updates every 10 minutes. Use it to check station status when managing stations remotely.
 
 ## WebSocket Endpoint
 

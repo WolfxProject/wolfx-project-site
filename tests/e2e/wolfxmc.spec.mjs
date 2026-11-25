@@ -84,17 +84,19 @@ test('WolfxMC remains overflow-free at every target viewport', async ({ page }) 
       await expect(page.locator('.mc-server-chip')).toHaveCount(1)
       await expect(page.locator('.mc-community-grid')).toBeVisible()
       const sectionGroups = await page.locator('.mc-content > h2').evaluateAll(headings => headings.map((heading) => {
-        const description = heading.nextElementSibling
+        const grid = heading.nextElementSibling
         return {
-          descriptionTag: description?.tagName,
+          gridClass: grid?.className,
           headingLeft: heading.getBoundingClientRect().left,
-          descriptionLeft: description?.getBoundingClientRect().left,
+          gridLeft: grid?.getBoundingClientRect().left,
         }
       }))
-      expect(sectionGroups, `${route} at ${viewport.width}x${viewport.height}: section groups`).toHaveLength(2)
+      expect(sectionGroups.map(group => group.gridClass), route).toEqual([
+        expect.stringContaining('mc-feature-grid'),
+        expect.stringContaining('mc-community-grid'),
+      ])
       for (const group of sectionGroups) {
-        expect(group.descriptionTag).toBe('P')
-        expect(Math.abs(group.headingLeft - (group.descriptionLeft ?? Number.NaN))).toBeLessThanOrEqual(1)
+        expect(Math.abs(group.headingLeft - (group.gridLeft ?? Number.NaN))).toBeLessThanOrEqual(1)
       }
     }
   }
@@ -138,18 +140,18 @@ test('WolfxMC navigation stays inside canonical /mc routes', async ({ page }) =>
 test('WolfxMC serves complete Chinese, Japanese, and English page families', async ({ page }) => {
   await mockMinecraftStatus(page)
   const cases = [
-    ['/mc', 'zh-CN', '来玩点轻松的生存吧'],
-    ['/zh/mc', 'zh-CN', '来玩点轻松的生存吧'],
-    ['/ja/mc', 'ja-JP', 'のんびりサバイバルを楽しもう'],
-    ['/en/mc', 'en-US', 'Let’s chill in survival'],
+    ['/mc', 'zh-CN', '玩法接近原版'],
+    ['/zh/mc', 'zh-CN', '玩法接近原版'],
+    ['/ja/mc', 'ja-JP', '無料で遊べる Minecraft'],
+    ['/en/mc', 'en-US', 'Our Minecraft survival server is free to join'],
     ['/mc/rules', 'zh-CN', '一、总则'],
     ['/ja/mc/rules', 'ja-JP', '1. 総則'],
     ['/en/mc/rules', 'en-US', 'General Principles'],
-    ['/mc/join', 'zh-CN', '在 Minecraft 中添加下方服务器地址'],
-    ['/ja/mc/join', 'ja-JP', 'Minecraft に下記のサーバーアドレスを追加'],
-    ['/en/mc/join', 'en-US', 'Add the server address below in Minecraft'],
-    ['/mc/vote', 'zh-CN', '可通过以下服务器列表'],
-    ['/ja/mc/vote', 'ja-JP', '以下のサーバーリスト'],
+    ['/mc/join', 'zh-CN', '在 Minecraft 的多人游戏中添加下方服务器地址'],
+    ['/ja/mc/join', 'ja-JP', 'Minecraft の「マルチプレイ」'],
+    ['/en/mc/join', 'en-US', 'In Minecraft, open Multiplayer'],
+    ['/mc/vote', 'zh-CN', '为 Wolfx Survival 投票'],
+    ['/ja/mc/vote', 'ja-JP', 'Wolfx Survival に投票する'],
     ['/en/mc/vote', 'en-US', 'Vote for Wolfx Survival'],
   ]
 
@@ -157,6 +159,12 @@ test('WolfxMC serves complete Chinese, Japanese, and English page families', asy
     await page.goto(route)
     await expect(page.locator('html')).toHaveAttribute('lang', lang)
     await expect(page.locator('main')).toContainText(expectedText)
+    if (route.endsWith('/vote')) {
+      const links = page.locator('.mc-vote-links a')
+      await expect(links).toHaveText(wolfxMc.voteLinks.map(([name]) => name))
+      expect(await links.evaluateAll(items => items.map(item => item.getAttribute('href'))))
+        .toEqual(wolfxMc.voteLinks.map(([, href]) => href))
+    }
   }
 })
 

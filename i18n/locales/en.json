@@ -13,10 +13,9 @@
     "label": "Search",
     "placeholder": "Search this site…",
     "close": "Close search",
-    "empty": "No matching content",
-    "hint": "Search page titles, headings, and text.",
-    "loading": "Loading search index…",
-    "failed": "The search index could not be loaded.",
+    "empty": "No results found",
+    "loading": "Loading…",
+    "failed": "Search is unavailable.",
     "retry": "Try again"
   },
   "theme": {
@@ -48,7 +47,7 @@
     "previous": "Previous",
     "next": "Next",
     "backToTop": "Back to top",
-    "fallback": "This page is not translated yet, so the Japanese version is shown.",
+    "fallback": "Showing the Japanese version because an English translation is unavailable.",
     "tableScroll": "Scroll horizontally to view the full table",
     "pagination": "Previous and next documents"
   },
@@ -59,7 +58,7 @@
   },
   "donation": {
     "walletAddress": "Wallet address",
-    "openExternal": "Open external website"
+    "openExternal": "Opens in a new tab"
   },
   "apiStatus": {
     "title": "API Status",
@@ -77,7 +76,6 @@
     "requiresScript": "Enable JavaScript to view the API status and charts."
   },
   "footer": {
-    "statement": "An independently operated, unofficial public-interest project.",
     "privacy": "Privacy policy",
     "terms": "Terms of service",
     "status": "Service status",
@@ -87,8 +85,8 @@
   },
   "error": {
     "title": "Page not found",
-    "description": "Check the URL or find what you need from the home page.",
-    "home": "Back home",
+    "description": "Check the address and try again.",
+    "home": "Go to homepage",
     "unavailable": "Page unavailable",
     "retry": "Please try again later."
   }

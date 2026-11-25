@@ -1,5 +1,5 @@
 <script setup lang="ts">
-withDefaults(defineProps<{
+const props = withDefaults(defineProps<{
   code?: string
   language?: string
   filename?: string
@@ -10,12 +10,20 @@ withDefaults(defineProps<{
   filename: undefined,
   highlights: () => [],
 })
+
+const caption = computed(() => props.filename || (props.language === 'text' ? undefined : props.language))
 </script>
 
 <template>
-  <div class="code-block">
-    <div class="code-block__header">
-      <span v-if="filename || language">{{ filename ?? language }}</span>
+  <div
+    class="code-block"
+    :class="{ 'code-block--plain': !caption }"
+  >
+    <div
+      v-if="caption"
+      class="code-block__header"
+    >
+      {{ caption }}
     </div>
     <pre><slot /></pre>
     <CopyButton :value="code" />

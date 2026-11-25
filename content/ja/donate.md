@@ -1,19 +1,21 @@
 ---
 title: "Wolfx Project への寄付"
-description: "Wolfx Project の継続的な改善と運営を支援するための寄付方法。"
+description: "暗号資産と Afdian を通じた Wolfx Project への寄付方法。"
 locale: ja
 layout: landing
-updated: 2026-11-24
+updated: 2026-11-25
 ---
 
-::page-intro{eyebrow="活動を支援する" title="Wolfx Project への寄付"}
-皆さまからのご寄付は、Wolfx Project の継続的な改善と発展に活用されます。
+::page-intro
+# Wolfx Project への寄付
+
+ご寄付はサービスの運営と開発に使わせていただきます。
 ::
 
 ::content-section{width="reading"}
 ## 暗号資産で寄付する
 
-送金前に、ネットワークとウォレットアドレスが正しいことを必ずご確認ください。
+送金前にネットワークとウォレットアドレスをご確認ください。
 
 :::donation-address{label="Bitcoin" network="SegWit" address="bc1qqrlqfhf3enhjexf5hl068el0rctv07zupcld23"}
 :::
@@ -26,8 +28,8 @@ updated: 2026-11-24
 
 ## Afdian（愛発電）
 
-:::external-link{href="https://ifdian.net/a/wolfx" label="外部サイトを開く：Afdian"}
-Afdian で Wolfx Project を支援する
+:::external-link{href="https://ifdian.net/a/wolfx"}
+Afdian で寄付する
 :::
 
 ご支援ありがとうございます。

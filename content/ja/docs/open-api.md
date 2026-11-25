@@ -3,12 +3,12 @@ title: "Wolfx Open API 利用ガイド"
 description: "地震・津波・気象情報などの HTTP API の接続先、応答例、各フィールドの仕様。対応するデータは WebSocket でも購読できます。"
 locale: ja
 layout: docs
-updated: 2026-11-24
+updated: 2026-11-25
 source: apidoc.html
 ---
 ## Wolfx Open API ご利用にあたっての注意事項
 
-ご利用前に、[プライバシーポリシー](/legal/privacy)と[利用規約](/legal/terms)をご確認ください。ご不明な点は [contact@mtf.edu.kg](mailto:contact@mtf.edu.kg) までお問い合わせください。Wolfx Project は、いかなる国・地域の政府機関、気象機関、地震関連機関とも関係のない非公式プロジェクトです。本サービスの情報は参考目的であり、公式の緊急地震速報、災害情報、避難情報などを代替するものではありません。災害時は、必ず公的機関の最新情報をご確認ください。
+地震情報は参考情報です。災害時は公的機関が発表する最新の警報や避難情報を確認してください。API のご利用前に[利用規約](/legal/terms)と[プライバシーポリシー](/legal/privacy)をご覧ください。お問い合わせは [contact@mtf.edu.kg](mailto:contact@mtf.edu.kg) まで。
 
 ## WebSocket の購読方法
 
@@ -70,7 +70,7 @@ wss://ws-api.wolfx.jp/jma_eew
 
 **JSON 応答例**
 
-過去の緊急地震速報のJSON応答例です。開発・テスト用の参考資料であり、現在の緊急地震速報を示すものではありません。これらの例には文字列の `Pond` も含まれます。警報かどうかは `isWarn` で判別します。
+開発・テスト用に過去の緊急地震速報を掲載しています。現在の警報ではありません。例に含まれる `Pond` は文字列です。警報の判定には `isWarn` を使ってください。
 
 - [第1報（予報）](/examples/jma_eew/forecast_first.json){external}
 - [続報（予報）](/examples/jma_eew/forecast_update.json){external}
@@ -120,7 +120,7 @@ wss://ws-api.wolfx.jp/jma_eqlist
 
 ## 気象庁 地震詳細 JSON API
 
-地震イベントごとの震源、震度・長周期地震動観測、公式説明と報告状態を取得
+地震ごとに震源、震度・長周期地震動の観測結果、気象庁の解説、報告の状態を取得します。
 
 **HTTP GET**
 
@@ -195,7 +195,7 @@ wss://ws-api.wolfx.jp/jma_tsunami
 
 **JSON 応答例**
 
-津波情報のJSON応答例です。開発・テスト用の参考資料であり、現在の津波警報状況を示すものではありません。
+開発・テスト用の津波情報の例です。現在の津波警報の発表状況を示すものではありません。
 
 - [津波予報](/examples/jma_tsunami/forecast_only.json){external}
 - [津波注意報](/examples/jma_tsunami/advisory.json){external}
@@ -239,7 +239,7 @@ wss://ws-api.wolfx.jp/jma_special_eq
 
 ## 中国地震台網 地震情報 JSON API
 
-中国地震台網が発表した最新の地震情報（最大50件）を取得
+中国地震台網が発表した直近の地震情報を最大 50 件取得します。
 
 **HTTP GET**
 
@@ -397,7 +397,7 @@ wss://ws-api.wolfx.jp/cq_eew
 
 ## 中国気象実況ランキング JSON API
 
-毎時、国家級気象観測所の気温・降水量・風速の実況ランキングを提供
+中国の国家級気象観測所で記録した気温、降水量、風速を、1 時間ごとの順位で返します。
 
 **HTTP GET**
 
@@ -417,7 +417,7 @@ https://api.wolfx.jp/weather_rank.json
 
 ## IPアドレス情報照会 JSON API
 
-リクエスト元または指定されたIPアドレスに関する情報を取得
+リクエスト元または指定した IP アドレスの地域情報を返します。
 
 **HTTP GET**
 
@@ -445,7 +445,7 @@ https://api.wolfx.jp/geoip.php?ip=<IPアドレス>
 
 ## 最新サーバー時刻取得 JSON API
 
-時刻同期用に最新かつ正確なサーバー時刻を提供
+時刻の同期に使えるよう、サーバーの現在時刻を返します。
 
 **HTTP GET**
 
@@ -463,7 +463,7 @@ https://api.wolfx.jp/ntp.json
 
 ## パブリックIPアドレス取得 PLAIN API
 
-リクエスト元のパブリックIPアドレスをプレーンテキスト形式で取得する
+リクエスト元のグローバル IP アドレスをプレーンテキストで返します。
 
 **HTTP GET**
 
@@ -473,7 +473,7 @@ https://api.wolfx.jp/ip.php
 
 ## ランダムアニメ画像取得 JPEG API
 
-ランダムにアニメ画像を取得する
+アニメ画像をランダムに 1 枚返します。
 
 **HTTP GET**
 
@@ -486,8 +486,6 @@ https://api.wolfx.jp/img.php?return=<img/json>
 ```
 
 ## API ステータス
-
-クライアント数と統計グラフは、ページ表示後に Wolfx Project の API サービスから読み込まれます。
 
 ::api-status-panel{locale="ja"}
 ::

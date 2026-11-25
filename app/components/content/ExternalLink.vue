@@ -1,10 +1,6 @@
 <script setup lang="ts">
-interface ExternalLinkProps {
-  href: string
-  label?: string
-}
-
-defineProps<ExternalLinkProps>()
+defineProps<{ href: string }>()
+const { t } = useI18n()
 </script>
 
 <template>
@@ -13,10 +9,10 @@ defineProps<ExternalLinkProps>()
     target="_blank"
     rel="noopener noreferrer"
     class="external-link"
-    :aria-label="label"
-    :title="label"
+    :title="t('donation.openExternal')"
   >
     <slot />
+    <span class="sr-only">{{ t('donation.openExternal') }}</span>
     <UIcon name="i-lucide-arrow-up-right" />
   </a>
 </template>

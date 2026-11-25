@@ -1,38 +1,34 @@
 ---
 title: "Wolfx Survival"
-description: "Minecraft 纯净原版生存服务器，地图永不重置，高自由度少限制，自 2019 年长期稳定运行，永久免费。"
+description: "Wolfx Survival 是一个免费开放的 Minecraft 原版生存服务器。地图自 2019 年开服以来一直保留。"
 locale: zh
 availableLocales: [zh, ja, en]
 layout: mc
-updated: 2026-11-24
+updated: 2026-11-25
 ---
 
-::mc-hero{eyebrow="原版生存 · 永不重置 · 免费游玩" title="来玩点轻松的生存吧 ☁️ — Wolfx Survival" copy-label="复制服务器地址" rules-label="查看规则" join-label="加入指南" minecraft-label="获取 Minecraft" core-label="当前服务器核心" version-label="支持版本" since-label="开服时间"}
-以原版生存为核心，尽量不改机制。高自由度、少限制，长期稳定运行，自 2019 年持续开放。
+::mc-hero{title="Wolfx Survival" copy-label="复制服务器地址" rules-label="查看规则" join-label="加入方法" minecraft-label="获取 Minecraft" core-label="服务器核心" version-label="支持版本" since-label="开服时间"}
+这是一个免费开放的 Minecraft 生存服，玩法接近原版。
 ::
 
-## 我们坚持的四件事
-
-让服务器“简单、干净、长期、好玩”。
+## 服务器玩法
 
 ::mc-feature-grid
-:::mc-feature{title="永不重置" tag="🧱 Never Reset"}
-建筑党放心肝，成果不会突然清空。
+:::mc-feature{title="地图不重置"}
+可以在同一个世界长期建造，不用在更新后从头开始。
 :::
-:::mc-feature{title="原版优先" tag="🍃 Vanilla First"}
-尽量不改机制，红石/农场/探索都更还原。
+:::mc-feature{title="原版机制"}
+尽量保留红石、农场和探索的原版玩法。
 :::
-:::mc-feature{title="保持新版本" tag="✨ Always Updated"}
-在稳定前提下尽量跟随最新正式版更新。
+:::mc-feature{title="版本更新"}
+新正式版稳定后，我们会尽量跟进。
 :::
-:::mc-feature{title="少限制高自由" tag="🎈 High Freedom"}
-只要不违反规则，你想怎么玩都可以。
+:::mc-feature{title="管理方式"}
+玩家明确违规并影响他人或服务器时，管理员才会介入。
 :::
 ::
 
-## 加入社群
+## 玩家社区
 
-找队友、晒建筑、看公告、反馈问题，都在这里。
-
-::mc-community-links{discord-title="Discord" discord-description="推荐加入：查看公告，参与讨论。" qq-title="QQ群" qq-description="国内交流方便，随时随地唠两句。" donate-title="捐助" donate-description="通过爱发电支持服务器。" plan-title="Plan" plan-description="查看 Wolfx Project Plan。"}
+::mc-community-links{discord-title="Discord" discord-description="服务器公告和玩家讨论。" qq-title="QQ 群" qq-description="找队友、聊建筑，或反馈问题。" donate-title="爱发电" donate-description="捐助服务器运营。" plan-title="Wolfx Project Plan"}
 ::

@@ -1,19 +1,21 @@
 ---
 title: "Donate to Wolfx Project"
-description: "Support the continued improvement and operation of Wolfx Project."
+description: "Donate to Wolfx Project with cryptocurrency or through Afdian."
 locale: en
 layout: landing
-updated: 2026-11-24
+updated: 2026-11-25
 ---
 
-::page-intro{eyebrow="PROJECT SUPPORT" title="Donate to Wolfx Project"}
-Your donation helps support the continued improvement and operation of Wolfx Project.
+::page-intro
+# Donate to Wolfx Project
+
+Donations help us run and develop these services.
 ::
 
 ::content-section{width="reading"}
 ## Donate with cryptocurrency
 
-Before sending funds, verify that both the network and wallet address are correct.
+Check the network and wallet address before sending funds.
 
 :::donation-address{label="Bitcoin" network="SegWit" address="bc1qqrlqfhf3enhjexf5hl068el0rctv07zupcld23"}
 :::
@@ -26,8 +28,8 @@ Before sending funds, verify that both the network and wallet address are correc
 
 ## Afdian
 
-:::external-link{href="https://ifdian.net/a/wolfx" label="Open external website: Afdian"}
-Support Wolfx Project on Afdian
+:::external-link{href="https://ifdian.net/a/wolfx"}
+Donate on Afdian
 :::
 
 Thank you for supporting Wolfx Project.

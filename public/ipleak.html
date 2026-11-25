@@ -410,7 +410,7 @@
     <main class="container">
       <h1>WebRTC 公网 IP 暴露检测</h1>
       <div class="subtitle">
-        比较 HTTPS 请求和各 STUN 服务器看到的公网 IP，检查 WebRTC 是否使用了不同的网络出口。
+        比较 HTTPS 和 WebRTC 使用的公网 IP。
       </div>
 
       <div class="card action-card">
@@ -422,11 +422,6 @@
         <h2>HTTPS 出口</h2>
 
         <div class="info-grid">
-          <div class="row">
-            <div class="label">GeoIP API</div>
-            <div class="value">https://api.wolfx.jp/geoip.php</div>
-          </div>
-
           <div class="row">
             <div class="label">出口 IP 地址</div>
             <div class="value" id="tcpIp">-</div>
@@ -454,8 +449,8 @@
                 <th>类型</th>
                 <th>STUN 服务器</th>
                 <th>公网 IP</th>
-                <th>GeoIP</th>
-                <th>与 HTTPS 出口是否一致</th>
+                <th>IP 归属地</th>
+                <th>与 HTTPS 出口对比</th>
                 <th>判断</th>
               </tr>
             </thead>
@@ -478,16 +473,16 @@
       </div>
 
       <div class="card">
-        <h2>说明</h2>
+        <h2>检测方法</h2>
         <div class="small">
           <p>
-            点击“开始检测”后，浏览器会联系 Wolfx 的 GeoIP 服务和下列 STUN 服务商：Cloudflare、Google、MiWiFi、哔哩哔哩。GeoIP 用于查询公网 IP 的归属地。
+            开始检测后，浏览器会连接 Cloudflare、Google、MiWiFi 和哔哩哔哩的 STUN 服务，并向 Wolfx GeoIP 查询公网 IP 的归属地。
           </p>
           <p>
-            IPv4 和 IPv6 分开比较。例如，HTTPS 只返回 IPv4 地址时，STUN 返回的 IPv6 地址会单独列出，供你判断。
+            IPv4 和 IPv6 分开比较。缺少同类型 HTTPS 地址时，STUN 查到的地址会单独列出。
           </p>
           <p>
-            如果 HTTPS 出口位于中国大陆以外，而 MiWiFi 或哔哩哔哩看到另一个同类型、归属地为 <code>CN</code> 的地址，页面会提示可能存在分流。
+            如果 HTTPS 出口在中国大陆以外，而 MiWiFi 或哔哩哔哩返回同类型的中国大陆 IP（<code>CN</code>），则可能存在分流。
           </p>
         </div>
       </div>
@@ -759,7 +754,7 @@
             </div>
 
             <div class="stun-card-row">
-              <div class="k">GeoIP</div>
+              <div class="k">IP 归属地</div>
               <div class="v">${geoText}</div>
             </div>
 

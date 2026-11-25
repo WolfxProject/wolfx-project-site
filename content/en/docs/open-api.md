@@ -3,12 +3,12 @@ title: "Wolfx Open API reference"
 description: "HTTP endpoints and response fields for earthquake reports, early warnings, tsunami bulletins, and weather data. Selected feeds also support WebSocket subscriptions."
 locale: en
 layout: docs
-updated: 2026-11-24
+updated: 2026-11-25
 source: apidoc_en.html
 ---
 ## Wolfx Open API Usage Guidelines
 
-Before using this service, review the [Privacy Policy](/en/legal/privacy) and [Terms of Service](/en/legal/terms). Send questions to [contact@mtf.edu.kg](mailto:contact@mtf.edu.kg). Wolfx Project is an unofficial project and is not affiliated with any government agency, meteorological organization, or earthquake-related authority in any country or region. The information provided by this service is for reference only and must not be used as a substitute for official earthquake warnings, disaster information, evacuation notices, or other official alert channels. During an emergency, always refer to the latest information issued by the relevant authorities.
+Earthquake data is for reference. In an emergency, follow the latest warnings and evacuation notices from the authorities. Review the [Terms of Service](/en/legal/terms) and [Privacy Policy](/en/legal/privacy) before using the API. For questions, email [contact@mtf.edu.kg](mailto:contact@mtf.edu.kg).
 
 ## WebSocket subscriptions
 
@@ -70,7 +70,7 @@ wss://ws-api.wolfx.jp/jma_eew
 
 **JSON Response Examples**
 
-Historical Earthquake Early Warning JSON response examples for development and testing. These examples do not represent current earthquake warnings. They also contain a string field called `Pond`. Use `isWarn` to determine whether a bulletin is a warning.
+These historical bulletins are for development and testing. They do not show current warnings. The examples include a string field named `Pond`. Use `isWarn` to identify warnings.
 
 - [First Forecast](/examples/jma_eew/forecast_first.json){external}
 - [Forecast Update](/examples/jma_eew/forecast_update.json){external}
@@ -120,7 +120,7 @@ Fields from `Title` through `info` belong to each `NoN`. Neither `time` nor `tim
 
 ## JMA Earthquake Detail JSON API
 
-Retrieves earthquake events with hypocenters, seismic intensity and long-period ground motion observations, official comments, and report status
+Returns the hypocenter, seismic intensity and long-period ground motion observations, official comments, and report status for each earthquake.
 
 **HTTP GET**
 
@@ -195,7 +195,7 @@ wss://ws-api.wolfx.jp/jma_tsunami
 
 **JSON Response Examples**
 
-Tsunami information JSON response examples for development and testing. These examples do not represent current tsunami warning conditions.
+These samples are for development and testing. They do not show current tsunami warnings.
 
 - [Tsunami Forecast](/examples/jma_tsunami/forecast_only.json){external}
 - [Tsunami Advisory](/examples/jma_tsunami/advisory.json){external}
@@ -208,7 +208,7 @@ Tsunami information JSON response examples for development and testing. These ex
 
 ## JMA Special Earthquake Information JSON API
 
-Retrieves the latest official reports concerning the Nankai Trough and the areas off Hokkaido and Sanriku
+Returns the latest official reports on the Nankai Trough and the areas off Hokkaido and Sanriku.
 
 **HTTP GET**
 
@@ -239,7 +239,7 @@ wss://ws-api.wolfx.jp/jma_special_eq
 
 ## China Earthquake Networks Center - Earthquake Information JSON API
 
-Retrieves the latest 50 earthquake reports published by the China Earthquake Networks Center (CENC)
+Returns the 50 most recent earthquake reports from the China Earthquake Networks Center (CENC).
 
 **HTTP GET**
 
@@ -272,7 +272,7 @@ wss://ws-api.wolfx.jp/cenc_eqlist
 
 ## Sichuan Earthquake Administration - Earthquake Early Warning JSON API
 
-Real-time access to earthquake early warnings issued by the Sichuan Earthquake Administration
+Real-time early warnings from the Sichuan Earthquake Administration.
 
 **HTTP GET**
 
@@ -304,7 +304,7 @@ wss://ws-api.wolfx.jp/sc_eew
 
 ## China Earthquake Networks Center - Earthquake Early Warning JSON API
 
-Real-time access to earthquake early warnings issued by the China Earthquake Networks Center
+Real-time early warnings from the China Earthquake Networks Center.
 
 **HTTP GET**
 
@@ -335,7 +335,7 @@ wss://ws-api.wolfx.jp/cenc_eew
 
 ## Fujian Earthquake Administration - Earthquake Early Warning JSON API
 
-Real-time access to earthquake early warnings issued by the Fujian Earthquake Administration
+Real-time early warnings from the Fujian Earthquake Administration.
 
 **HTTP GET**
 
@@ -366,7 +366,7 @@ wss://ws-api.wolfx.jp/fj_eew
 
 ## Chongqing Earthquake Administration - Earthquake Early Warning JSON API
 
-Real-time access to earthquake early warnings issued by the Chongqing Earthquake Administration
+Real-time early warnings from the Chongqing Earthquake Administration.
 
 **HTTP GET**
 
@@ -397,7 +397,7 @@ wss://ws-api.wolfx.jp/cq_eew
 
 ## China Real-Time Weather Ranking JSON API
 
-Provides hourly rankings of temperature, precipitation, and wind speed from national-level weather observation stations across China
+Ranks temperature, precipitation, and wind speed readings from national weather stations across China each hour.
 
 **HTTP GET**
 
@@ -417,7 +417,7 @@ Each entry in `tempRank`, `rainRank`, and `windSRank` contains the region (`prov
 
 ## IP Address Information Lookup JSON API
 
-Retrieve information about the requester’s IP address or a specified IP address
+Looks up the location of the caller’s IP address or an address you specify.
 
 **HTTP GET**
 
@@ -445,7 +445,7 @@ https://api.wolfx.jp/geoip.php?ip=<IP address>
 
 ## Latest Server Time JSON API
 
-Provides the latest accurate server time for synchronization purposes
+Returns the current server time for clock synchronization.
 
 **HTTP GET**
 
@@ -463,7 +463,7 @@ https://api.wolfx.jp/ntp.json
 
 ## Public IP Address Retrieval PLAIN API
 
-Retrieve the public IP address of the requester in plain text format.
+Returns the caller’s public IP address as plain text.
 
 **HTTP GET**
 
@@ -473,7 +473,7 @@ https://api.wolfx.jp/ip.php
 
 ## Random Anime Image Retrieval JPEG API
 
-Retrieve a random anime image.
+Returns a random anime image.
 
 **HTTP GET**
 
@@ -486,8 +486,6 @@ https://api.wolfx.jp/img.php?return=<img/json>
 ```
 
 ## API Status
-
-Client counts and statistical charts load from Wolfx Project's own API service after the page is displayed.
 
 ::api-status-panel{locale="en"}
 ::

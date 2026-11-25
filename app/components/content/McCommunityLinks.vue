@@ -9,14 +9,13 @@ const props = defineProps<{
   donateTitle: string
   donateDescription: string
   planTitle: string
-  planDescription: string
 }>()
 
 const links = computed(() => [
   { title: props.discordTitle, description: props.discordDescription, href: wolfxMc.links.discord },
   { title: props.qqTitle, description: props.qqDescription, href: wolfxMc.links.qq },
   { title: props.donateTitle, description: props.donateDescription, href: wolfxMc.links.donate },
-  { title: props.planTitle, description: props.planDescription, href: wolfxMc.links.plan },
+  { title: props.planTitle, href: wolfxMc.links.plan },
 ])
 </script>
 
@@ -30,7 +29,7 @@ const links = computed(() => [
       rel="noopener noreferrer"
     >
       <strong>{{ link.title }}</strong>
-      <span>{{ link.description }}</span>
+      <span v-if="link.description">{{ link.description }}</span>
       <UIcon
         class="mc-community-grid__icon"
         name="i-lucide-arrow-up-right"

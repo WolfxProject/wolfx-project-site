@@ -28,7 +28,6 @@ const tocLinks = computed(() => (props.page.body.toc?.links ?? [])
         </div>
         <header class="document-header legal-header">
           <h1>{{ page.title }}</h1>
-          <p>{{ page.description }}</p>
           <p
             v-if="page.updated"
             class="legal-updated"

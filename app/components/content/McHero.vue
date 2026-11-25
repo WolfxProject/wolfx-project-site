@@ -11,7 +11,6 @@ const rulesPath = computed(() => localizeWolfxMc('/mc/rules', displayLocale.valu
 const joinPath = computed(() => localizeWolfxMc('/mc/join', displayLocale.value, preservesExplicitChinese.value))
 
 const props = defineProps<{
-  eyebrow: string
   title: string
   copyLabel: string
   rulesLabel: string
@@ -52,9 +51,6 @@ const playerLabel = computed(() => {
     </div>
     <div class="site-container mc-hero__inner">
       <div class="mc-hero__content">
-        <p class="eyebrow">
-          {{ eyebrow }}
-        </p>
         <h1>{{ title }}</h1>
         <div class="mc-hero__description">
           <slot />

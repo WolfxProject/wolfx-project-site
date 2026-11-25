@@ -620,6 +620,7 @@ for (const viewport of viewports) {
 }
 
 test('explicit light and dark themes remain legible and persisted', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' })
   await page.goto('/')
   await page.evaluate(() => localStorage.removeItem('wolfx-color-mode'))
   await page.reload()
@@ -630,10 +631,13 @@ test('explicit light and dark themes remain legible and persisted', async ({ pag
     await expect(page.locator('html')).toHaveClass(new RegExp(`(^|\\s)${theme}(\\s|$)`))
     await page.reload()
     await expect(page.locator('html')).toHaveClass(new RegExp(`(^|\\s)${theme}(\\s|$)`))
-    const contrast = await page.locator('.hero-section__actions a').first().evaluate((button) => {
+    const primary = page.locator('.hero-section__actions a').first()
+    const contrast = () => primary.evaluate((button) => {
       const style = getComputedStyle(button)
       const context = document.createElement('canvas').getContext('2d')
       function luminance(color) {
+        context.fillStyle = getComputedStyle(document.body).backgroundColor
+        context.fillRect(0, 0, 1, 1)
         context.fillStyle = color
         context.fillRect(0, 0, 1, 1)
         const channels = context.getImageData(0, 0, 1, 1).data.slice(0, 3)
@@ -646,6 +650,8 @@ test('explicit light and dark themes remain legible and persisted', async ({ pag
       const [darker, lighter] = [luminance(style.color), luminance(style.backgroundColor)].sort((a, b) => a - b)
       return (lighter + 0.05) / (darker + 0.05)
     })
-    expect(contrast, theme).toBeGreaterThanOrEqual(4.5)
+    expect(await contrast(), theme).toBeGreaterThanOrEqual(4.5)
+    await primary.hover()
+    expect(await contrast(), `${theme} hover`).toBeGreaterThanOrEqual(4.5)
   }
 })

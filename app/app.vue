@@ -1,6 +1,6 @@
 <template>
   <UApp>
-    <NuxtLoadingIndicator color="#16867a" />
+    <NuxtLoadingIndicator color="var(--wolfx-accent)" />
     <NuxtRouteAnnouncer />
     <NuxtPage />
   </UApp>

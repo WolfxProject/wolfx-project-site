@@ -85,7 +85,7 @@ content/
 
 ```mdc
 ::project-grid
-:::project-card{title="Project" eyebrow="API" href="https://example.com" icon="i-lucide-activity" action="Open"}
+:::project-card{title="Project" href="https://example.com" icon="i-lucide-activity" action="Open"}
 プロジェクトの説明は Markdown に記述します。
 :::
 ::

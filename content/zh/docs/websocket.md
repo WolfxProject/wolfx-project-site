@@ -1,15 +1,15 @@
 ---
 title: "Wolfx WebSocket API 使用指南"
-description: "订阅地震预警、地震和海啸信息。包含各数据源的连接地址、all_eew 过滤参数、手动查询命令和消息格式。"
+description: "地震预警、地震和海啸信息的 WebSocket 订阅地址、过滤参数、查询命令和消息格式。"
 locale: zh
 layout: docs
-updated: 2026-11-24
+updated: 2026-11-25
 source: wsapi_zh.html
 ---
 
 ## WebSocket 简介
 
-订阅的数据源更新时，服务器会推送最新的 JSON 数据。服务器在连接建立后以及此后每分钟发送一次 `heartbeat` 心跳消息。建议客户端回复 `ping`，此操作可选。
+数据源更新时，服务器会推送新的 JSON。连接建立时及之后每分钟，服务器都会发送一次 `heartbeat`。建议客户端回复 `ping`，也可以不回复。
 
 ## 连接复用
 
@@ -17,13 +17,11 @@ source: wsapi_zh.html
 
 ## 聚合订阅与过滤
 
-通过以下地址可同时订阅多个数据源。
-
 ```text
 wss://ws-api.wolfx.jp/all_eew
 ```
 
-如需减少不必要的推送，可通过可选 URL 查询参数 `exclude` 指定要排除的数据源。使用各独立订阅入口 URL 路径中的数据源名称，多个名称用英文逗号（`,`）分隔。
+用可选的 URL 参数 `exclude` 排除不需要的数据源。名称取自各订阅地址的路径，多个名称用英文逗号（`,`）分隔。
 
 ```text
 wss://ws-api.wolfx.jp/all_eew?exclude=cenc_eew
@@ -32,7 +30,7 @@ wss://ws-api.wolfx.jp/all_eew?exclude=sc_eew,fj_eew,cq_eew
 
 `exclude` 在建立连接时指定，仅对该 `all_eew` 连接的自动推送生效。更改排除项需要重新建立连接。指定不存在的数据源名称时，服务端会在 WebSocket 握手阶段返回 `HTTP 400`。
 
-在同一连接中，仍可使用原有手动查询指令获取被排除的公开数据源的缓存 JSON。
+被排除的公开数据源仍可手动查询。在同一连接上发送该源的查询命令，即可取得缓存的 JSON。
 
 ## 单独订阅与手动查询
 

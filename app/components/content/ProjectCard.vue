@@ -1,7 +1,6 @@
 <script setup lang="ts">
 const props = defineProps<{
   title: string
-  eyebrow: string
   href: string
   action: string
   image?: string
@@ -32,9 +31,6 @@ const external = computed(() => /^https?:\/\//.test(props.href))
       <UIcon :name="icon ?? 'i-lucide-box'" />
     </div>
     <div class="project-card__body">
-      <p class="eyebrow">
-        {{ eyebrow }}
-      </p>
       <component
         :is="headingTag"
         class="project-card__title"

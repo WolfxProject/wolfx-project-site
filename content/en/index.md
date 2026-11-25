@@ -1,41 +1,35 @@
 ---
 title: "Wolfx Project"
-description: "Free public APIs for earthquake early warnings and seismic observations, plus weather and network tools."
+description: "Earthquake reports and early warnings from the Wolfx Open API, observations from SeisJS stations, and weather and network tools."
 locale: en
 layout: landing
-updated: 2026-11-24
+updated: 2026-11-25
 ---
 
-::hero-section{eyebrow="EARTHQUAKE MONITORING" title="Earthquake alerts and observations, open to everyone" primary-label="API documentation" primary-href="/en/docs/open-api" secondary-label="Explore projects" secondary-href="/en/projects"}
-Wolfx Project is an independent public-interest project. Developers and the public can use its free services to follow earthquakes, receive earthquake early warnings (EEW), and explore station observations.
-
-#features
-
-- HTTP / WebSocket
-- Open documentation
-- No behavioral tracking
+::hero-section{title="Wolfx Project" primary-label="API documentation" primary-href="/en/docs/open-api" secondary-label="View projects" secondary-href="/en/projects"}
+Wolfx Project shares earthquake reports and early warnings through a free API.
 ::
 
 ## Public services
 
 ::project-grid
-:::project-card{title="Wolfx Open API" eyebrow="DATA API" href="/en/docs/open-api" image="/images/cards/API.webp" action="Read the specification"}
-Get earthquake reports, early warnings, and utility data over HTTP. Subscribe to supported sources over WebSocket.
+:::project-card{title="Wolfx Open API" href="/en/docs/open-api" image="/images/cards/API.webp" action="Read the API reference"}
+Get earthquake reports and early warnings over HTTP. Some feeds also publish updates over WebSocket.
 :::
-:::project-card{title="Wolfx Real-time Earthquake Monitoring" eyebrow="MONITORING" href="https://bs.wolfx.jp/about.html" image="/images/cards/WREM.webp" action="Open WREM"}
-A monitoring service that aggregates real-time earthquake observations and provides public modules.
+:::project-card{title="Wolfx Real-time Earthquake Monitoring" href="https://bs.wolfx.jp/about.html" image="/images/cards/WREM.webp" action="About WREM"}
+See earthquake reports from Japan and China alongside station waveforms.
 :::
-:::project-card{title="Wolfx SeisJS" eyebrow="CITIZEN SENSING" href="https://seis.wolfx.jp/" image="/images/cards/seisJS.webp" action="Join SeisJS"}
-Record ground motion with a mobile device’s accelerometer. Station observations are available through the public API.
+:::project-card{title="Wolfx SeisJS" href="https://seis.wolfx.jp/" image="/images/cards/seisJS.webp" action="Join SeisJS"}
+Record ground motion with a mobile accelerometer and share station readings through the API.
 :::
-:::project-card{title="Seismic Stations Viewer" eyebrow="SEISMIC VIEWER" href="https://ssv.wolfx.jp" image="/images/cards/SSV.webp" action="Use SSV"}
-A public viewer for SeisJS observation data.
+:::project-card{title="Seismic Stations Viewer" href="https://ssv.wolfx.jp" image="/images/cards/SSV.webp" action="Open the viewer"}
+View readings and waveforms from SeisJS stations.
 :::
-:::project-card{title="ACG.kr" eyebrow="UTILITY" href="https://acg.kr" image="/images/cards/ACGKR.webp" action="Shorten a URL"}
-A public-interest URL shortening service based on YOURLS.
+:::project-card{title="ACG.kr" href="https://acg.kr" image="/images/cards/ACGKR.webp" action="Shorten a URL"}
+A URL shortener built on YOURLS.
 :::
-:::project-card{title="Service Status" eyebrow="OPERATIONS" href="https://status.wolfx.jp" icon="i-lucide-circle-gauge" action="View service status"}
-Operational status and incident information for Wolfx Project public services.
+:::project-card{title="Service Status" href="https://status.wolfx.jp" icon="i-lucide-circle-gauge" action="View service status"}
+Check uptime and reported incidents across Wolfx services.
 :::
 ::
 
@@ -43,16 +37,12 @@ Operational status and incident information for Wolfx Project public services.
 
 ::service-links
 :::service-link{title="Open API" href="/en/docs/open-api" icon="i-lucide-braces"}
-Earthquake, EEW, weather, and network APIs
+Earthquake reports, weather, IP lookups, and server time
 :::
 :::service-link{title="WebSocket" href="/en/docs/websocket" icon="i-lucide-radio-tower"}
-Subscription endpoints and query commands
+Feed URLs, filters, and query commands
 :::
 :::service-link{title="SeisJS API" href="/en/docs/seisjs-api" icon="i-lucide-audio-waveform"}
-Station observations and field definitions
+Station lists, readings, and units
 :::
-::
-
-::content-notice{type="warning" title="About this unofficial project"}
-Wolfx Project is an independently operated, unofficial project. It is not affiliated with any government, meteorological, or earthquake-related authority. Information is provided for reference and does not replace official earthquake warnings, disaster information, or evacuation notices. Always verify the latest information from public authorities during an emergency.
 ::

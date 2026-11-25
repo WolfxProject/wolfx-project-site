@@ -227,24 +227,18 @@ onBeforeUnmount(() => {
     </p>
     <div class="api-status-panel__summary">
       <div class="api-status-panel__metric">
-        <span
-          class="api-status-panel__indicator"
-          aria-hidden="true"
-        />
-        <div>
-          <p class="api-status-panel__label">
-            {{ t('apiStatus.activeClients') }}
-          </p>
-          <p
-            class="api-status-panel__value"
-            :class="{ 'api-status-panel__value--error': statusState === 'error' }"
-            aria-live="polite"
-          >
-            <span v-if="statusState === 'ready'">{{ formattedClientCount }}</span>
-            <span v-else-if="statusState === 'error'">{{ t('apiStatus.statusError') }}</span>
-            <span v-else>{{ t('apiStatus.loading') }}</span>
-          </p>
-        </div>
+        <p class="api-status-panel__label">
+          {{ t('apiStatus.activeClients') }}
+        </p>
+        <p
+          class="api-status-panel__value"
+          :class="{ 'api-status-panel__value--error': statusState === 'error' }"
+          aria-live="polite"
+        >
+          <span v-if="statusState === 'ready'">{{ formattedClientCount }}</span>
+          <span v-else-if="statusState === 'error'">{{ t('apiStatus.statusError') }}</span>
+          <span v-else>{{ t('apiStatus.loading') }}</span>
+        </p>
       </div>
 
       <div class="api-status-panel__meta">
@@ -331,19 +325,6 @@ onBeforeUnmount(() => {
 
 .api-status-panel__metric {
   min-width: 0;
-  display: flex;
-  align-items: center;
-  gap: .9rem;
-}
-
-.api-status-panel__indicator {
-  width: .72rem;
-  height: .72rem;
-  flex: 0 0 auto;
-  border: 2px solid var(--wolfx-surface);
-  border-radius: 50%;
-  background: var(--wolfx-accent);
-  box-shadow: 0 0 0 4px color-mix(in srgb, var(--wolfx-accent) 18%, transparent);
 }
 
 .api-status-panel__label,

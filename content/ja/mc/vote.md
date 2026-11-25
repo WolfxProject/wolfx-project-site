@@ -1,19 +1,17 @@
 ---
 title: "Wolfx Survival に投票する"
-description: "Wolfx Survival を応援できるサーバーリスト投票ページ。"
+description: "Minecraft のサーバーリストで Wolfx Survival に投票できます。"
 locale: ja
 availableLocales: [zh, ja, en]
 layout: mc
-updated: 2026-11-24
+updated: 2026-11-25
 ---
 
-::page-intro{eyebrow="サーバーを応援する" title="Wolfx Survival に投票する"}
-以下のサーバーリストから Wolfx Survival に投票できます。
+::page-intro
+# Wolfx Survival に投票する
 ::
 
 ::content-section{width="reading"}
 ::mc-vote-links
 ::
-
-投票ありがとうございます。
 ::
