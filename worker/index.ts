@@ -1,8 +1,6 @@
 // Workers Assets resolves HTML using extensionless paths. Keep the published
-// entry points of the standalone tools and the localized home pages intact.
+// entry points of the standalone tools intact.
 const publicHtml = new Map([
-  ['/zh/', '/zh'],
-  ['/en/', '/en'],
   ['/geiger/', '/geiger'],
   ['/geiger/index.html', '/geiger'],
   ['/ipleak.html', '/ipleak'],
@@ -22,6 +20,8 @@ export default {
     // Conditional headers for a missing resource do not apply to this body.
     const method = request.method === 'HEAD' ? 'HEAD' : 'GET'
     const errorPage = await env.ASSETS.fetch(new Request(new URL('/404', url), { method }))
+    if (!errorPage.ok)
+      return errorPage
     return new Response(errorPage.body, { status: 404, headers: errorPage.headers })
   },
 } satisfies ExportedHandler<Env>

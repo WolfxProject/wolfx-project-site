@@ -3,7 +3,7 @@ title: "Wolfx Project"
 description: "Wolfx Project 的地震预警和地震信息 API、SeisJS 测站数据，以及气象和网络工具。"
 locale: zh
 layout: landing
-updated: 2026-11-25
+updated: 2026-11-26
 ---
 
 ::hero-section{title="Wolfx Project" primary-label="API 文档" primary-href="/zh/docs/open-api" secondary-label="查看项目" secondary-href="/zh/projects"}
@@ -41,8 +41,5 @@ Wolfx Project 免费提供地震数据 API。
 :::
 :::service-link{title="WebSocket" href="/zh/docs/websocket" icon="i-lucide-radio-tower"}
 订阅地址、过滤参数和查询命令
-:::
-:::service-link{title="SeisJS API" href="/zh/docs/seisjs-api" icon="i-lucide-audio-waveform"}
-测站列表、观测字段和单位
 :::
 ::

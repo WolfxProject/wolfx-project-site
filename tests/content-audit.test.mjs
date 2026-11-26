@@ -7,7 +7,6 @@ import { auditPage } from '../scripts/audit-content.mjs'
 const locales = ['ja', 'zh', 'en']
 const http = 'docs/open-api.md'
 const socket = 'docs/websocket.md'
-const seis = 'docs/seisjs-api.md'
 const api = 'https://api.wolfx.jp/'
 const ws = 'wss://ws-api.wolfx.jp/'
 const channels = { land: 'query_land', sea: 'query_sea' }
@@ -94,20 +93,6 @@ test('message tables and identically named CENC keys are validated in their own 
   audit(http, cenc([nested, discriminator]), contract)
   assert.throws(() => audit(http, cenc([discriminator]), contract), /cenc_eqlist: fields/)
   assert.throws(() => audit(http, cenc([discriminator, ['type', '`NoN` can be `automatic` (string)']]), contract), /missing reviewed/)
-})
-
-test('SeisJS accepts equivalent velocity units and rejects acceleration units and swapped packet tables', () => {
-  const stationFields = { number: 'PGA Sva30 Max_Sva30' }
-  function station(unit, messages = packets()) {
-    const table = fieldTable([
-      ['PGA', 'Peak acceleration (number)'], ['Max_Sva30', `Highest \`Sva30\` over 2 minutes, in ${unit}. (number)`],
-      ['Sva30', `Over 30 seconds, periods 1.6 to 7.8 seconds, 5 % damping. Unit: ${unit}; horizontal response. (number)`],
-    ])
-    return ['## Station', '[Stations](https://api.wolfx.jp/seis_list.json)', code('wss://seisjs.wolfx.jp/all_seis'), table, messages].join('\n\n')
-  }
-  for (const unit of ['cm/s', 'cm / s', 'cm·s⁻¹']) audit(seis, station(unit), { stationFields })
-  for (const unit of ['cm/s²', 'cm/s^2', 'cm·s⁻²']) assert.throws(() => audit(seis, station(unit), { stationFields }), /velocity unit/)
-  assert.throws(() => audit(seis, station('cm/s', packets(pong, heartbeat)), { stationFields }), /heartbeat/)
 })
 
 test('cross-references, ordinary tables, multiple query examples and MDC coexist with checked declarations', () => {

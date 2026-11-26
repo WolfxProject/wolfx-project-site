@@ -26,7 +26,7 @@ Wolfx Project の公式ウェブサイトおよび公開ドキュメントサイ
 
 ```bash
 pnpm install --frozen-lockfile
-pnpm exec playwright install chromium webkit
+pnpm exec playwright install chromium firefox webkit
 pnpm dev
 pnpm typecheck
 pnpm lint
@@ -56,8 +56,7 @@ content/
 ├── projects.md            # プロジェクト一覧
 ├── docs/
 │   ├── open-api.md
-│   ├── websocket.md
-│   └── seisjs-api.md
+│   └── websocket.md
 ├── legal/
 │   ├── privacy.md
 │   └── terms.md
@@ -104,7 +103,7 @@ API フィールドには引き続き Markdown の表を使用し、1 列目に�
 
 API の変更をサービスの実装や実際のレスポンスで確認したら、`scripts/api-contract.mjs` と対象言語の文書を同時に更新します。契約には通信上の識別子と JSON 型、適用する言語を記述します。型は表の説明の末尾に各言語の括弧で示し、単位や任意指定も併記できます。`heartbeat` と `pong` のメッセージ表は、それぞれの識別子が入った見出しの下に置きます。地震・津波情報では、参照元に照らして警報の解除と期限切れ、欠測、情報の有効期間、観測値の単位といった説明を各言語で確認してください。
 
-旧サイトのリポジトリは廃止されました。移行当時の HTML を含む Git アーカイブがある場合は、`WOLFX_LEGACY_ROOT` にそのパスを指定すると、`pnpm content:audit:legacy` で当時のコミット `8cd8387d334d8301d4f6c9ed7eeb5cc522fd8b42` との照合もできます。既定の参照先は `../wolfx-project` です。`pnpm content:migrate` は同じリビジョンを読み取り、15 文書の旧版を `.data/legacy-migration/content/` に出力します。
+旧サイトのリポジトリは廃止されました。移行当時の HTML を含む Git アーカイブがある場合は、`WOLFX_LEGACY_ROOT` にそのパスを指定すると、`pnpm content:audit:legacy` で当時のコミット `8cd8387d334d8301d4f6c9ed7eeb5cc522fd8b42` との照合もできます。既定の参照先は `../wolfx-project` です。`pnpm content:migrate` は同じリビジョンを読み取り、Open API、WebSocket、法的文書の 3 言語分（12 文書）を `.data/legacy-migration/content/` に出力します。
 
 ### 法的文書の編集
 
@@ -177,10 +176,13 @@ Cloudflare でのデフォルト構成は「Nuxt による静的生成 + 最小�
 
 `wolfx.jp` と Worker の紐付けは Cloudflare アカウント側で管理します。初回の公開前に対象のルートまたはカスタムドメインを確認してください。Wrangler の設定で `workers.dev` とバージョン別の公開プレビュー URL を無効にしています。
 
+Workers Builds のルートはリポジトリ直下、ビルドコマンドは `pnpm build`、デプロイコマンドは `pnpm exec wrangler deploy --config wrangler.jsonc` です。`build` は `generate` を呼び出します。`pnpm cf:dry-run` は Workers Builds と同じ `WORKERS_CI=1` で通常のビルドと静的出力の検査を行い、公開用の Worker をローカルでパッケージします。
+
 - 静的アセットのディレクトリ：`.output/public`
 - Worker のエントリーポイント：`worker/index.ts`
 - 通常のコンテンツページ：動的 SSR を介さず、Workers Assets から直接配信
-- Worker は `/zh/`、`/en/`、`/geiger/`、`/geiger/index.html`、`/ipleak.html` を対応する静的ファイルから配信します。存在しないページや Nuxt ページの `.html` 形式には、生成したエラーページを HTTP 404 で返します。
+- 言語別トップの正規 URL は `/zh` と `/en` です。末尾のスラッシュは他のページと同じく Workers Assets が 307 で取り除き、クエリ文字列を引き継ぎます。
+- Worker は `/geiger/`、`/geiger/index.html`、`/ipleak.html` を対応する静的ファイルから配信します。存在しないページや Nuxt ページの `.html` 形式には、生成したエラーページを HTTP 404 で返します。
 - 常駐する Node.js サーバーも、通常のページをレンダリングする SSR Worker も不要
 
 ローカルプレビューと HTTP 検証：

@@ -49,7 +49,7 @@ function publicPath(locale, relativeFile) {
   let prefix = `/${locale}`
   if ((isWolfxMc && locale === 'zh') || (!isWolfxMc && locale === 'ja'))
     prefix = ''
-  return `${prefix}/${route}`
+  return route ? `${prefix}/${route}` : prefix || '/'
 }
 
 async function markdownFiles(directory) {

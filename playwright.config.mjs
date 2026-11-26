@@ -16,6 +16,11 @@ export default defineConfig({
       testIgnore: /mobile\.spec\.mjs/,
       use: { browserName: 'chromium' },
     },
+    ...['firefox', 'webkit'].map(browserName => ({
+      name: `desktop-${browserName}`,
+      testMatch: /localized-homes\.spec\.mjs/,
+      use: { browserName },
+    })),
     {
       name: 'mobile-chromium',
       testMatch: /mobile\.spec\.mjs/,

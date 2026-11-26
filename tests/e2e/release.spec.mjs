@@ -32,7 +32,6 @@ const contentPaths = [
   '/donate',
   '/docs/open-api',
   '/docs/websocket',
-  '/docs/seisjs-api',
   '/legal/privacy',
   '/legal/terms',
 ]
@@ -46,7 +45,7 @@ const representativeLayoutRoutes = [
   '/', '/zh/', '/en/',
   '/donate', '/zh/donate', '/en/donate',
   '/docs/open-api/', '/zh/docs/open-api/', '/en/docs/open-api/',
-  '/docs/websocket/', '/docs/seisjs-api/',
+  '/docs/websocket/',
   '/legal/privacy/', '/legal/terms/',
   '/projects/', '/404.html',
 ]
@@ -144,7 +143,7 @@ test('critical pages make no unexpected third-party requests', async ({ page }) 
   expect([...apiRequests].sort()).toEqual([statusJsonPath, ...statusImagePaths].sort())
 })
 
-test('all 24 content pages preserve the shared layout and typography invariants', async ({ page }) => {
+test('all main-site content pages preserve the shared layout and typography invariants', async ({ page }) => {
   test.setTimeout(120_000)
   const problems = []
   page.on('console', (message) => {
@@ -254,8 +253,18 @@ test('API Status refreshes once on demand with a new shared chart timestamp', as
   await expect(panel.getByText('1,234', { exact: true })).toBeVisible()
   await revealStatusCharts(panel)
   const initialTimestamp = new URL(await panel.locator('img').first().getAttribute('src')).searchParams.get('ts')
-  await panel.getByRole('button', { name: 'Refresh', exact: true }).click()
-  await expect(panel.getByRole('button', { name: 'Refreshing', exact: true })).toBeDisabled()
+  const refresh = Promise.withResolvers()
+  await page.route(`https://api.wolfx.jp${statusJsonPath}`, async (route) => {
+    await refresh.promise
+    await route.fallback()
+  })
+  try {
+    await panel.getByRole('button', { name: 'Refresh', exact: true }).click()
+    await expect(panel.getByRole('button', { name: 'Refreshing', exact: true })).toBeDisabled()
+  }
+  finally {
+    refresh.resolve()
+  }
   await expect(panel.getByText('5,678', { exact: true })).toBeVisible()
   const refreshedSources = await panel.locator('img').evaluateAll(elements => elements.map(image => image.src))
   const refreshedTimestamps = new Set(refreshedSources.map(source => new URL(source).searchParams.get('ts')))
@@ -277,7 +286,7 @@ test('API Status handles JSON and individual chart failures without hiding the d
   await expect(page.locator('.prose-document')).toContainText('https://api.wolfx.jp/jma_eew.json')
 })
 
-test('all nine API documents show their content revision date and preserve API version fields', async ({ page }) => {
+test('all API documents show their content revision date and preserve API version fields', async ({ page }) => {
   const locales = [
     { code: 'ja', prefix: '', label: '最終更新' },
     { code: 'zh', prefix: '/zh', label: '最后更新' },
@@ -286,7 +295,6 @@ test('all nine API documents show their content revision date and preserve API v
   const documents = [
     { path: '/docs/open-api' },
     { path: '/docs/websocket', field: 'ver' },
-    { path: '/docs/seisjs-api', field: 'version' },
   ]
 
   for (const locale of locales) {
@@ -361,7 +369,7 @@ test('static search works in Japanese, Chinese, and English after navigation and
     await expect(firstResult).toBeVisible()
     // Legal pages can also match an API query; ranking is content-dependent.
     const matchingPaths = index.filter(entry => entry.locale === item.locale
-      && `${entry.title} ${(entry.headings ?? []).join(' ')} ${entry.text}`.toLocaleLowerCase().includes(item.query.toLocaleLowerCase()))
+      && `${entry.title} ${(entry.headings ?? []).join(' ')} ${entry.description ?? ''} ${entry.text}`.toLocaleLowerCase().includes(item.query.toLocaleLowerCase()))
       .map(entry => entry.path)
     const resultPaths = await page.locator('#search-results a').evaluateAll(links => links.map(link => link.getAttribute('href')))
     for (const path of resultPaths)
@@ -595,7 +603,7 @@ for (const viewport of viewports) {
       }
       if (route === '/404.html') {
         await expect(page.getByRole('heading', { level: 1 })).toHaveText('404')
-        for (const home of ['/', '/zh/', '/en/'])
+        for (const home of ['/', '/zh', '/en'])
           await expect(page.locator(`main a[href="${home}"]`)).toBeVisible()
       }
       if (route === '/donate') {

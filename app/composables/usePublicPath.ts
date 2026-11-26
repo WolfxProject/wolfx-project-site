@@ -8,7 +8,7 @@ export function usePublicPath() {
     const cleanPath = unlocalize(path)
     if (targetLocale === 'ja')
       return cleanPath
-    return `/${targetLocale}${cleanPath}`
+    return cleanPath === '/' ? `/${targetLocale}` : `/${targetLocale}${cleanPath}`
   }
 
   function localizeWolfxMc(path: string, targetLocale: WolfxLocale, explicitChinese = false) {

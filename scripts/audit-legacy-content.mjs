@@ -7,7 +7,6 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const migrations = [
   ['apidoc.html', 'ja/docs/open-api.md'], ['apidoc_zh.html', 'zh/docs/open-api.md'], ['apidoc_en.html', 'en/docs/open-api.md'],
   ['wsapi.html', 'ja/docs/websocket.md'], ['wsapi_zh.html', 'zh/docs/websocket.md'], ['wsapi_en.html', 'en/docs/websocket.md'],
-  ['seisapi.html', 'ja/docs/seisjs-api.md'], ['seisapi_zh.html', 'zh/docs/seisjs-api.md'], ['seisapi_en.html', 'en/docs/seisjs-api.md'],
   ['privacy_policy.html', 'ja/legal/privacy.md'], ['privacy_policy_zh.html', 'zh/legal/privacy.md'], ['privacy_policy_en.html', 'en/legal/privacy.md'],
   ['tos.html', 'ja/legal/terms.md'], ['tos_zh.html', 'zh/legal/terms.md'], ['tos_en.html', 'en/legal/terms.md'],
 ]
@@ -60,25 +59,6 @@ const headingRenames = {
     'WebSocket Call URLs': 'Aggregate subscriptions and filters',
     'WebSocket Manual Query Commands': 'Individual subscriptions and query commands',
     'WebSocket JSON Data Specification': 'WebSocket message format',
-  },
-  'seisapi.html': {
-    '提供観測点一覧': '観測点一覧',
-    'JSONフィールドの説明（データ型）': '観測データのフィールド',
-  },
-  'seisapi_zh.html': {
-    'Wolfx SeisJS API 调用说明': 'Wolfx SeisJS API 使用指南',
-    '提供测站列表': '测站列表',
-    'WebSocket 调用地址': 'WebSocket 连接地址',
-    'JSON 字段解析(数据类型)': '观测数据字段',
-    'WebSocket 手动查询指令': 'WebSocket 手动查询命令',
-    'WebSocket JSON 资料说明': 'WebSocket 消息格式',
-  },
-  'seisapi_en.html': {
-    'Wolfx SeisJS API Documentation': 'Wolfx SeisJS API reference',
-    'Available Station List': 'Station list',
-    'JSON Field Description (Data Types)': 'Observation fields',
-    'WebSocket Manual Commands': 'Connection check',
-    'WebSocket JSON Field Specification': 'WebSocket message format',
   },
 }
 
@@ -217,7 +197,7 @@ for (const [legacyFile, markdownFile] of migrations) {
 }
 
 console.log('\nCross-language differences (preserved, not normalized):')
-for (const family of ['apidoc', 'wsapi', 'seisapi', 'privacy_policy', 'tos']) {
+for (const family of ['apidoc', 'wsapi', 'privacy_policy', 'tos']) {
   const entries = summaries.filter(item => item.legacyFile.startsWith(family))
   const signature = entries.map(item => `${item.language}: headings=${item.headings}, tables=${item.tables}, fields=${item.fields}, endpoints=${item.endpoints}`).join(' | ')
   console.log(`- ${family}: ${signature}`)

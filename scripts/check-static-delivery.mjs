@@ -1,7 +1,7 @@
-const mainPaths = ['/', '/projects', '/donate', '/docs/open-api', '/docs/websocket', '/docs/seisjs-api', '/legal/privacy', '/legal/terms']
+const mainPaths = ['', '/projects', '/donate', '/docs/open-api', '/docs/websocket', '/legal/privacy', '/legal/terms']
 const gamePaths = ['/mc', '/mc/rules', '/mc/join', '/mc/vote']
 const pages = [
-  ...['', '/zh', '/en'].flatMap(prefix => mainPaths.map(path => prefix + path)),
+  ...['', '/zh', '/en'].flatMap(prefix => mainPaths.map(path => prefix + path || '/')),
   ...['', '/zh', '/ja', '/en'].flatMap(prefix => gamePaths.map(path => prefix + path)),
 ]
 
@@ -24,18 +24,54 @@ export async function checkStaticDelivery(base, server) {
     expect((cache.match(/\b(?:no-cache|max-age=\d+)\b/g) ?? []).length === 1, `${path}: expected a single cache policy`)
   }
 
+  const query = '?source=delivery&view=full'
+  const build = await (await request('/_nuxt/builds/latest.json')).json()
+  expect(typeof build.id === 'string' && build.id, 'Missing current build ID')
   const bundles = new Set()
   for (const path of pages) {
-    const response = await request(`${path}?source=delivery&view=full`)
+    const response = await request(path + query)
     const html = await response.text()
     const canonical = path.replace(/^\/zh(?=\/mc(?:\/|$))/, '')
-    expect(html.includes(`<link rel="canonical" href="https://wolfx.jp${canonical}"`), `${path}: incorrect generated page or canonical URL`)
+    expect(html.includes(`<link rel="canonical" href="https://wolfx.jp${canonical}"`) && html.includes('markdown-content'), `${path}: incorrect generated page or canonical URL`)
+    expect(/text\/html/.test(response.headers.get('content-type')), `${path}: incorrect HTML content type`)
     checkRevalidation(response, path)
-    if (path === '/') {
-      expect(html.includes('data-site="main"'), '/: missing main site identity')
-      for (const match of html.matchAll(/(?:src|href)="(\/_nuxt\/[^"/?]+\.(?:css|js))(?:\?[^"]*)?"/g))
-        bundles.add(match[1])
+    const head = await request(path + query, 200, { method: 'HEAD' })
+    expect(head.headers.get('content-type') === response.headers.get('content-type') && await head.text() === '', `HEAD ${path}: expected empty HTML response`)
+    const payloadPath = `${path === '/' ? '' : path}/_payload.json?_b=${build.id}`
+    expect(html.includes(`data-src="${payloadPath}"`) && html.includes(`href="${payloadPath}"`), `${path}: payload and preload must match the published build`)
+    const payload = await request(payloadPath)
+    checkRevalidation(payload, payloadPath)
+    expect(/application\/json/.test(payload.headers.get('content-type')), `${path}: incorrect payload type`)
+    const data = await payload.json()
+    const locale = path.match(/^\/(zh|ja|en)(?:\/|$)/)?.[1] ?? (path.startsWith('/mc') ? 'zh' : 'ja')
+    const slug = path.replace(/^\/(zh|ja|en)(?:\/|$)/, '/').slice(1)
+    const key = `content-page:/${locale}${slug ? `/${slug}` : ''}`
+    expect(data[data[0].buildId] === build.id && data.some(item => item && Object.hasOwn(item, key)), `${path}: payload belongs to another page or build`)
+    if (path !== '/') {
+      const slash = `${path}/${query}`
+      const redirects = server === 'Cloudflare'
+      for (const method of ['GET', 'HEAD']) {
+        const raw = await request(slash, redirects ? 307 : 200, { method, headers: { 'Accept': 'text/html', 'Cache-Control': 'no-cache' } })
+        expect(raw.headers.get('location') === (redirects ? path + query : null), `${method} ${slash}: unexpected redirect target`)
+        if (method === 'HEAD') expect(await raw.text() === '', `HEAD ${slash}: unexpected body`)
+        else if (!redirects) expect(await raw.text() === html, `${slash}: wrong directory index`)
+        else await raw.body?.cancel()
+      }
+      const final = await request(slash, 200, { redirect: 'follow' })
+      expect(final.url === new URL(redirects ? path + query : slash, base).href && await final.text() === html, `${slash}: wrong final URL or page after navigation`)
+      if (path === '/zh' || path === '/en') {
+        for (const headers of [{ 'Accept': 'application/json', 'Sec-Purpose': 'prefetch' }, { 'Accept': 'text/html', 'Sec-Fetch-Mode': 'navigate', 'Accept-Language': 'ja' }]) {
+          const repeat = await request(slash, redirects ? 307 : 200, { headers })
+          expect(repeat.headers.get('location') === (redirects ? path + query : null), `${slash}: request headers changed the route`)
+          if (redirects) await repeat.body?.cancel()
+          else expect(await repeat.text() === html, `${slash}: request headers changed the page`)
+        }
+      }
     }
+    for (const match of html.matchAll(/(?:src|href)="(\/_nuxt\/[^"/?]+\.(?:css|js))(?:\?[^"]*)?"/g))
+      bundles.add(match[1])
+    if (path === '/')
+      expect(html.includes('data-site="main"'), '/: missing main site identity')
     if (path === '/mc') {
       expect(html.includes('data-site="wolfxmc"') && (html.match(/<code>wolfx\.jp<\/code>/g) ?? []).length === 1, '/mc: incorrect site or game address')
       expect(html.includes('首页') && !/nav\.home|mc\.overview/.test(html), '/mc: missing Chinese UI messages')
@@ -45,6 +81,9 @@ export async function checkStaticDelivery(base, server) {
   for (const extension of ['.js', '.css'])
     expect([...bundles].some(path => path.endsWith(extension)), `/: missing generated ${extension} bundle`)
   for (const path of bundles) {
+    const bundle = await request(path)
+    const mime = path.endsWith('.css') ? /text\/css/ : /(?:application|text)\/javascript/
+    expect(mime.test(bundle.headers.get('content-type')) && /^[^<]/.test((await bundle.text()).trim()), `${path}: expected a non-empty JS or CSS asset`)
     const response = await request(path, 200, { method: 'HEAD' })
     const cache = response.headers.get('cache-control') ?? ''
     expect(/\bimmutable\b/.test(cache) && /\bmax-age=31536000\b/.test(cache) && (cache.match(/max-age=/g) ?? []).length === 1, `${path}: incorrect immutable bundle policy "${cache}"`)
@@ -109,7 +148,7 @@ export async function checkStaticDelivery(base, server) {
     checkRevalidation(response, path)
   }
 
-  for (const path of ['/mc/rules', '/en/', '/zh/', '/ipleak.html', '/geiger', '/geiger/', '/geiger/index.html']) {
+  for (const path of ['/mc/rules', '/en', '/zh', '/ipleak.html', '/geiger', '/geiger/', '/geiger/index.html']) {
     const html = await request(`${path}?source=delivery`)
     const body = await html.text()
     expect(/text\/html/.test(html.headers.get('content-type')) && /<html[\s>]/i.test(body), `${path}: expected HTML`)
@@ -127,6 +166,7 @@ export async function checkStaticDelivery(base, server) {
   }
 
   for (const path of [
+    ...['', '/zh', '/en'].flatMap(prefix => ['', '/', '.html', '/index', '/index/', '/index.html', '/_payload.json'].map(suffix => `${prefix}/docs/seisjs-api${suffix}`)),
     '/apidoc', '/apidoc.html', '/wsapi', '/seisapi.html', '/privacy_policy', '/privacy_policy.html', '/tos.html', '/donate.html',
     '/mc/rules.html', '/mc/join.html', '/mc/vote.html', '/mc/index.html', '/_headers', '/200', '/404', '/404.html',
     '/ipleak', '/ipleak/', '/en/index', '/404/index', '/nonexistent-path', '/_nuxt/missing-bundle.js',
@@ -134,18 +174,20 @@ export async function checkStaticDelivery(base, server) {
     const response = await request(`${path}?source=delivery`, 404)
     const html = await response.text()
     expect(!response.headers.has('location'), `${path}: missing route unexpectedly redirects`)
+    const head = await request(path, 404, { method: 'HEAD' })
+    expect(!head.headers.has('location') && /text\/html/.test(head.headers.get('content-type')) && await head.text() === '', `HEAD ${path}: expected an empty 404 HTML response`)
     checkRevalidation(response, `${path} (404)`)
     expect(/<h1(?:\s[^>]*)?>[^<]+<\/h1>/.test(html) && /<a\b[^>]*href="\/"/.test(html), `${path}: missing a readable error heading or home link`)
     expect(/<meta name="robots" content="[^"]*noindex/.test(html), `${path}: missing robots noindex`)
     if (path === '/nonexistent-path') {
-      for (const home of ['/', '/zh/', '/en/'])
+      for (const home of ['/', '/zh', '/en'])
         expect(html.includes(`href="${home}"`), `${path}: no static link to ${home}`)
       expect(!/<script\b[^>]*type="module"/.test(html), `${path}: the shared fallback must work without hydrating at the requested URL`)
     }
   }
 
   for (const [method, path, status] of [
-    ['POST', '/en/', 405], ['POST', '/ipleak.html', 405], ['OPTIONS', '/images/logo.png', 405],
+    ['POST', '/en', 405], ['POST', '/en/', 405], ['POST', '/ipleak.html', 405], ['OPTIONS', '/images/logo.png', 405],
     ['POST', '/ipleak', 404], ['POST', '/donate.html', 404],
   ]) {
     const response = await request(path, status, { method })

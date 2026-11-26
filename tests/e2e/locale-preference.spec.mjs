@@ -21,10 +21,9 @@ async function configureLocale(page, { languages, language, storedLocale }) {
 }
 
 async function expectStablePath(page, path) {
-  const normalizePath = value => value === '/' ? value : value.replace(/\/$/, '')
-  await expect.poll(() => normalizePath(new URL(page.url()).pathname)).toBe(normalizePath(path))
+  await expect.poll(() => new URL(page.url()).pathname).toBe(path)
   await expect(page.locator('.language-select select')).toBeEnabled()
-  expect(normalizePath(new URL(page.url()).pathname)).toBe(normalizePath(path))
+  expect(new URL(page.url()).pathname).toBe(path)
 }
 
 const mainSiteCases = [
@@ -50,7 +49,7 @@ const mainSiteCases = [
     language: 'zh-CN',
     storedLocale: 'en',
     route: '/',
-    expected: '/en/',
+    expected: '/en',
   },
   {
     name: 'stored Chinese localizes an unprefixed content route',

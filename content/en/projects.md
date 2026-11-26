@@ -3,7 +3,7 @@ title: "Projects"
 description: "Services and source code for the Wolfx Open API, WREM, SeisJS, and other Wolfx projects."
 locale: en
 layout: landing
-updated: 2026-11-25
+updated: 2026-11-26
 ---
 
 ::page-intro
@@ -18,7 +18,7 @@ Get earthquake reports, early warnings, weather data, IP information, and server
 Follow station waveforms in real time. The earthquake lists for Japan and China are also available on their own pages.
 :::
 :::project-card{title="Wolfx SeisJS" href="https://seis.wolfx.jp/" image="/images/cards/seisJS.webp" action="Join SeisJS"}
-Use a mobile accelerometer to record ground motion. Readings are available through the [station API](/en/docs/seisjs-api).
+Use a mobile accelerometer to record ground motion. Readings are available through the station API.
 :::
 :::project-card{title="Seismic Stations Viewer" href="https://ssv.wolfx.jp" image="/images/cards/SSV.webp" action="Open the viewer"}
 View readings and waveforms from SeisJS stations.

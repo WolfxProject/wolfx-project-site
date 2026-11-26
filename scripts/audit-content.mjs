@@ -4,7 +4,7 @@ import { isIP } from 'node:net'
 import { join, relative, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { visit } from 'unist-util-visit'
-import { httpApis, messageFields, seisFields, subscriptions } from './api-contract.mjs'
+import { httpApis, messageFields, subscriptions } from './api-contract.mjs'
 import { parsePage } from './content-markdown.mjs'
 
 const locales = ['ja', 'zh', 'en']
@@ -134,7 +134,6 @@ function checkFields(tables, schema, values = {}, scope = '') {
       assert(new RegExp(`(?<![a-zA-Z0-9_])${escaped}(?![a-zA-Z0-9_])`).test(row.description), `${scope}.${field}: missing ${token}`)
     }
   }
-  return actual
 }
 
 function checkOpenApi(tree, locale, apis, channels, examples) {
@@ -196,7 +195,7 @@ function checkOpenApi(tree, locale, apis, channels, examples) {
   }
 }
 
-function checkSocketDoc(tree, isSeis, channels, stationFields) {
+function checkSocketDoc(tree, channels) {
   const tokens = identifiers(tree)
   const urls = declaredUrls(tree)
   const seen = new Set()
@@ -206,7 +205,7 @@ function checkSocketDoc(tree, isSeis, channels, stationFields) {
     if (node.type === 'heading')
       packet = ['heartbeat', 'pong'].find(name => new RegExp(`\\b${name}\\b`).test(text(node)))
     if (node.type !== 'table') continue
-    if (!isSeis && node.children.slice(1).some(row => row.children.length === 3 && /^query_/.test(text(row.children[2])))) {
+    if (node.children.slice(1).some(row => row.children.length === 3 && /^query_/.test(text(row.children[2])))) {
       for (const row of node.children.slice(1)) {
         const [source, url, command] = row.children.map(cell => text(cell).trim())
         assert(source && url.startsWith(socketOrigin) && !commands.has(url), `invalid or duplicate subscription ${url}`)
@@ -214,33 +213,15 @@ function checkSocketDoc(tree, isSeis, channels, stationFields) {
       }
       continue
     }
-    const observation = isSeis && node.children.slice(1).some(row => identifiers(row.children[0]).has('PGA'))
-    const role = packet ?? (observation ? 'observation' : 'common')
-    const schema = role === 'observation' ? stationFields : messageFields[role]
+    const role = packet ?? 'common'
+    const schema = messageFields[role]
     if (!schemaTable(node, schema)) continue
     assert(!seen.has(role), `duplicate ${role} table`)
     seen.add(role)
-    const values = packet ? { type: [packet] } : {}
-    if (role === 'observation') {
-      values.Sva30 = ['1.6', '7.8', '30']
-      values.Max_Sva30 = ['Sva30', '2']
-    }
-    const fields = checkFields([node], schema, values, role)
-    if (role === 'observation') {
-      assert.match(fields.get('Sva30').description.normalize('NFKC'), /(?<![\d.])5\s*%/, 'Sva30: damping ratio')
-      for (const name of ['Sva30', 'Max_Sva30']) {
-        const velocity = /(?:cm\s*\/\s*s|cm[\s·⋅]+s(?:⁻¹|\^[-−]1))(?![\p{N}a-zA-Z_^/⁻⁺])/u
-        assert.match(fields.get(name).description, velocity, `${name}: velocity unit`)
-      }
-    }
+    checkFields([node], schema, packet ? { type: [packet] } : {}, role)
   }
-  assert.deepEqual(seen, new Set([...Object.keys(messageFields), ...(isSeis ? ['observation'] : [])]), 'message tables')
+  assert.deepEqual(seen, new Set(Object.keys(messageFields)), 'message tables')
   assert(tokens.has('ping'), 'missing ping command')
-  if (isSeis) {
-    assert(tokens.has(`${apiOrigin}seis_list.json`), 'missing station list')
-    assert.deepEqual([...urls].filter(token => token.startsWith('wss://')), ['wss://seisjs.wolfx.jp/all_seis'], 'SeisJS endpoint')
-    return
-  }
   assert.deepEqual(commands, new Map(Object.entries(channels).map(([feed, command]) => [socketOrigin + feed, command])), 'WebSocket endpoint and query command pairs')
   assert(urls.has(aggregate), 'missing aggregate endpoint')
   assert.match(text(tree), /\b400\b/, 'missing unknown-source handshake status')
@@ -260,7 +241,7 @@ function checkSocketDoc(tree, isSeis, channels, stationFields) {
   assert(filterCounts.includes(1) && filterCounts.some(count => count > 1), 'missing single/multiple exclusion examples')
 }
 
-export function auditPage(markdown, locale, document, { apis = httpApis, channels = subscriptions, stationFields = seisFields, examples = {} } = {}) {
+export function auditPage(markdown, locale, document, { apis = httpApis, channels = subscriptions, examples = {} } = {}) {
   const { data, tree } = parsePage(markdown)
   const directory = document.split('/')[0]
   assert.equal(data.locale, locale, 'frontmatter locale')
@@ -286,7 +267,7 @@ export function auditPage(markdown, locale, document, { apis = httpApis, channel
     assert(paragraphs.some(Boolean), 'missing policy body')
   }
   if (document === 'docs/open-api.md') checkOpenApi(tree, locale, apis, channels, examples)
-  if (document === 'docs/websocket.md' || document === 'docs/seisjs-api.md') checkSocketDoc(tree, document.includes('seisjs'), channels, stationFields)
+  if (document === 'docs/websocket.md') checkSocketDoc(tree, channels)
   return tree
 }
 
@@ -321,7 +302,8 @@ export async function auditContent(root) {
     const dir = join(root, 'content', locale)
     const entries = await readdir(dir, { recursive: true, withFileTypes: true })
     const paths = entries.filter(entry => entry.isFile() && entry.name.endsWith('.md')).map(entry => relative(dir, join(entry.parentPath, entry.name)).split(sep).join('/'))
-    for (const required of ['docs/open-api.md', 'docs/websocket.md', 'docs/seisjs-api.md', 'legal/privacy.md', 'legal/terms.md'])
+    assert(!paths.includes('docs/seisjs-api.md'), `${locale}: retired guide in published content`)
+    for (const required of ['docs/open-api.md', 'docs/websocket.md', 'legal/privacy.md', 'legal/terms.md'])
       assert(paths.includes(required), `${locale}: missing ${required}`)
     if (base) assert.deepEqual(new Set(paths), base, `${locale}: translated pages`)
     else base = new Set(paths)

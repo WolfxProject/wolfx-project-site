@@ -9,7 +9,7 @@
   },
   "scripts": {
     "dev": "nuxt dev",
-    "build": "nuxt build",
+    "build": "pnpm generate",
     "pregenerate": "node scripts/generate-search-index.mjs",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
@@ -21,18 +21,18 @@
     "content:audit:legacy": "node scripts/audit-legacy-content.mjs",
     "search:generate": "node scripts/generate-search-index.mjs",
     "check": "node scripts/generate-search-index.mjs --check && node scripts/check-site.mjs",
-    "test:e2e": "pnpm generate && playwright test --project=desktop-chromium --project=mobile-chromium",
+    "test:e2e": "pnpm generate && playwright test --project=desktop-chromium --project=mobile-chromium --project=desktop-firefox --project=desktop-webkit",
     "test:e2e:mobile": "pnpm generate && playwright test tests/e2e/mobile.spec.mjs --project=mobile-chromium --project=mobile-webkit",
     "wrangler:types": "wrangler types worker-configuration.d.ts",
     "cf:prepare": "pnpm generate",
-    "cf:dev": "pnpm generate && wrangler dev --port 8787",
+    "cf:dev": "pnpm generate && wrangler dev --config wrangler.jsonc --port 8787",
     "cf:test": "node scripts/check-cloudflare.mjs",
     "nginx:test": "node scripts/check-nginx-static.mjs",
-    "cf:dry-run": "pnpm generate && pnpm check && wrangler deploy --dry-run --outdir .wrangler/dry-run",
-    "cf:deploy": "pnpm typecheck && pnpm lint && pnpm content:audit && pnpm generate && pnpm check && wrangler deploy"
+    "cf:dry-run": "node --test tests/cloudflare.test.mjs && wrangler deploy --config wrangler.jsonc --dry-run --outdir .wrangler/dry-run",
+    "cf:deploy": "pnpm typecheck && pnpm lint && pnpm content:audit && pnpm generate && pnpm check && wrangler deploy --config wrangler.jsonc"
   },
   "dependencies": {
-    "@iconify-json/lucide": "^1.2.158",
+    "@iconify-json/lucide": "^1.2.159",
     "@nuxt/content": "^3.17.0",
     "@nuxt/ui": "^4.13.0",
     "@nuxtjs/i18n": "^10.6.0",
@@ -45,7 +45,7 @@
   "devDependencies": {
     "@nuxt/eslint": "^1.17.0",
     "@playwright/test": "1.65.1",
-    "@types/node": "^26.6.6",
+    "@types/node": "^26.6.10",
     "better-sqlite3": "^13.2.0",
     "debug": "^4.4.3",
     "eslint": "^10.15.0",
@@ -66,6 +66,6 @@
     "unist-util-visit": "^5.2.0",
     "unplugin": "^3.7.0",
     "vue-tsc": "^3.3.14",
-    "wrangler": "4.167.0"
+    "wrangler": "4.168.0"
   }
 }

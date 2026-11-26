@@ -2,6 +2,7 @@ import fs from 'node:fs/promises'
 import { createRequire } from 'node:module'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { gunzipSync } from 'node:zlib'
 import { collectSitemap } from '@nuxtjs/sitemap/utils'
 import { parse } from 'parse5'
 import { parseConfigFileTextToJson } from 'typescript'
@@ -26,7 +27,6 @@ const routePages = [
   { file: 'donate.md', route: 'donate', layout: 'landing' },
   { file: 'docs/open-api.md', route: 'docs/open-api', layout: 'docs' },
   { file: 'docs/websocket.md', route: 'docs/websocket', layout: 'docs' },
-  { file: 'docs/seisjs-api.md', route: 'docs/seisjs-api', layout: 'docs' },
   { file: 'legal/privacy.md', route: 'legal/privacy', layout: 'legal' },
   { file: 'legal/terms.md', route: 'legal/terms', layout: 'legal' },
 ]
@@ -39,6 +39,7 @@ const wolfxMcPages = wolfxMcRouteFamilies.flatMap(path => [
 ])
 const wolfxMcAlternates = ['zh-CN', 'ja', 'en', 'x-default']
 const retiredRoutes = [
+  '/docs/seisjs-api', '/zh/docs/seisjs-api', '/en/docs/seisjs-api',
   '/apidoc', '/apidoc.html', '/apidoc_zh', '/apidoc_zh.html', '/apidoc_en', '/apidoc_en.html',
   '/wsapi', '/wsapi.html', '/wsapi_ja', '/wsapi_zh', '/wsapi_zh.html', '/wsapi_en', '/wsapi_en.html',
   '/seisapi', '/seisapi.html', '/seisapi_zh', '/seisapi_zh.html', '/seisapi_en', '/seisapi_en.html',
@@ -63,8 +64,6 @@ const requiredEndpoints = [
   'https://api.wolfx.jp/jma_eew.json',
   'wss://ws-api.wolfx.jp/jma_eew',
   'wss://ws-api.wolfx.jp/all_eew',
-  'https://api.wolfx.jp/seis_list.json',
-  'wss://seisjs.wolfx.jp/all_seis',
 ]
 const apiStatusResources = [
   'https://api.wolfx.jp/ws_clients.json',
@@ -178,10 +177,6 @@ function outputFileForRoute(route) {
   return route === '/'
     ? path.join(outputRoot, 'index.html')
     : path.join(outputRoot, route.slice(1), 'index.html')
-}
-
-function canonicalForRoute(route) {
-  return route === '/zh' || route === '/en' ? `${route}/` : route
 }
 
 function extractAttribute(html, pattern) {
@@ -344,6 +339,8 @@ else {
       fail(`${label}: invalid locale ${entry.locale}`)
     if (!entry.path?.startsWith('/') || entry.path?.startsWith('//') || entry.path?.includes('.md'))
       fail(`${label}: invalid public path ${entry.path}`)
+    if (!contentPaths.has(entry.path))
+      fail(`${label}: unpublished page URL ${entry.path}`)
     if (paths.has(entry.path))
       fail(`${label}: duplicate path ${entry.path}`)
     paths.add(entry.path)
@@ -369,7 +366,6 @@ else {
   for (const { locale, prefix } of locales) {
     for (const [route, term] of [
       ['docs/websocket', 'query_jmaeew'],
-      ['docs/seisjs-api', 'PGA_EW'],
       ['docs/open-api', 'https://api.wolfx.jp/jma_eew.json'],
       ['projects', 'Seismic Stations Viewer'],
     ]) {
@@ -406,9 +402,16 @@ if (!await exists(outputRoot)) {
   fail('Missing .output/public; run pnpm generate')
 }
 else {
+  const build = JSON.parse(await fs.readFile(path.join(outputRoot, '../nitro.json'), 'utf8'))
+  if (build.preset !== 'static' || await exists(path.join(outputRoot, '../server/index.mjs')))
+    fail('Expected a static Nitro build. Check the Workers Builds command and preset.')
   const builtIndex = await fs.readFile(path.join(outputRoot, 'search-index.json'), 'utf8').catch(() => '')
   if (builtIndex !== await fs.readFile(sourceIndexFile, 'utf8'))
     fail('Generated search-index.json differs from public/search-index.json')
+  const dump = await fs.readFile(path.join(outputRoot, '__nuxt_content/pages/sql_dump.txt'), 'utf8')
+  const contentSql = gunzipSync(Buffer.from(dump, 'base64')).toString('utf8')
+  if (contentSql.includes('docs/seisjs-api'))
+    fail('The browser content database contains the retired guide')
   const generatedPages = []
   for (const locale of locales) {
     for (const page of routePages) {
@@ -420,14 +423,13 @@ else {
         continue
       }
       const html = await fs.readFile(file, 'utf8')
-      const canonicalPath = canonicalForRoute(route)
       if (!new RegExp(`<html[^>]+lang="${locale.htmlLang}"`).test(html))
         fail(`${route}: expected html lang ${locale.htmlLang}`)
-      if (!html.includes(`<link rel="canonical" href="https://wolfx.jp${canonicalPath}"`))
+      if (!html.includes(`<link rel="canonical" href="https://wolfx.jp${route}"`))
         fail(`${route}: wrong canonical URL`)
-      for (const hreflang of ['ja', 'zh-CN', 'en', 'x-default']) {
-        if (!html.includes(`hreflang="${hreflang}"`))
-          fail(`${route}: missing hreflang ${hreflang}`)
+      for (const [hreflang, prefix] of [['ja', ''], ['zh-CN', 'zh'], ['en', 'en'], ['x-default', '']]) {
+        if (!html.includes(`hreflang="${hreflang}" href="https://wolfx.jp${publicRoute(prefix, page.route)}"`))
+          fail(`${route}: incorrect hreflang ${hreflang}`)
       }
       const description = extractAttribute(html, /<meta name="description" content="([^"]+)"/)
       if (!description?.trim())
@@ -580,7 +582,7 @@ else {
     for (const family of families) {
       const paths = new Map(locales.map((language) => {
         const prefix = family.mc ? (language.locale === 'zh' ? '' : language.locale) : language.prefix
-        return [language.htmlLang, `https://wolfx.jp${canonicalForRoute(publicRoute(prefix, family.route))}`]
+        return [language.htmlLang, `https://wolfx.jp${publicRoute(prefix, family.route)}`]
       }))
       const address = paths.get(locale.htmlLang)
       const entry = entries.get(address)
@@ -628,7 +630,7 @@ else {
         ids.add(attrs.id)
       const href = node.tagName === 'a' || node.tagName === 'link' ? attrs.href : attrs.src
       if (href)
-        links.push(new URL(href, `https://wolfx.jp${canonicalForRoute(route)}`))
+        links.push(new URL(href, `https://wolfx.jp${route}`))
       node.childNodes?.forEach(visit)
     }
     visit(parse(await fs.readFile(file, 'utf8')))
@@ -662,11 +664,17 @@ else {
   await walk(outputRoot)
   for (const file of outputFiles) {
     const relative = path.relative(outputRoot, file)
+    if (/(?:^|\/)500(?:\.html|\/index\.html)$/.test(relative) || /(?:^|\/)docs\/seisjs-api(?:[./]|$)/.test(relative))
+      fail(`Unexpected error page or retired document in static output: ${relative}`)
     if (file.endsWith('.md'))
       fail(`Generated output contains source Markdown: ${relative}`)
     if (!/\.(?:html|json|js|css|xml|txt)$/.test(file))
       continue
     const text = await fs.readFile(file, 'utf8')
+    if (file.endsWith('.html') && /<title>500 · Wolfx Project<\/title>/i.test(text))
+      fail(`${relative}: generated a server-error document`)
+    if (text.includes('/docs/seisjs-api') || /\\u002Fdocs\\u002Fseisjs-api/i.test(text))
+      fail(`${relative}: contains a retired documentation URL`)
     if (text.includes(root) || /(?:\/Users\/[^/]+\/[^"'\s]*wolfx|[A-Z]:\\Users\\[^\\]+\\[^"'\s]*wolfx)/i.test(text))
       fail(`${relative}: contains an internal project file path`)
     if (!relative.startsWith('_nuxt/') && /localhost|127\.0\.0\.1:\d{2,5}/i.test(text))

@@ -3,7 +3,7 @@ title: "プロジェクト"
 description: "Wolfx Open API、WREM、SeisJS などのサービスとソースコード。"
 locale: ja
 layout: landing
-updated: 2026-11-25
+updated: 2026-11-26
 ---
 
 ::page-intro
@@ -18,7 +18,7 @@ updated: 2026-11-25
 観測点の波形をリアルタイムで表示します。気象庁と中国地震台網の地震情報一覧は個別のページでも見られます。
 :::
 :::project-card{title="Wolfx SeisJS" href="https://seis.wolfx.jp/" image="/images/cards/seisJS.webp" action="観測に参加する"}
-端末の加速度計で地面の揺れを観測します。記録は[観測点 API](/docs/seisjs-api) から取得できます。
+端末の加速度計で地面の揺れを観測します。記録は観測点 API から取得できます。
 :::
 :::project-card{title="Seismic Stations Viewer" href="https://ssv.wolfx.jp" image="/images/cards/SSV.webp" action="ビューアーを開く"}
 SeisJS の観測点ごとに、観測値や波形を見られます。

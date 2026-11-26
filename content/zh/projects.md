@@ -3,7 +3,7 @@ title: "项目"
 description: "Wolfx Open API、WREM、SeisJS 等项目及源代码。"
 locale: zh
 layout: landing
-updated: 2026-11-25
+updated: 2026-11-26
 ---
 
 ::page-intro
@@ -18,7 +18,7 @@ updated: 2026-11-25
 实时显示地震观测波形。日本气象厅和中国地震台网的地震目录也可以单独查看。
 :::
 :::project-card{title="Wolfx SeisJS" href="https://seis.wolfx.jp/" image="/images/cards/seisJS.webp" action="参与观测"}
-用设备的加速度计记录地面振动。观测数据可通过[测站 API](/zh/docs/seisjs-api) 获取。
+用设备的加速度计记录地面振动。观测数据可通过测站 API 获取。
 :::
 :::project-card{title="Seismic Stations Viewer" href="https://ssv.wolfx.jp" image="/images/cards/SSV.webp" action="打开测站查看器"}
 查看 SeisJS 各测站记录的振动波形。

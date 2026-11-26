@@ -1,4 +1,4 @@
-// Public identifiers and JSON types used by the three API guides. Update these
+// Public identifiers and JSON types used by the Open API and WebSocket guides. Update these
 // with the corresponding service or a verified response when the protocol changes.
 // A trailing ? marks fields explicitly documented as optional in the type label.
 const continentalEew = {
@@ -111,13 +111,6 @@ export const httpApis = {
   'img.php': { parameters: { return: ['img', 'json'] } },
 }
 
-const peakFields = ['PGA', 'PGV', 'PGD'].flatMap(name => ['', '_EW', '_NS', '_UD'].flatMap(axis => [`${name}${axis}`, `Max_${name}${axis}`]))
-export const seisFields = {
-  'string': 'type region Shindo Max_Shindo reverse update_at create_at',
-  'number': `latitude longitude version ${peakFields.join(' ')} CalcShindo Max_CalcShindo Intensity Max_Intensity LPGM Max_LPGM Sva30 Max_Sva30`,
-  'number[]': 'error_code',
-  'boolean': 'is_desktop High_Precision',
-}
 export const messageFields = {
   common: { string: 'type' },
   heartbeat: { string: 'type id timestamp', number: 'ver' },

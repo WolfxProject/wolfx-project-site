@@ -8,7 +8,6 @@ const contentPaths = [
   '/donate',
   '/docs/open-api',
   '/docs/websocket',
-  '/docs/seisjs-api',
   '/legal/privacy',
   '/legal/terms',
 ]
@@ -55,7 +54,7 @@ function overlap(first, second) {
     * Math.max(0, Math.min(first.bottom, second.bottom) - Math.max(first.top, second.top))
 }
 
-test('all 24 content pages keep the mobile document flow inside the viewport', async ({ page }) => {
+test('all main-site content pages keep the mobile document flow inside the viewport', async ({ page }) => {
   test.setTimeout(120_000)
   await page.setViewportSize({ width: 390, height: 844 })
 
@@ -306,14 +305,14 @@ test('404 and missing routes preserve mobile-safe layout', async ({ page }) => {
 })
 
 test('keyboard readers can skip navigation and open a mobile table of contents', async ({ page }) => {
-  await page.goto('/en/docs/seisjs-api', { waitUntil: 'networkidle' })
+  await page.goto('/en/docs/websocket', { waitUntil: 'networkidle' })
   await page.keyboard.press('Tab')
   const skip = page.getByRole('link', { name: 'Skip to main content' })
   await expect(skip).toBeFocused()
   await skip.press('Enter')
   await expect(page.locator('main')).toBeFocused()
 
-  for (const path of ['/en/docs/seisjs-api', '/en/legal/privacy']) {
+  for (const path of ['/en/docs/websocket', '/en/legal/privacy']) {
     await page.goto(path, { waitUntil: 'networkidle' })
     const toc = page.getByRole('navigation', { name: 'On this page', exact: true })
     const links = toc.locator('a')
@@ -333,7 +332,7 @@ test.describe('without JavaScript', () => {
   test.use({ javaScriptEnabled: false })
 
   test('the static 404 links to each localized home page', async ({ page }) => {
-    for (const [language, home] of [['ja-JP', '/'], ['zh-CN', '/zh/'], ['en-US', '/en/']]) {
+    for (const [language, home] of [['ja-JP', '/'], ['zh-CN', '/zh'], ['en-US', '/en']]) {
       await page.goto('/404.html')
       await expect(page.getByRole('heading', { level: 1 })).toHaveText('404')
       const section = page.locator(`main section[lang="${language}"]`)

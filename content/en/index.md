@@ -3,7 +3,7 @@ title: "Wolfx Project"
 description: "Earthquake reports and early warnings from the Wolfx Open API, observations from SeisJS stations, and weather and network tools."
 locale: en
 layout: landing
-updated: 2026-11-25
+updated: 2026-11-26
 ---
 
 ::hero-section{title="Wolfx Project" primary-label="API documentation" primary-href="/en/docs/open-api" secondary-label="View projects" secondary-href="/en/projects"}
@@ -41,8 +41,5 @@ Earthquake reports, weather, IP lookups, and server time
 :::
 :::service-link{title="WebSocket" href="/en/docs/websocket" icon="i-lucide-radio-tower"}
 Feed URLs, filters, and query commands
-:::
-:::service-link{title="SeisJS API" href="/en/docs/seisjs-api" icon="i-lucide-audio-waveform"}
-Station lists, readings, and units
 :::
 ::

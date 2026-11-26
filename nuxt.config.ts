@@ -12,7 +12,6 @@ const mainContentRoutes = [
   '/donate',
   '/docs/open-api',
   '/docs/websocket',
-  '/docs/seisjs-api',
   '/legal/privacy',
   '/legal/terms',
 ]
@@ -21,7 +20,9 @@ const wolfxMcRouteFamilies = ['/mc', '/mc/rules', '/mc/join', '/mc/vote']
 
 function contentPath(path: string, locale: string) {
   const defaultLocale = wolfxMcRouteFamilies.includes(path) ? 'zh' : 'ja'
-  return locale === defaultLocale ? path : `/${locale}${path}`
+  if (locale === defaultLocale)
+    return path
+  return path === '/' ? `/${locale}` : `/${locale}${path}`
 }
 
 const routeFamilies = [...mainContentRoutes, ...wolfxMcRouteFamilies]
@@ -99,7 +100,8 @@ export default defineNuxtConfig({
   },
   compatibilityDate: '2026-08-04',
   nitro: {
-    // Match the minimum supported Node.js major for prerendering and the default server build.
+    // Workers Builds sets WORKERS_CI, which otherwise selects the Nitro SSR Worker.
+    preset: 'static',
     esbuild: {
       options: { target: 'node22' },
     },
@@ -146,7 +148,6 @@ export default defineNuxtConfig({
         'lucide:arrow-right',
         'lucide:arrow-up',
         'lucide:arrow-up-right',
-        'lucide:audio-waveform',
         'lucide:box',
         'lucide:braces',
         'lucide:check',

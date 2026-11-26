@@ -9,7 +9,7 @@
     "directory": "./.output/public",
     "binding": "ASSETS",
     "run_worker_first": [
-      "/zh/", "/en/", "/geiger/", "/*.html",
+      "/geiger/", "/*.html",
       "/ipleak", "/ipleak/*", "/200", "/200/*", "/404", "/404/*",
       "/index", "/index/", "/*/index", "/*/index/"
     ],

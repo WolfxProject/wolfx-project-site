@@ -3,7 +3,7 @@ title: "Wolfx Project"
 description: "Wolfx Project の地震情報・緊急地震速報 API、SeisJS の観測データ、気象・ネットワーク関連のツール。"
 locale: ja
 layout: landing
-updated: 2026-11-25
+updated: 2026-11-26
 ---
 
 ::hero-section{title="Wolfx Project" primary-label="API ドキュメント" primary-href="/docs/open-api" secondary-label="プロジェクトを見る" secondary-href="/projects"}
@@ -41,8 +41,5 @@ YOURLS を使った短縮 URL サービスです。
 :::
 :::service-link{title="WebSocket" href="/docs/websocket" icon="i-lucide-radio-tower"}
 接続先、配信の絞り込み、クエリコマンド
-:::
-:::service-link{title="SeisJS API" href="/docs/seisjs-api" icon="i-lucide-audio-waveform"}
-観測点一覧、観測値と単位
 :::
 ::

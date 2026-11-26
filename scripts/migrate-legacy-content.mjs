@@ -15,9 +15,6 @@ const pages = [
   ['wsapi.html', 'ja', 'docs/websocket.md', 'Wolfx WebSocket API 利用説明', 'Wolfx WebSocket API の接続先、手動クエリ、JSON データ仕様。', 'docs', '2026-04-15'],
   ['wsapi_zh.html', 'zh', 'docs/websocket.md', 'Wolfx WebSocket API 调用说明', 'Wolfx WebSocket API 连接地址、手动查询指令与 JSON 数据说明。', 'docs', '2026-04-15'],
   ['wsapi_en.html', 'en', 'docs/websocket.md', 'Wolfx WebSocket API Call Instructions', 'Wolfx WebSocket endpoints, manual query commands, and JSON data specification.', 'docs', '2026-04-15'],
-  ['seisapi.html', 'ja', 'docs/seisjs-api.md', 'Wolfx SeisJS API 利用ガイド', 'SeisJS 観測点、WebSocket 接続、観測データフィールドの仕様。', 'docs', '2025-07-04'],
-  ['seisapi_zh.html', 'zh', 'docs/seisjs-api.md', 'Wolfx SeisJS API 调用说明', 'SeisJS 测站、WebSocket 连接与观测数据字段说明。', 'docs', '2025-07-04'],
-  ['seisapi_en.html', 'en', 'docs/seisjs-api.md', 'Wolfx SeisJS API Documentation', 'SeisJS station, WebSocket connection, and observation data field documentation.', 'docs', '2025-07-04'],
   ['privacy_policy.html', 'ja', 'legal/privacy.md', 'Wolfx Project プライバシーポリシー', 'Wolfx Project のサービスにおける情報の取扱いについて説明します。', 'legal', '2026-07-28'],
   ['privacy_policy_zh.html', 'zh', 'legal/privacy.md', 'Wolfx Project 隐私政策', '说明 Wolfx Project 各项服务中的信息处理方式。', 'legal', '2026-07-28'],
   ['privacy_policy_en.html', 'en', 'legal/privacy.md', 'Wolfx Project Privacy Policy', 'How Wolfx Project handles information across its public services.', 'legal', '2026-07-28'],
@@ -124,7 +121,6 @@ function rewriteInternalLinks(markdown, locale) {
   const replacements = [
     [/https:\/\/wolfx\.jp\/apidoc(?:_(?:zh|en))?(?:\.html)?(?:\?nodetect)?/g, `${prefix}/docs/open-api`],
     [/https:\/\/wolfx\.jp\/wsapi(?:_(?:ja|zh|en))?(?:\.html)?/g, `${prefix}/docs/websocket`],
-    [/https:\/\/wolfx\.jp\/seisapi(?:_(?:zh|en))?(?:\.html)?/g, `${prefix}/docs/seisjs-api`],
     [/https:\/\/wolfx\.jp\/privacy_policy(?:_(?:zh|en))?(?:\.html)?/g, `${prefix}/legal/privacy`],
     [/https:\/\/wolfx\.jp\/tos(?:_(?:zh|en))?(?:\.html)?/g, `${prefix}/legal/terms`],
   ]
