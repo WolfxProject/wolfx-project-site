@@ -22,7 +22,7 @@ test('localized home survives direct entry, reload, language switching and histo
     if (response.url().startsWith(baseURL) && response.status() >= 400)
       problems.push(`${response.status()} ${response.url()}`)
   })
-  const language = page.locator('.language-select select')
+  const language = page.locator('.language-select:not([inert]) select')
   const url = locale => new URL(`/${locale}${suffix}`, baseURL).href
   const preloaded = page.waitForResponse(response => new URL(response.url()).pathname === '/zh/_payload.json')
   for (const locale of Object.keys(languages)) {

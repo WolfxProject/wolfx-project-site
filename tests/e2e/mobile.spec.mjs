@@ -86,7 +86,7 @@ test('all main-site content pages keep the mobile document flow inside the viewp
     expect(geometry.h1Right, `${route}: h1 right edge`).toBeLessThanOrEqual(382)
     expect(geometry.mainBottom, `${route}: footer overlap`).toBeLessThanOrEqual(geometry.footerTop + 1)
     // Finish hydrating this document before navigating away from its static directory URL.
-    await expect(page.locator('.language-select select'), route).toBeEnabled()
+    await expect(page.locator('.language-select:not([inert]) select'), route).toBeEnabled()
   }
 })
 
@@ -160,7 +160,7 @@ test('header, hero, and breakpoint geometry stay stable across the device matrix
       }
 
       // Measure the static layout first, then let the router finish mounting before the next visit.
-      await expect(page.locator('.language-select select'), `${viewport.name} ${route}`).toBeEnabled()
+      await expect(page.locator('.language-select:not([inert]) select'), `${viewport.name} ${route}`).toBeEnabled()
     }
   }
 })

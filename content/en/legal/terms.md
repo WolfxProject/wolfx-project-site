@@ -54,6 +54,6 @@ These Terms are governed by Japanese law. The Japanese version is authoritative;
 
 These Terms apply from publication unless a separate effective date is specified. Updates and their effective dates will be published, and significant changes will be highlighted through reasonable means. Stating a revision date alone does not apply the Terms retroactively to past use.
 
-For questions or inquiries, please contact [contact@mtf.edu.kg](mailto:contact@mtf.edu.kg).
+For questions or inquiries, please contact [contact@wolfx.jp](mailto:contact@wolfx.jp).
 
 Last revised: November 14, 2026

@@ -6,6 +6,7 @@ const route = useRoute()
 const error = useError()
 const { localize, localizeWolfxMc, unlocalize } = usePublicPath()
 const { displayLocale, isWolfxMc, tr } = useSiteContext()
+// Keep the switcher inert until Vue can handle selection.
 const mounted = ref(false)
 
 onMounted(() => {
@@ -41,6 +42,7 @@ async function changeLanguage(event: Event) {
   <label
     class="language-select"
     :title="activeLocale?.name"
+    :inert="!mounted"
   >
     <span class="sr-only">{{ tr('language.label') }}</span>
     <UIcon name="i-lucide-languages" />
@@ -55,7 +57,6 @@ async function changeLanguage(event: Event) {
     <select
       :value="displayLocale"
       :aria-label="tr('language.label')"
-      :disabled="!mounted"
       @change="changeLanguage"
     >
       <option

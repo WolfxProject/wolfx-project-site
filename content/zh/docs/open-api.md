@@ -8,7 +8,7 @@ source: apidoc_zh.html
 ---
 ## Wolfx Open API 使用须知
 
-地震信息仅供参考。灾害期间，请以官方发布的最新预警和疏散信息为准。使用 API 前请阅读[服务条款](/zh/legal/terms)和[隐私政策](/zh/legal/privacy)。如有疑问，可联系 [contact@mtf.edu.kg](mailto:contact@mtf.edu.kg)。
+地震信息仅供参考。灾害期间，请以官方发布的最新预警和疏散信息为准。使用 API 前请阅读[服务条款](/zh/legal/terms)和[隐私政策](/zh/legal/privacy)。如有疑问，可联系 [contact@wolfx.jp](mailto:contact@wolfx.jp)。
 
 ## WebSocket 订阅指南
 

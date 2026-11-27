@@ -54,6 +54,6 @@ Wolfx Project 是独立的非官方项目，不隶属于或代表政府、气象
 
 本条款自发布之日起适用，另行规定生效日期的除外。更新时将公布新版条款和生效日期，重要变化将以合理方式提示。仅记载修订日期不会使条款追溯适用于过去的使用。
 
-如有任何疑问或建议，请联系 [contact@mtf.edu.kg](mailto:contact@mtf.edu.kg)。
+如有任何疑问或建议，请联系 [contact@wolfx.jp](mailto:contact@wolfx.jp)。
 
 最后修订日期：2026年11月14日

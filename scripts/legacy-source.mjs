@@ -7,6 +7,10 @@ export const legacyRoot = resolve(process.env.WOLFX_LEGACY_ROOT || fileURLToPath
 const revision = '8cd8387d334d8301d4f6c9ed7eeb5cc522fd8b42'
 const git = promisify(execFile)
 
+export function migrateLegacyContactEmail(value) {
+  return value.replaceAll(/(?<![\w.!#$%&'*+/=?^`{|}~@-])contact@mtf\.edu\.kg(?![\w@-]|\.[\w-])/g, 'contact@wolfx.jp')
+}
+
 export async function readLegacyFile(filename) {
   try {
     const { stdout } = await git('git', ['show', `${revision}:${filename}`], { cwd: legacyRoot, encoding: 'utf8' })

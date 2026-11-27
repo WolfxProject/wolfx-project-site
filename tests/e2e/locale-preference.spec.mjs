@@ -22,7 +22,7 @@ async function configureLocale(page, { languages, language, storedLocale }) {
 
 async function expectStablePath(page, path) {
   await expect.poll(() => new URL(page.url()).pathname).toBe(path)
-  await expect(page.locator('.language-select select')).toBeEnabled()
+  await expect(page.locator('.language-select:not([inert]) select')).toBeEnabled()
   expect(new URL(page.url()).pathname).toBe(path)
 }
 
@@ -212,9 +212,14 @@ test('language selection waits for hydration when locale messages are delayed', 
     await page.goto('/zh/projects?foo=1#bar', { waitUntil: 'domcontentloaded' })
     await expect.poll(() => pendingMessages).toBeGreaterThan(0)
     const language = page.locator('.language-select select')
-    await expect(language).toBeDisabled()
+    const focusLanguage = () => language.evaluate((select) => {
+      select.focus()
+      return document.activeElement === select
+    })
+    expect(await focusLanguage()).toBe(false)
 
     releaseMessages()
+    await expect.poll(focusLanguage).toBe(true)
     await expect(language).toBeEnabled()
     await language.selectOption('en')
     await expect(page).toHaveURL(/\/en\/projects\/?\?foo=1#bar$/)

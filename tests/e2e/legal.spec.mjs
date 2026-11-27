@@ -71,6 +71,14 @@ async function renderedHeadings(page) {
     elements.map(element => ({ id: element.id, text: element.textContent.replace(/^#\s*/, '').trim() })))
 }
 
+async function expectContactLink(page) {
+  const contact = page.locator('main a[href^="mailto:"]')
+  await expect(contact).toHaveCount(1)
+  await expect(contact).toBeVisible()
+  await expect(contact).toHaveText('contact@wolfx.jp')
+  await expect(contact).toHaveAttribute('href', 'mailto:contact@wolfx.jp')
+}
+
 test.beforeEach(async ({ page }) => {
   await page.addInitScript(() => localStorage.setItem('wolfx-locale', 'ja'))
   await page.emulateMedia({ reducedMotion: 'reduce' })
@@ -120,12 +128,12 @@ for (const { locale, prefix, tocLabel } of locales) {
       expect(body).toMatch(pattern)
     expect(body).not.toMatch(rules.obsolete)
     await expect(page.locator(`.legal-document a[href="${prefix}/legal/privacy"]`)).toHaveCount(1)
-    await expect(page.locator('.legal-document a[href="mailto:contact@mtf.edu.kg"]')).toHaveCount(1)
 
     // Keep documentation navigation local; status widgets must not call production.
     await page.route('https://api.wolfx.jp/**', route => route.fulfill({ status: 204 }))
     for (const document of ['websocket', 'open-api']) {
       await page.goto(`${prefix}/docs/${document}`, { waitUntil: 'networkidle' })
+      if (document === 'open-api') await expectContactLink(page)
       // The current documents link legal pages through the shared footer.
       // They need not duplicate the JMA redistribution clause in their body.
       const footer = page.locator('.site-footer')
@@ -147,6 +155,7 @@ for (const { locale, prefix, tocLabel } of locales) {
       await page.setViewportSize({ width: 1920, height: 1080 })
       await page.emulateMedia({ colorScheme: 'light', reducedMotion: 'reduce' })
       await page.goto(`${route}?source=legal-toc`, { waitUntil: 'networkidle' })
+      await expectContactLink(page)
 
       const toc = page.getByRole('navigation', { name: tocLabel, exact: true })
       await expect(toc).toBeVisible()

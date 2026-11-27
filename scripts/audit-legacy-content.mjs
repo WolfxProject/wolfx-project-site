@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { readLegacyFile } from './legacy-source.mjs'
+import { migrateLegacyContactEmail, readLegacyFile } from './legacy-source.mjs'
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const migrations = [
@@ -173,7 +173,12 @@ for (const [legacyFile, markdownFile] of migrations) {
     fields: source.fields.filter(value => !target.fields.includes(value)),
     endpoints: source.endpoints.filter(value => !value.startsWith('https://wolfx.jp/') && !(apiStatusMigration && isApiStatusEndpoint(value)) && !target.endpoints.includes(value)),
     code: source.code.filter(value => !markdown.includes(value)),
-    links: source.links.filter(value => !value.startsWith('https://wolfx.jp') && !target.links.includes(value) && !markdown.includes(value)),
+    links: source.links.flatMap((value) => {
+      const expected = migrateLegacyContactEmail(value)
+      if (value.startsWith('https://wolfx.jp') || target.links.includes(expected) || (expected === value && markdown.includes(value)))
+        return []
+      return [expected]
+    }),
     documentMetadata,
     dynamicStatus,
   }

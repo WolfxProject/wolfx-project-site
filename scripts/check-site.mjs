@@ -624,16 +624,26 @@ else {
       continue
     const ids = new Set()
     const links = []
+    let payloadAttributes
     function visit(node) {
       const attrs = Object.fromEntries((node.attrs ?? []).map(attr => [attr.name, attr.value]))
       if (attrs.id)
         ids.add(attrs.id)
+      if (node.tagName === 'script' && attrs.id === '__NUXT_DATA__')
+        payloadAttributes = attrs
       const href = node.tagName === 'a' || node.tagName === 'link' ? attrs.href : attrs.src
       if (href)
         links.push(new URL(href, `https://wolfx.jp${route}`))
       node.childNodes?.forEach(visit)
     }
     visit(parse(await fs.readFile(file, 'utf8')))
+    const payloadPath = `${route === '/' ? '' : route}/_payload.json`
+    if (payloadAttributes?.['data-ssr'] !== 'true' || payloadAttributes['data-src']?.split('?')[0] !== payloadPath)
+      fail(`${route}: generated HTML does not reference its SSR payload`)
+    const payload = await fs.readFile(path.join(path.dirname(file), '_payload.json'), 'utf8')
+      .then(JSON.parse).catch(() => null)
+    if (!payload || typeof payload !== 'object' || !Object.keys(payload).length)
+      fail(`${route}: missing or invalid generated SSR payload`)
     pagesByPath.set(route, { ids, links })
   }
   for (const [route, { links }] of pagesByPath) {

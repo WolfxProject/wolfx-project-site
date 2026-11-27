@@ -90,6 +90,6 @@ The Project may update this Policy in response to changes in the Services or app
 
 ## 13. Contact Information
 
-If you have any questions about this Privacy Policy or our data handling practices, you can contact us via email at: [contact@mtf.edu.kg](mailto:contact@mtf.edu.kg)
+If you have any questions about this Privacy Policy or our data handling practices, you can contact us via email at: [contact@wolfx.jp](mailto:contact@wolfx.jp)
 
 Last updated: November 24, 2026

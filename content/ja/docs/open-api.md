@@ -8,7 +8,7 @@ source: apidoc.html
 ---
 ## Wolfx Open API ご利用にあたっての注意事項
 
-地震情報は参考情報です。災害時は公的機関が発表する最新の警報や避難情報を確認してください。API のご利用前に[利用規約](/legal/terms)と[プライバシーポリシー](/legal/privacy)をご覧ください。お問い合わせは [contact@mtf.edu.kg](mailto:contact@mtf.edu.kg) まで。
+地震情報は参考情報です。災害時は公的機関が発表する最新の警報や避難情報を確認してください。API のご利用前に[利用規約](/legal/terms)と[プライバシーポリシー](/legal/privacy)をご覧ください。お問い合わせは [contact@wolfx.jp](mailto:contact@wolfx.jp) まで。
 
 ## WebSocket の購読方法
 

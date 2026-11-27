@@ -3,7 +3,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import TurndownService from 'turndown'
 import { gfm } from 'turndown-plugin-gfm'
-import { readLegacyFile } from './legacy-source.mjs'
+import { migrateLegacyContactEmail, readLegacyFile } from './legacy-source.mjs'
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const output = path.join(root, '.data/legacy-migration/content')
@@ -138,7 +138,7 @@ for (const [source, locale, destination, title, description, layout, updated] of
   if (firstHeading && decodeEntities(firstHeading[1].replaceAll(/<[^>]+>/g, '').trim()) === title)
     bodyHtml = bodyHtml.slice(firstHeading[0].length)
 
-  let markdown = rewriteInternalLinks(decodeEntities(turndown.turndown(bodyHtml)), locale)
+  const markdown = migrateLegacyContactEmail(rewriteInternalLinks(decodeEntities(turndown.turndown(bodyHtml)), locale))
     // Remove only document-version headings, never response-field tables or code.
     .replaceAll(/^#{1,6}\s+(?:Doc version|API Documentation Version|APIドキュメントバージョン|API文档版本|文档版本|ドキュメントバージョン)\s*[:：]\s*v\d{8}[\t ]*$/gm, '')
     .replaceAll(/\n{3,}/g, '\n\n')

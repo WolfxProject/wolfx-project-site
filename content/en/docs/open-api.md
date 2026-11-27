@@ -8,7 +8,7 @@ source: apidoc_en.html
 ---
 ## Wolfx Open API Usage Guidelines
 
-Earthquake data is for reference. In an emergency, follow the latest warnings and evacuation notices from the authorities. Review the [Terms of Service](/en/legal/terms) and [Privacy Policy](/en/legal/privacy) before using the API. For questions, email [contact@mtf.edu.kg](mailto:contact@mtf.edu.kg).
+Earthquake data is for reference. In an emergency, follow the latest warnings and evacuation notices from the authorities. Review the [Terms of Service](/en/legal/terms) and [Privacy Policy](/en/legal/privacy) before using the API. For questions, email [contact@wolfx.jp](mailto:contact@wolfx.jp).
 
 ## WebSocket subscriptions
 

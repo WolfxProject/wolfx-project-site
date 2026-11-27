@@ -90,6 +90,6 @@ SeisJS及本项目其他服务可能使用localStorage在用户设备上保存UU
 
 ## 十三、联系方式
 
-如果您对我们的隐私政策或数据处理方式有任何疑问，可以通过以下邮箱与我们取得联系：[contact@mtf.edu.kg](mailto:contact@mtf.edu.kg)
+如果您对我们的隐私政策或数据处理方式有任何疑问，可以通过以下邮箱与我们取得联系：[contact@wolfx.jp](mailto:contact@wolfx.jp)
 
 本隐私政策最后更新于：2026年11月24日

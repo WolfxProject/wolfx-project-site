@@ -32,20 +32,20 @@
     "cf:deploy": "pnpm typecheck && pnpm lint && pnpm content:audit && pnpm generate && pnpm check && wrangler deploy --config wrangler.jsonc"
   },
   "dependencies": {
-    "@iconify-json/lucide": "^1.2.159",
+    "@iconify-json/lucide": "^1.2.160",
     "@nuxt/content": "^3.17.0",
-    "@nuxt/ui": "^4.13.0",
-    "@nuxtjs/i18n": "^10.6.0",
+    "@nuxt/ui": "^4.13.1",
+    "@nuxtjs/i18n": "^10.7.0",
     "@nuxtjs/sitemap": "^9.2.0",
     "nuxt": "^4.7.0",
     "vue": "^3.5.46",
-    "vue-router": "^5.5.1",
+    "vue-router": "^5.5.3",
     "zod": "^4.6.7"
   },
   "devDependencies": {
     "@nuxt/eslint": "^1.17.0",
     "@playwright/test": "1.65.1",
-    "@types/node": "^26.6.10",
+    "@types/node": "^26.6.11",
     "better-sqlite3": "^13.2.0",
     "debug": "^4.4.3",
     "eslint": "^10.15.0",
